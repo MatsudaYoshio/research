@@ -21,7 +21,7 @@ using namespace cv;
 using namespace dlib;
 
 int main() {
-	const string path = "D:/machine_learning_data/hand/20170819/hand_training_data29924_100100/"; // 訓練データのディレクトリパス
+	const string path = ""; // 訓練データのディレクトリパス
 
 	HANDLE hFind;
 	WIN32_FIND_DATAA win32fd;
