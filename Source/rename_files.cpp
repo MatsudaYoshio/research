@@ -25,7 +25,6 @@ int main() {
 		cout << "rename file : " << old_filename << " -> " << new_filename << endl;
 	} while (FindNextFileA(hFind, &win32fd));
 	CloseHandle(hFind);
-
-
+	
 	return 0;
 }
