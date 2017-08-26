@@ -14,7 +14,7 @@ HandDetector::HandDetector() :nms(this->overlap_ratio) {
 	deserialize("") >> this->df; // ファイルから学習済みのモデルを読み込む
 }
 
-void HandDetector::operator() (array2d<unsigned char> &image, std::vector<dlib::rectangle> &sliding_windows, std::vector<dlib::rectangle> &result_rects, bool nms_flag = true) {
+std::vector<dlib::rectangle> HandDetector::operator() (array2d<unsigned char> &image, std::vector<dlib::rectangle> &sliding_windows, bool nms_flag = true) {
 	array2d<unsigned char> roi;
 	std::vector<dlib::rectangle> rects;
 
@@ -26,10 +26,12 @@ void HandDetector::operator() (array2d<unsigned char> &image, std::vector<dlib::
 	}
 
 	if (nms_flag) {
+		std::vector<dlib::rectangle> result_rects;
 		this->nms(rects, result_rects);
+		return result_rects;
 	}
 	else {
-		result_rects = rects;
+		return rects;
 	}
 }
 

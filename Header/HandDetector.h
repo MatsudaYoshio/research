@@ -21,7 +21,7 @@ private:
 	static constexpr double overlap_ratio = 0.1;
 public:
 	HandDetector();
-	void operator() (dlib::array2d<unsigned char> &image, std::vector<dlib::rectangle> &sliding_windows, std::vector<dlib::rectangle> &result_rects, bool nms_flag = true);
+	std::vector<dlib::rectangle> operator() (dlib::array2d<unsigned char> &image, std::vector<dlib::rectangle> &sliding_windows, bool nms_flag = true);
 private:
 	bool is_hand(dlib::array2d<unsigned char> &image);
 	void fhog_to_feature_vector(X_type &feature_vector, fhog_type &fhog);
