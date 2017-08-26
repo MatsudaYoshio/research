@@ -98,4 +98,6 @@ int main()
 	*/
 
 	serialize(path + "linear_svm_function.dat") << df; // 訓練結果をファイルに出力
+
+	return 0;
 }

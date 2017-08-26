@@ -130,4 +130,6 @@ int main()
 	*/
 
 	serialize(path + "ekm_svm_function.dat") << learned_function; // 訓練結果をファイルに出力
+
+	return 0;
 }
