@@ -66,30 +66,32 @@ HogDescriptor::HogDescriptor(const array2d<unsigned char> &img, const int cell_s
 		}
 	}
 
-	std::vector<std::vector<double>> histogram_sum(histogram_rows, std::vector<double>(histogram_cols));
+	std::vector<std::vector<double>> histogram_sum(histogram_rows, std::vector<double>(histogram_cols, 0.0));
 	for (int i = 0; i < histogram_rows; ++i) {
 		for (int j = 0; j < histogram_cols; ++j) {
-			histogram_sum[i][j] = accumulate(begin(histogram[i][j]), end(histogram[i][j]), 0.0);
+			for (int k = 0; k < orientation_size; ++k) {
+				histogram_sum[i][j] += pow(histogram[i][j][k], 2);
+			}
 		}
 	}
 
 	std::vector<std::vector<double>> block_sum(block_rows, std::vector<double>(block_cols, 0));
 	for (int i = 0; i < block_size; ++i) {
 		for (int j = 0; j < block_size; ++j) {
-			block_sum[0][0] += pow(histogram_sum[i][j], 2);
+			block_sum[0][0] += histogram_sum[i][j];
 		}
 	}
 	for (int i = 1; i < block_cols; ++i) {
 		block_sum[0][i] = block_sum[0][i - 1];
 		for (int j = 0; j < block_size; ++j) {
-			block_sum[0][i] += pow(histogram_sum[j][i + block_size - 1] - histogram_sum[j][i - 1], 2);
+			block_sum[0][i] += histogram_sum[j][i + block_size - 1] - histogram_sum[j][i - 1];
 		}
 	}
 	for (int i = 1; i < block_rows; ++i) {
 		for (int j = 0; j < block_cols; ++j) {
 			block_sum[i][j] = block_sum[i - 1][j];
 			for (int k = 0; k < block_size; ++k) {
-				block_sum[i][j] += pow(histogram_sum[i - 1][k] - histogram_sum[i + block_size - 1][k], 2);
+				block_sum[i][j] += histogram_sum[i + block_size - 1][j + k] - histogram_sum[i - 1][j + k];
 			}
 		}
 	}
