@@ -20,7 +20,7 @@ HogDescriptor::HogDescriptor(const array2d<unsigned char> &img, const int cell_s
 	const int feature_size = block_rows*block_cols*pow(block_size, 2)*orientation_size;
 	const double angle = 180.0 / orientation_size;
 
-	std::vector<std::vector<std::vector<double>>> histogram = std::vector<std::vector<std::vector<double>>>(histogram_rows,std::vector<std::vector<double>>(histogram_cols,std::vector<double>(orientation_size, 0)));
+	std::vector<std::vector<std::vector<double>>> histogram(histogram_rows, std::vector<std::vector<double>>(histogram_cols, std::vector<double>(orientation_size, 0)));
 	int dx, dy, p, q;
 	double mag, grad;
 	for (int y = 0; y < img_height; ++y) {
