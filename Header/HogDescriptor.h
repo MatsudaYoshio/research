@@ -7,11 +7,10 @@
 
 class HogDescriptor {
 private:
-	const int cell_size, block_size, orientation_size;
-	int img_width, img_height, feature_size;
+	std::vector<double> feature_vector;
 public:
-	HogDescriptor(dlib::array2d<unsigned char> &img, int cell_size, int block_size, int orientation_size);
-private:
+	HogDescriptor(const dlib::array2d<unsigned char> &img, const int cell, const int block, const int orientation);
+	std::vector<double> get_feature_vector() const;
 };
 
 #endif
