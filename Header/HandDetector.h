@@ -5,16 +5,17 @@
 #include <vector>
 
 #include <dlib/gui_widgets.h>
+#include <dlib/svm.h>
 
 #include "NonMaximumSuppression.h"
 
 class HandDetector {
 private:
-	using X_type = std::map<unsigned long, double>; // “Á’¥ƒxƒNƒgƒ‹‚ÌŒ^
-	using kernel_type = dlib::sparse_linear_kernel<X_type>; // ƒJ[ƒlƒ‹‚ÌŒ^
-	using fhog_type = dlib::array2d<dlib::matrix<double, 31, 1>>; // fhog“Á’¥—Ê‚ÌŒ^
+	using X_type = std::map<unsigned long, double>; // ç‰¹å¾´ãƒ™ã‚¯ãƒˆãƒ«ã®å‹
+	using kernel_type = dlib::sparse_linear_kernel<X_type>; // ã‚«ãƒ¼ãƒãƒ«ã®å‹
+	using fhog_type = dlib::array2d<dlib::matrix<double, 31, 1>>; // fhogç‰¹å¾´é‡ã®å‹
 
-	dlib::decision_function<kernel_type> df; // Œˆ’è‹«ŠE‚ÌŠÖ”
+	dlib::decision_function<kernel_type> df; // æ±ºå®šå¢ƒç•Œã®é–¢æ•°
 	NonMaximumSuppression nms;
 	static constexpr int resize_size = 80;
 	static constexpr double decision_ratio = 0.5;
