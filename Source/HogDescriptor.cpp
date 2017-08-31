@@ -1,9 +1,12 @@
 #include <vector>
+#include <array>
 #include <numeric>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <algorithm>
 
 #include <dlib/gui_widgets.h>
+#include <dlib/image_processing.h>
 
 #include "HogDescriptor.h"
 
@@ -11,8 +14,11 @@ using namespace std;
 using namespace dlib;
 
 HogDescriptor::HogDescriptor(const array2d<unsigned char> &img, const int cell_size, const int block_size, const int orientation_size) {
-	const int img_width = img.nc();
-	const int img_height = img.nr();
+	array2d<unsigned char> img_eq;
+	equalize_histogram(img, img_eq);
+
+	const int img_width = img_eq.nc();
+	const int img_height = img_eq.nr();
 	const int histogram_rows = img_height / cell_size;
 	const int histogram_cols = img_width / cell_size;
 	const int block_rows = histogram_rows - block_size + 1;
@@ -37,7 +43,7 @@ HogDescriptor::HogDescriptor(const array2d<unsigned char> &img, const int cell_s
 				p = x - 1;
 				q = x + 1;
 			}
-			dx = img[y][p] - img[y][q];
+			dx = img_eq[y][p] - img_eq[y][q];
 
 			if (y == 0) {
 				p = y;
@@ -51,7 +57,7 @@ HogDescriptor::HogDescriptor(const array2d<unsigned char> &img, const int cell_s
 				p = y - 1;
 				q = y + 1;
 			}
-			dy = img[p][x] - img[q][x];
+			dy = img_eq[p][x] - img_eq[q][x];
 			
 			mag = sqrt(pow(dx, 2) + pow(dy, 2));
 			grad = atan2(dy, dx)*180.0 / M_PI;
