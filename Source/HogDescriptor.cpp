@@ -1,9 +1,6 @@
 #include <vector>
-#include <array>
-#include <numeric>
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include <algorithm>
 
 #include <dlib/gui_widgets.h>
 #include <dlib/image_processing.h>
