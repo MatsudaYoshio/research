@@ -1,11 +1,9 @@
 #include <iostream>
 #include <cmath>
-#include <limits>
 #include <algorithm>
 #include <thread>
-#include <mutex>
 #include <cstdio>
-#include <random>
+#include <map>
 
 /* dlib */
 #include <dlib/gui_widgets.h>
@@ -31,14 +29,13 @@ using namespace cv;
 
 class Action {
 private:
-	using X_type = std::map<unsigned long, double>; // ç‰¹å¾´ãƒ™ã‚¯ãƒˆãƒ«ã®å‹
-	using kernel_type = sparse_linear_kernel<X_type>; // ã‚«ãƒ¼ãƒãƒ«ã®å‹
-	using fhog_type = array2d<matrix<double, 31, 1>>; // fhogç‰¹å¾´é‡ã®å‹
+	using X_type = std::map<unsigned long, double>; // “Á’¥ƒxƒNƒgƒ‹‚ÌŒ^
+	using kernel_type = sparse_linear_kernel<X_type>; // ƒJ[ƒlƒ‹‚ÌŒ^
+	using fhog_type = array2d<matrix<double, 31, 1>>; // fhog“Á’¥—Ê‚ÌŒ^
 	using track_data_type = struct {
 		dlib::rectangle hand, face;
 		Point past_pointer, current_pointer;
 		drectangle current_pos;
-		bool tracking_flag;
 		std::vector<pair<int, dlib::rectangle>> track_hand_dets;
 	};
 
@@ -48,29 +45,26 @@ private:
 	static constexpr double decision_ratio = 0.5;
 	static constexpr double overlap_ratio = 0.1;
 
-	track_data_type track_assignment[5];
-	std::vector<dlib::rectangle> face_dets_buf, face_dets, hand_dets, hand_track_rects;
-	frontal_face_detector face_detector; // æ­£é¢é¡”æ¤œå‡ºå™¨
-	decision_function<kernel_type> df; // æ±ºå®šå¢ƒç•Œã®é–¢æ•°
+	//track_data_type track_assignment[5];
+	std::map<long long int, track_data_type> track_data;
+	std::vector<dlib::rectangle> face_dets, hand_dets;
+	frontal_face_detector face_detector; // ³–ÊŠçŒŸoŠí
+	decision_function<kernel_type> df; // Œˆ’è‹«ŠE‚ÌŠÖ”
 	array2d<unsigned char> image_gs;
 	array2d<bgr_pixel> image_org;
 	bool face_thread_flag;
 	bool hand_thread_flag;
 	bool stop_flag;
-	long long int frame_count; // ã‚ªãƒ¼ãƒãƒ¼ãƒ•ãƒ­ãƒ¼ã«æ°—ã‚’ä»˜ã‘ã‚‹
+	long long int frame_count;
+	long long int track_id;
 	Mat frame, view_frame;
 	NonMaximumSuppression nms;
 	VideoCapture cap;
 public:
-	Action() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0) {
+	Action() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0) {
 		this->face_detector = get_frontal_face_detector();
 
-		deserialize("") >> df; // ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰å­¦ç¿’æ¸ˆã¿ã®ãƒ¢ãƒ‡ãƒ«ã‚’èª­ã¿è¾¼ã‚€
-
-		for (int i = 0; i < 5; ++i) {
-			this->track_assignment[i].tracking_flag = false;
-			this->track_assignment[i].hand.set_left(-1);
-		}
+		deserialize("D:/machine_learning_data/hand/20170813/linear_svm_function.dat") >> df; // ƒtƒ@ƒCƒ‹‚©‚çŠwKÏ‚İ‚Ìƒ‚ƒfƒ‹‚ğ“Ç‚İ‚Ş
 
 		this->frame = Mat(Size(this->window_width, this->window_height), CV_8UC3);
 		
@@ -86,7 +80,7 @@ public:
 
 			++this->frame_count;
 
-			this->cap >> this->frame; // ã‚«ãƒ¡ãƒ©ã‹ã‚‰ç”»åƒã‚’å–å¾—
+			this->cap >> this->frame; // ƒJƒƒ‰‚©‚ç‰æ‘œ‚ğæ“¾
 
 			assign_image(this->image_org, cv_image<bgr_pixel>(this->frame));
 			assign_image(this->image_gs, this->image_org);
@@ -113,64 +107,59 @@ private:
 			cv::rectangle(view_frame, Point(this->hand_dets[i].left(), this->hand_dets[i].top()), Point(this->hand_dets[i].right(), this->hand_dets[i].bottom()), ColorParam::RED, 5);
 		});
 
-		parallel_for(0, this->face_dets_buf.size(), [&](long i) {
-			cv::rectangle(view_frame, Point(this->face_dets_buf[i].left(), this->face_dets_buf[i].top()), Point(this->face_dets_buf[i].right(), this->face_dets_buf[i].bottom()), ColorParam::BLUE, 5);
+		parallel_for(0, this->face_dets.size(), [&](long i) {
+			cv::rectangle(view_frame, Point(this->face_dets[i].left(), this->face_dets[i].top()), Point(this->face_dets[i].right(), this->face_dets[i].bottom()), ColorParam::BLUE, 5);
 		});
 
-		parallel_for(0, 5, [&](long i) {
-			if (this->track_assignment[i].tracking_flag) {
-				cv::rectangle(view_frame, Point(this->track_assignment[i].current_pos.left(), this->track_assignment[i].current_pos.top()), Point(this->track_assignment[i].current_pos.right(), this->track_assignment[i].current_pos.bottom()), ColorParam::ORANGE, 5);
-			}
-		});
+		for (auto t : this->track_data) {
+			cv::rectangle(view_frame, Point(t.second.current_pos.left(), t.second.current_pos.top()), Point(t.second.current_pos.right(), t.second.current_pos.bottom()), ColorParam::ORANGE, 5);
+		}
+
 		imshow("detect window", view_frame);
 	}
 
-	/* é¡”æ¤œå‡º */
+	/* ŠçŒŸo */
 	void face_detect() {
 		this->face_thread_flag = true;
-		this->face_dets.clear();
 
-		this->face_dets_buf = this->face_detector(this->image_gs);
+		this->face_dets = this->face_detector(this->image_gs);
 
-		/* æ—¢ã«è¿½è·¡ã—ã¦ã„ã‚‹é¡”ã®è¿‘ãã®é¡”ã‚’é™¤ã */
-		for (auto r : this->face_dets_buf) {
-			bool flag = false;
-			for (int i = 0; i < 5; ++i) {
-				if (this->track_assignment[i].tracking_flag && this->euclid_distance((this->track_assignment[i].face.left() + this->track_assignment[i].face.right()) / 2, (this->track_assignment[i].face.top() + this->track_assignment[i].face.bottom()) / 2, (r.left() + r.right()) / 2, (r.top() + r.bottom()) / 2) < 400) {
-					flag = true;
-					break;
+		/* Šù‚É’ÇÕ‚µ‚Ä‚¢‚éŠç‚Ì‹ß‚­‚ÌŠç‚Íœ‚­ */
+		for (auto td : this->track_data) {
+			for (auto fd = begin(this->face_dets); fd != end(this->face_dets);) {
+				if (this->euclid_distance((td.second.face.left() + td.second.face.right()) / 2, (td.second.face.top() + td.second.face.bottom()) / 2, (fd->left() + fd->right()) / 2, (fd->top() + fd->bottom()) / 2) < 400) {
+					fd = this->face_dets.erase(fd);
+				}
+				else {
+					++fd;
 				}
 			}
-			if (!flag) {
-				this->face_dets.emplace_back(r);
-			}
 		}
-
-		if (!this->face_dets.empty()) { // æ¤œå‡ºã—ãŸé¡”ãŒã‚ã‚Œã°
-			this->new_thread_hand_detect(); // æ‰‹æ¤œå‡ºã‚¹ãƒ¬ãƒƒãƒ‰ã‚’èµ·å‹•
+		
+		if (!this->face_dets.empty()) { // ŒŸo‚µ‚½Šç‚ª‚ ‚ê‚Î
+			this->new_thread_hand_detect(); // èŒŸoƒXƒŒƒbƒh‚ğ‹N“®
 		}
 
 		this->face_thread_flag = false;
 	}
 
-	/* æ‰‹æ¤œå‡º */
+	/* èŒŸo */
 	void hand_detect() {
 		this->hand_thread_flag = true;
 		
 		this->hand_dets.clear();
 
-		std::vector<dlib::rectangle> face_dets_tmp = this->face_dets;
-		const int face_num = face_dets_tmp.size(); // æ¤œå‡ºã•ã‚ŒãŸé¡”ã®æ•°
-		std::vector<dlib::rectangle> windows; // ã‚¹ãƒ©ã‚¤ãƒ‡ã‚£ãƒ³ã‚°ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ç”¨ã®çŸ©å½¢
+		std::vector<dlib::rectangle> face_dets_tmp = this->face_dets, hand_dets_tmp;
+		const int face_num = face_dets_tmp.size(); // ŒŸo‚³‚ê‚½Šç‚Ì”
+		std::vector<dlib::rectangle> windows; // ƒXƒ‰ƒCƒfƒBƒ“ƒOƒEƒBƒ“ƒhƒE—p‚Ì‹éŒ`
 		array2d<unsigned char> roi;
-		std::vector<dlib::rectangle> hand_dets_tmp, hand_dets_tmp2;
 		
 		for (int i = 0; i < face_num; ++i) {
-			/* é¡”ã®å‘¨è¾ºã®ã‚¹ãƒ©ã‚¤ãƒ‡ã‚£ãƒ³ã‚°ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ä½œæˆ */
+			/* Šç‚Ìü•Ó‚ÌƒXƒ‰ƒCƒfƒBƒ“ƒOƒEƒBƒ“ƒhƒE‚ğì¬ */
 			SlidingWindows sw(200, 40, std::max((int)face_dets_tmp[i].left() - 200, 0), std::min((int)face_dets_tmp[i].right() + 200, this->window_width), std::max((int)face_dets_tmp[i].top() - 200, 0), std::min((int)face_dets_tmp[i].bottom() + 200, this->window_height));
 			windows = sw.get_windows();
 
-			/* ã‚¹ãƒ©ã‚¤ãƒ‡ã‚£ãƒ³ã‚°ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã§æ¤œå‡º */
+			/* ƒXƒ‰ƒCƒfƒBƒ“ƒOƒEƒBƒ“ƒhƒE‚ÅŒŸo */
 			for (auto w : windows) {
 				extract_image_chip(this->image_gs, w, roi);
 				if (this->is_hand(roi)) {
@@ -178,42 +167,32 @@ private:
 				}
 			}
 
-			/* æ—¢ã«è¿½è·¡ã—ã¦ã„ã‚‹æ‰‹ã®è¿‘ãã®æ‰‹ã‚’é™¤ã */
-			for (auto r : hand_dets_tmp) {
-				bool flag = false;
-				for (int i = 0; i < 5; ++i) {
-					if (this->track_assignment[i].tracking_flag && this->euclid_distance((this->track_assignment[i].hand.left() + this->track_assignment[i].hand.right()) / 2, (this->track_assignment[i].hand.top() + this->track_assignment[i].hand.bottom()) / 2, (r.left() + r.right()) / 2, (r.top() + r.bottom()) / 2) < 400) {
-						flag = true;
-						break;
+			/* Šù‚É’ÇÕ‚µ‚Ä‚¢‚éè‚Ì‹ß‚­‚Ìè‚ğœ‚­ */
+			for (auto td : this->track_data) {
+				for (auto hd = begin(hand_dets_tmp); hd != end(hand_dets_tmp);) {
+					if (this->euclid_distance((td.second.face.left() + td.second.face.right()) / 2, (td.second.face.top() + td.second.face.bottom()) / 2, (hd->left() + hd->right()) / 2, (hd->top() + hd->bottom()) / 2) < 400) {
+						hand_dets_tmp.erase(hd++);
 					}
-				}
-				if (!flag) {
-					hand_dets_tmp2.emplace_back(r);
+					else {
+						++hd;
+					}
 				}
 			}
 
-			if (!hand_dets_tmp.empty()) { // æ¤œå‡ºã•ã‚ŒãŸæ‰‹ãŒã‚ã‚Œã°
+			if (!hand_dets_tmp.empty()) { // ŒŸo‚³‚ê‚½è‚ª‚ ‚ê‚Î
 
-				/* NonMaximumSuppressionã«ã‹ã‘ã¦é‡è¤‡ã‚’å–ã‚Šé™¤ã */
-				this->nms(hand_dets_tmp2, this->hand_dets);
+				/* NonMaximumSuppression‚É‚©‚¯‚Äd•¡‚ğæ‚èœ‚­ */
+				this->nms(hand_dets_tmp, this->hand_dets);
 
-				/* é¡”ã¨æ‰‹ã‚’å¯¾å¿œã•ã›ã¦è¿½è·¡ã‚’é–‹å§‹ã™ã‚‹ */
-				for (int j = 0; j < 5; ++j) {
-					if (!this->track_assignment[j].tracking_flag) {
-						this->track_assignment[j].tracking_flag = true;
-						this->track_assignment[j].hand = this->hand_dets[0];
-						this->track_assignment[j].face = face_dets_tmp[i];
+				this->track_data[this->track_id].hand = this->hand_dets[0];
+				this->track_data[this->track_id].face = face_dets_tmp[i];
 
-						correlation_tracker ct;
-						ct.start_track(this->image_org, this->hand_dets[0]);
+				correlation_tracker ct;
+				ct.start_track(this->image_org, this->hand_dets[0]);
 
-						this->track_assignment[i].past_pointer = Point((this->hand_dets[0].left() + this->hand_dets[0].right()) / 2, (this->hand_dets[0].top() + this->hand_dets[0].bottom()) / 2);
+				this->track_data[this->track_id].past_pointer = Point((this->hand_dets[0].left() + this->hand_dets[0].right()) / 2, (this->hand_dets[0].top() + this->hand_dets[0].bottom()) / 2);
 
-						this->new_thread_tracking(ct, i);
-
-						break;
-					}
-				}
+				this->new_thread_tracking(ct, this->track_id++);
 			}
 			
 		}
@@ -221,13 +200,13 @@ private:
 		this->hand_thread_flag = false;
 	}
 
-	/* è¿½è·¡æ™‚ç”¨ã®æ‰‹æ¤œå‡º */
-	void hand_detect(const std::vector<dlib::rectangle> &sliding_windows, const int n) {
+	/* ’ÇÕ—p‚ÌèŒŸo */
+	void hand_detect(const std::vector<dlib::rectangle> &sliding_windows, const int track_id) {
 		array2d<unsigned char> roi;
 		for (auto w : sliding_windows) {
 			extract_image_chip(this->image_gs, w, roi);
 			if (this->is_hand(roi)) {
-				this->track_assignment[n].track_hand_dets.emplace_back(make_pair(this->frame_count, w));
+				this->track_data[track_id].track_hand_dets.emplace_back(make_pair(this->frame_count, w));
 			}
 		}
 	}
@@ -245,42 +224,42 @@ private:
 		return (df(feature_vec) > this->decision_ratio);
 	}
 
-	void tracking(correlation_tracker &ct, int n) {
+	void tracking(correlation_tracker &ct, int track_id) {
 		while (1) {
 
-			/* ç›´è¿‘ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã§æ¤œå‡ºã—ãŸæ‰‹ä»¥å¤–ã‚’æ¶ˆã™ */
+			/* ’¼‹ß‚ÌƒtƒŒ[ƒ€‚ÅŒŸo‚µ‚½èˆÈŠO‚ğÁ‚· */
 			int m = 0;
-			for (auto d : this->track_assignment[n].track_hand_dets) {
+			for (auto d : this->track_data[track_id].track_hand_dets) {
 				if (d.first < this->frame_count - 30) {
 					++m;
 					continue;
 				}
 				break;
 			}
-			this->track_assignment[n].track_hand_dets.erase(begin(this->track_assignment[n].track_hand_dets), begin(this->track_assignment[n].track_hand_dets) + m);
+			this->track_data[track_id].track_hand_dets.erase(begin(this->track_data[track_id].track_hand_dets), begin(this->track_data[track_id].track_hand_dets) + m);
 
-			drectangle past_pos = ct.get_position(); // ç›´è¿‘ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ‰‹ã®ä½ç½®ã‚’å¾—ã‚‹
+			drectangle past_pos = ct.get_position(); // ’¼‹ßƒtƒŒ[ƒ€‚Ìè‚ÌˆÊ’u‚ğ“¾‚é
 
-			ct.update(this->image_org); // è¿½è·¡ä½ç½®ã®æ›´æ–°
+			ct.update(this->image_org); // ’ÇÕˆÊ’u‚ÌXV
 			
-			/* ç¾åœ¨ã®è¿½è·¡ä½ç½®(çŸ©å½¢)ã‚’å¾—ã‚‹ */
+			/* Œ»İ‚Ì’ÇÕˆÊ’u(‹éŒ`)‚ğ“¾‚é */
 			drectangle current_pos = ct.get_position();
-			this->track_assignment[n].hand = this->track_assignment[n].current_pos = current_pos;
+			this->track_data[track_id].hand = this->track_data[track_id].current_pos = current_pos;
 
-			/* ç¾åœ¨ã®è¿½è·¡ä½ç½®ã®å‘¨è¾ºã®ã‚¹ãƒ©ã‚¤ãƒ‡ã‚£ãƒ³ã‚°ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ä½œæˆã—ã¦æ‰‹ã‚’æ¤œå‡º */
+			/* Œ»İ‚Ì’ÇÕˆÊ’u‚Ìü•Ó‚ÌƒXƒ‰ƒCƒfƒBƒ“ƒOƒEƒBƒ“ƒhƒE‚ğì¬‚µ‚Äè‚ğŒŸo */
 			SlidingWindows local_sw(current_pos.width(), current_pos.width() / 5, std::max((int)current_pos.left() - 100, 0), std::min((int)current_pos.right() + 100, this->window_width), std::max((int)current_pos.top() - 100, 0), std::min((int)current_pos.bottom() + 100, this->window_height));
-			this->hand_detect(local_sw.get_windows(), n);
+			this->hand_detect(local_sw.get_windows(), track_id);
 
-			/* ç¾åœ¨ã®è¿½è·¡ä½ç½®(çŸ©å½¢ã®ä¸­å¿ƒåº§æ¨™)ã‚’å¾—ã‚‹ */
-			double x = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // xåº§æ¨™
-			double y = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // yåº§æ¨™
+			/* Œ»İ‚Ì’ÇÕˆÊ’u(‹éŒ`‚Ì’†SÀ•W)‚ğ“¾‚é */
+			double x = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // xÀ•W
+			double y = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // yÀ•W
 
-			Point2f cp(this->track_assignment[n].past_pointer.x - 10 * x, this->track_assignment[n].past_pointer.y + 10 * y); // ç¾åœ¨ã®è¿½è·¡ä½ç½®ã‹ã‚‰ç›¸å¯¾çš„ã«ãƒã‚¤ãƒ³ã‚¿ã®ä½ç½®ã‚’æ±ºå®š
+			Point2f cp(this->track_data[track_id].past_pointer.x - 10 * x, this->track_data[track_id].past_pointer.y + 10 * y); // Œ»İ‚Ì’ÇÕˆÊ’u‚©‚ç‘Š‘Î“I‚Éƒ|ƒCƒ“ƒ^‚ÌˆÊ’u‚ğŒˆ’è
 
-			this->track_assignment[n].current_pointer = this->track_assignment[n].past_pointer = cp; // ãƒã‚¤ãƒ³ã‚¿ã®ä½ç½®ã‚’æ›´æ–°
+			this->track_data[track_id].current_pointer = this->track_data[track_id].past_pointer = cp; // ƒ|ƒCƒ“ƒ^‚ÌˆÊ’u‚ğXV
 
-			if (this->track_assignment[n].track_hand_dets.empty() || this->stop_flag) { // ç›´è¿‘ãƒ•ãƒ¬ãƒ¼ãƒ ã§æ‰‹ãŒæ¤œå‡ºã•ã‚Œãªã‹ã£ãŸã‚‰è¿½è·¡ã‚’ã‚„ã‚ã‚‹
-				this->track_assignment[n].tracking_flag = false;
+			if (this->track_data[track_id].track_hand_dets.empty() || this->stop_flag) { // ’¼‹ßƒtƒŒ[ƒ€‚Åè‚ªŒŸo‚³‚ê‚È‚©‚Á‚½‚ç’ÇÕ‚ğ‚â‚ß‚é
+				this->track_data.erase(track_id);
 				break;
 			}
 		}
