@@ -1,3 +1,4 @@
+#pragma once
 #ifndef ___Class_HandPointer
 #define ___Class_HandPointer
 
@@ -67,12 +68,14 @@ private:
 	std::random_device rd;
 	std::mt19937 mt;
 	std::uniform_int_distribution<int> rn_color;
+	bool stop_flag;
 public:
 	std::map<long long int, track_data_type> track_data;
 
 public:
 	HandPointer();
-	void loop();
+	void update();
+	void exit();
 private:
 	void show_detect_window();
 	void face_detect();

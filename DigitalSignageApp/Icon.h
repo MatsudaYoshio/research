@@ -1,3 +1,4 @@
+#pragma once
 #ifndef ___Class_Icon
 #define ___Class_Icon
 
@@ -8,14 +9,12 @@ private:
 	ofRectangle rect;
 	ofPoint tl, tr, bl, br; // 左上、右上、左下、右下の4点
 	ofTexture texture;
-	bool state;
 public:
+	Icon(const int x, const int y, const int width, const int height, const string img_path);
 	void setup(const int x, const int y, const int width, const int height, const string img_path);
+	void update();
 	void draw();
-	void update_state(const ofPoint &p);
-
-	ofEvent<float> my_event;
-	void fireEvent();
+	bool is_inside(const ofPoint &p) const;
 };
 
 #endif

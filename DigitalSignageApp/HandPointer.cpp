@@ -4,7 +4,7 @@ using namespace std;
 using namespace dlib;
 using namespace cv;
 
-HandPointer::HandPointer() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), frame_count(0), track_id(0), mt(rd()) {
+HandPointer::HandPointer() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0), mt(rd()) {
 	this->face_detector = get_frontal_face_detector();
 
 	deserialize("C:/Users/matsuda/Desktop/20170813/linear_svm_function.dat") >> df; // ファイルから学習済みのモデルを読み込む
@@ -22,7 +22,7 @@ HandPointer::HandPointer() :nms(this->overlap_ratio), face_thread_flag(false), h
 	this->rn_color = uniform_int_distribution<int>(0, this->pointer_color_list.size());
 }
 
-void HandPointer::loop() {
+void HandPointer::update() {
 	++this->frame_count;
 
 	frc.NewFrame();
@@ -39,7 +39,10 @@ void HandPointer::loop() {
 	}
 
 	this->show_detect_window();
+}
 
+void HandPointer::exit() {
+	this->stop_flag = true;
 }
 
 void HandPointer::show_detect_window() {
@@ -246,7 +249,7 @@ void HandPointer::tracking(correlation_tracker &ct, int track_id) {
 
 		this->track_data[track_id].current_pointer = this->track_data[track_id].past_pointer = cp; // ポインタの位置を更新
 
-		if (this->track_data[track_id].track_hand_dets.empty()) { // 直近フレームで手が検出されなかったら追跡をやめる
+		if (this->track_data[track_id].track_hand_dets.empty() || this->stop_flag) { // 直近フレームで手が検出されなかったら追跡をやめる
 			this->track_data.erase(track_id);
 			break;
 		}
