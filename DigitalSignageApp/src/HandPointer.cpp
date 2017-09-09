@@ -14,10 +14,8 @@ HandPointer::HandPointer() :nms(this->overlap_ratio), face_thread_flag(false), h
 	this->pointer_color_list.emplace_back(ofColor::blue);
 	this->pointer_color_list.emplace_back(ofColor::red);
 	this->pointer_color_list.emplace_back(ofColor::green);
-	this->pointer_color_list.emplace_back(ofColor::orange);
 	this->pointer_color_list.emplace_back(ofColor::yellow);
 	this->pointer_color_list.emplace_back(ofColor::black);
-	this->pointer_color_list.emplace_back(ofColor::pink);
 	this->pointer_color_list.emplace_back(ofColor::purple);
 	this->rn_color = uniform_int_distribution<int>(0, this->pointer_color_list.size());
 }

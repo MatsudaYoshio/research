@@ -7,9 +7,11 @@ void SceneManager::setup(HandPointer* hp) {
 	this->scenes.insert(make_pair("detail", new DetailScene()));
 	
 	this->scenes["main"]->setup(hp);
-	ofAddListener(this->scenes["main"]->point_event, this, &SceneManager::pointed);
-	
-	this->scenes["detail"]->setup();
+	this->scenes["detail"]->setup(hp);
+
+	for (auto s : this->scenes) {
+		ofAddListener(s.second->point_event, this, &SceneManager::pointed);
+	}
 
 	this->current_scene = "main";
 }
@@ -23,7 +25,14 @@ void SceneManager::draw() {
 }
 
 void SceneManager::pointed(pair<string,int> &id) {
-	this->current_scene = "detail";
+	if (this->current_scene == "main") {
+		this->current_scene = "detail";
+	}
+	else if (this->current_scene == "detail") {
+		if (id.first == "return") {
+			this->current_scene = "main";
+		}
+	}
 }
 
 SceneManager::~SceneManager() {

@@ -4,13 +4,13 @@
 
 #include "ofMain.h"
 #include "BaseScene.h"
-#include "HandPointer.h"
-#include "Icon.h"
 
 class MainScene : public BaseScene {
 private:
 	HandPointer* hp;
 public:
+	ofImage img;
+
 	void setup(HandPointer *hp);
 	void update();
 	void draw();

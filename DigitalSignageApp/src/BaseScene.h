@@ -8,6 +8,9 @@
 
 class BaseScene {
 public:
+	static constexpr int window_width = 1920;
+	static constexpr int window_height = 1080;
+
 	virtual void setup() {};
 	virtual void setup(HandPointer *hp) {};
 	virtual void update() {};

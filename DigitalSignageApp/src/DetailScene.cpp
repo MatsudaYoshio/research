@@ -1,16 +1,12 @@
-#include "MainScene.h"
+#include "DetailScene.h"
 
-void MainScene::setup(HandPointer* hp) {
-	ofSetBackgroundAuto(true);
+void DetailScene::setup(HandPointer *hp) {
+	this->icons.insert(make_pair("return", Icon(this->window_width-200, 100, 100, 100, "C:/Users/matsuda/Downloads/return.jpeg")));
 
-	/* アイコンを生成 */
-	this->icons.insert(make_pair("test_icon1", Icon(200, 200, 200, 200, "C:/Users/matsuda/Desktop/car.jpg")));
-	this->icons.insert(make_pair("test_icon2", Icon(1000, 600, 200, 200, "C:/Users/matsuda/Desktop/car.jpg")));
-	
 	this->hp = hp;
 }
 
-void MainScene::update() {
+void DetailScene::update() {
 	/* 手ポインタがアイコンに触れたらイベントを発火 */
 	for (auto t : this->hp->track_data) {
 		for (auto i : this->icons) {
@@ -22,8 +18,7 @@ void MainScene::update() {
 	}
 }
 
-void MainScene::draw() {
-	/* アイコンを描画 */
+void DetailScene::draw() {
 	for (auto i : this->icons) {
 		i.second.draw();
 	}

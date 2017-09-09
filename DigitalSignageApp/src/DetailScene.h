@@ -4,10 +4,12 @@
 
 #include "ofMain.h"
 #include "BaseScene.h"
-#include "Icon.h"
 
 class DetailScene : public BaseScene {
-	void setup();
+private:
+	HandPointer* hp;
+public:
+	void setup(HandPointer *hp);
 	void update();
 	void draw();
 };
