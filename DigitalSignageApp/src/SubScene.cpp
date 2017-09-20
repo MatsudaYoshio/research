@@ -6,11 +6,13 @@
 
 using namespace cv;
 
-void SubScene::setup(BaseScene* scene, HandPointer* hp) {
-	this->sub_window.setup(this->window_name.c_str(), 50, 50, this->window_width/2, this->window_height/2, false);
+void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id) {
+	this->pointer_id = pointer_id;
+	this->hp = hp;
+
+	this->sub_window.setup(this->window_name.c_str(), (this->hp->track_data[this->pointer_id].face.left() + this->hp->track_data[this->pointer_id].face.right()) / 2 - this->window_width / 4, (this->hp->track_data[this->pointer_id].face.top() + this->hp->track_data[this->pointer_id].face.bottom()) / 2 - this->window_height / 4, this->window_width / 2, this->window_height / 2, false);
 	this->sub_window.show();
 	this->scene = scene;
-	this->hp = hp;
 	this->scene->setup(this->hp);
 	/*
 	this->fbo.allocate(this->window_width, this->window_height, GL_RGBA);

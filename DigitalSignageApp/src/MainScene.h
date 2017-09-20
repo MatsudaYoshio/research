@@ -14,8 +14,9 @@ public:
 	void setup(HandPointer *hp);
 	void update();
 	void draw();
-	void transition(string &str);
+	void transition(int &pointer_id);
 	void change_icon_state(string icon_id, string state);
+	void set_icon_pointer_id(string icon_id, int pointer_id);
 };
 
 #endif

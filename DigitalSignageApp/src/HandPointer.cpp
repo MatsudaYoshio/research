@@ -16,7 +16,6 @@ HandPointer::HandPointer() :nms(this->overlap_ratio), face_thread_flag(false), h
 	this->pointer_color_list.emplace_back(ofColor::green);
 	this->pointer_color_list.emplace_back(ofColor::yellow);
 	this->pointer_color_list.emplace_back(ofColor::black);
-	//this->pointer_color_list.emplace_back(ofColor::purple);
 	this->rn_color = uniform_int_distribution<int>(0, this->pointer_color_list.size());
 }
 
@@ -243,7 +242,7 @@ void HandPointer::tracking(correlation_tracker &ct, int track_id) {
 		double x = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x座標
 		double y = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y座標
 
-		Point2f cp(this->track_data[track_id].past_pointer.x - 10 * x, this->track_data[track_id].past_pointer.y + 10 * y); // 現在の追跡位置から相対的にポインタの位置を決定
+		Point2f cp(std::max(std::min(this->track_data[track_id].past_pointer.x - 10 * x, (double)this->window_width), 0.0), std::max(std::min((this->track_data[track_id].past_pointer.y + 10 * y), (double)this->window_height), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
 
 		this->track_data[track_id].current_pointer = this->track_data[track_id].past_pointer = cp; // ポインタの位置を更新
 

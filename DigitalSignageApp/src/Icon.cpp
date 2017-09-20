@@ -29,8 +29,8 @@ void Icon::update() {
 	}
 
 	if (this->frame_r < 0) {
-		string a = "test";
-		ofNotifyEvent(this->transition_event, a);
+		int pointer_id = this->pointer_id;
+		ofNotifyEvent(this->transition_event, pointer_id);
 		this->state = "None";
 		this->frame_r = this->frame_g = this->frame_b = this->alpha = 255;
 	}
@@ -52,4 +52,8 @@ bool Icon::is_inside(const ofPoint &p) const {
 
 void Icon::change_state(string state) {
 	this->state = state;
+}
+
+void Icon::set_pointer_id(int pointer_id) {
+	this->pointer_id = pointer_id;
 }

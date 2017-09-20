@@ -65,6 +65,7 @@ void SceneManager::draw() {
 void SceneManager::pointed(pair<string,int> &id) {
 	if (this->current_scene == "main") {
 		this->scenes[this->current_scene]->change_icon_state(id.first, "point");
+		this->scenes[this->current_scene]->set_icon_pointer_id(id.first, id.second);
 	}
 	else if (this->current_scene == "detail") {
 		if (id.first == "return") {
@@ -73,13 +74,13 @@ void SceneManager::pointed(pair<string,int> &id) {
 	}
 }
 
-void SceneManager::transition(string &str) {
+void SceneManager::transition(int &pointer_id) {
 	this->current_scene = "detail";
 }
 
-void SceneManager::make_sub_window(string &str) {
+void SceneManager::make_sub_window(int &pointer_id) {
 	SubScene sub_scene;
-	sub_scene.setup(new DetailScene(), this->hp);
+	sub_scene.setup(new DetailScene(), this->hp, pointer_id);
 	sub_scene.track_id.emplace_back();
 	this->sub_scenes.emplace_back(sub_scene);
 }

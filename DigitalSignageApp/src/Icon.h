@@ -13,6 +13,7 @@ private:
 	int frame_r, frame_g, frame_b;
 	int alpha;
 	string state;
+	int pointer_id;
 public:
 	int track_id;
 
@@ -21,8 +22,9 @@ public:
 	void update();
 	void draw();
 	bool is_inside(const ofPoint &p) const;
-	ofEvent<string> transition_event;
+	ofEvent<int> transition_event;
 	void change_state(string state);
+	void set_pointer_id(int pointer_id);
 };
 
 #endif

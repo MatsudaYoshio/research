@@ -48,16 +48,20 @@ void MainScene::draw() {
 	}
 }
 
-void MainScene::transition(string &str) {
+void MainScene::transition(int &pointer_id) {
 	if (hp->track_data.size() == 1) {
-		ofNotifyEvent(this->make_sub_window_event, str);
-		//ofNotifyEvent(this->transition_event, str);
+		ofNotifyEvent(this->make_sub_window_event, pointer_id);
+		//ofNotifyEvent(this->transition_event, pointer_id);
 	}
 	else if (hp->track_data.size() >= 2) {
-		ofNotifyEvent(this->make_sub_window_event, str);
+		ofNotifyEvent(this->make_sub_window_event, pointer_id);
 	}
 }
 
 void MainScene::change_icon_state(string icon_id, string state) {
 	this->icons.at(icon_id).change_state(state);
+}
+
+void MainScene::set_icon_pointer_id(string icon_id, int pointer_id) {
+	this->icons.at(icon_id).set_pointer_id(pointer_id);
 }

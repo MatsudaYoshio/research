@@ -16,10 +16,12 @@ public:
 	virtual void update() {};
 	virtual void draw() {};
 	virtual void change_icon_state (string icon_id, string state) {};
+	virtual void set_icon_pointer_id(string icon_id, int pointer_id) {};
 
+	vector<int> pointer_id;
 	ofEvent<pair<string,int>> point_event;
-	ofEvent<string> transition_event;
-	ofEvent<string> make_sub_window_event;
+	ofEvent<int> transition_event;
+	ofEvent<int> make_sub_window_event;
 	unordered_map<string, Icon> icons;
 };
 

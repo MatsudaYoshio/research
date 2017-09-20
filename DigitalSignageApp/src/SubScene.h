@@ -19,9 +19,10 @@ private:
 
 	const string window_name = "sub_window";
 	ofxSecondWindow sub_window;
+	int pointer_id;
 public:
 	vector<int> track_id;
-	void setup(BaseScene* scene, HandPointer* hp);
+	void setup(BaseScene* scene, HandPointer* hp, int pointer_id);
 	void update();
 	void draw();
 	~SubScene();

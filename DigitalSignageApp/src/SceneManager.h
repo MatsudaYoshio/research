@@ -23,8 +23,8 @@ public:
 	void update();
 	void draw();
 	void pointed(pair<string, int> &id);
-	void transition(string &str);
-	void make_sub_window(string &str);
+	void transition(int &pointer_id);
+	void make_sub_window(int &pointer_id);
 	~SceneManager();
 };
 
