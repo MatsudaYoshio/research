@@ -7,6 +7,7 @@
 #include "Icon.h"
 #include "BaseScene.h"
 #include "SceneManager.h"
+#include "ofxSecondWindow.h"
 
 class DigitalSignageApp : public ofBaseApp {
 public:
@@ -18,6 +19,8 @@ public:
 
 	HandPointer hp;
 	SceneManager sm;
+
+	ofxSecondWindow secondWindow;
 };
 
 #endif

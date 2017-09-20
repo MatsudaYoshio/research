@@ -4,7 +4,7 @@
 
 using namespace cv;
 
-Icon::Icon(const int x, const int y, const int width, const int height, const string img_path) {
+Icon::Icon(const int x, const int y, const int width, const int height, const string img_path) :frame_r(255), frame_g(255), frame_b(255), alpha(255), state("None") {
 	this->setup(x, y, width, height, img_path);
 }
 
@@ -19,17 +19,37 @@ void Icon::setup(const int x, const int y, const int width, const int height, co
 
 void Icon::update() {
 
+	if (this->state == "point") {
+		this->frame_r -= 15;
+		this->frame_b -= 15;
+		this->alpha = 100;
+	}
+	else if (this->state == "None") {
+		this->frame_r = this->frame_g = this->frame_b = this->alpha = 255;
+	}
+
+	if (this->frame_r < 0) {
+		string a = "test";
+		ofNotifyEvent(this->transition_event, a);
+		this->state = "None";
+		this->frame_r = this->frame_g = this->frame_b = this->alpha = 255;
+	}
 }
 
 void Icon::draw() {
-	ofSetColor(255, 255, 255);
+	ofSetColor(this->frame_r, this->frame_g, this->frame_b);
 	ofNoFill();
 	ofSetLineWidth(10);
 	ofRect(this->rect);
-	ofSetColor(ofColor::white);
+	ofSetColor(ofColor::white, this->alpha);
 	this->texture.draw(this->tl, this->tr, this->br, this->bl);
+	ofFill();
 }
 
 bool Icon::is_inside(const ofPoint &p) const {
 	return this->rect.inside(p);
+}
+
+void Icon::change_state(string state) {
+	this->state = state;
 }

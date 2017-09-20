@@ -4,14 +4,27 @@
 
 #include "ofMain.h"
 #include "BaseScene.h"
+#include "ofxSecondWindow.h"
 
-class SubScene : public BaseScene {
+class SubScene {
 private:
+	static constexpr int window_width = 1920;
+	static constexpr int window_height = 1080;
+
+	BaseScene* scene;
 	HandPointer* hp;
+	ofFbo fbo;
+	ofPixels pixels;
+	ofImage img;
+
+	const string window_name = "sub_window";
+	ofxSecondWindow sub_window;
 public:
-	void setup(HandPointer *hp);
+	vector<int> track_id;
+	void setup(BaseScene* scene, HandPointer* hp);
 	void update();
 	void draw();
+	~SubScene();
 };
 
 #endif

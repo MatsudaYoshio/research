@@ -7,7 +7,7 @@ using namespace cv;
 HandPointer::HandPointer() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0), mt(rd()) {
 	this->face_detector = get_frontal_face_detector();
 
-	deserialize("C:/Users/matsuda/Desktop/20170813/linear_svm_function.dat") >> df; // ファイルから学習済みのモデルを読み込む
+	deserialize("C:/Users/matsuda/workspace/machine_learning_data/20170813/linear_svm_function.dat") >> df; // ファイルから学習済みのモデルを読み込む
 
 	this->frame = Mat(Size(this->window_width, this->window_height), CV_8UC3);
 
@@ -16,7 +16,7 @@ HandPointer::HandPointer() :nms(this->overlap_ratio), face_thread_flag(false), h
 	this->pointer_color_list.emplace_back(ofColor::green);
 	this->pointer_color_list.emplace_back(ofColor::yellow);
 	this->pointer_color_list.emplace_back(ofColor::black);
-	this->pointer_color_list.emplace_back(ofColor::purple);
+	//this->pointer_color_list.emplace_back(ofColor::purple);
 	this->rn_color = uniform_int_distribution<int>(0, this->pointer_color_list.size());
 }
 
