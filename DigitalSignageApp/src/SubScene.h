@@ -16,6 +16,7 @@ private:
 	ofFbo fbo;
 	ofPixels pixels;
 	ofImage img;
+	ofRectangle rect;
 
 	const string window_name = "sub_window";
 	ofxSecondWindow sub_window;
@@ -25,6 +26,7 @@ public:
 	void setup(BaseScene* scene, HandPointer* hp, int pointer_id);
 	void update();
 	void draw();
+	bool is_inside(const ofPoint &p) const;
 	~SubScene();
 };
 

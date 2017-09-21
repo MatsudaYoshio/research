@@ -23,16 +23,21 @@ void SceneManager::setup(HandPointer* hp) {
 	}
 
 	this->current_scene = "main";
-
 	
 	this->fbo.allocate(this->window_width, this->window_height, GL_RGBA);
 	fbo.begin();
 	ofClear(255, 255, 255, 0);
 	fbo.end();
-	
 }
 
 void SceneManager::update() {
+	for (auto &t : this->hp->track_data) {
+		if (this->pointer_log.find(t.first) == end(this->pointer_log)) {
+			this->pointer_log.insert(make_pair(t.first, true));
+			this->scenes["main"]->pointer_id.emplace_back(t.first);
+		}
+	}
+
 	this->scenes[this->current_scene]->update();
 	for (auto &ss : this->sub_scenes) {
 		ss.update();
@@ -46,9 +51,11 @@ void SceneManager::draw() {
 		ss.draw();
 	}
 
-	ofSetColor(ofColor::white);
+	
+	//ofSetColor(ofColor::white);
 
 	/* Žèƒ|ƒCƒ“ƒ^‚Ì•`‰æ */
+	/*
 	for (auto &t : this->hp->track_data) {
 		int alpha = 255;
 		double r = 1;
@@ -58,8 +65,8 @@ void SceneManager::draw() {
 			ofSetColor(t.second.pointer_color, alpha);
 			ofCircle(t.second.current_pointer.x, t.second.current_pointer.y, r);
 		}
-		//ofCircle(t.second.current_pointer.x, t.second.current_pointer.y, 15);
 	}
+	*/
 }
 
 void SceneManager::pointed(pair<string,int> &id) {
@@ -83,6 +90,7 @@ void SceneManager::make_sub_window(int &pointer_id) {
 	sub_scene.setup(new DetailScene(), this->hp, pointer_id);
 	sub_scene.track_id.emplace_back();
 	this->sub_scenes.emplace_back(sub_scene);
+	this->scenes["main"]->pointer_id.erase(remove(begin(this->scenes["main"]->pointer_id), end(this->scenes["main"]->pointer_id), pointer_id), end(this->scenes["main"]->pointer_id));
 }
 
 SceneManager::~SceneManager() {

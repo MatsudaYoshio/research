@@ -9,11 +9,13 @@ using namespace cv;
 void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id) {
 	this->pointer_id = pointer_id;
 	this->hp = hp;
-
+	this->hp->track_data[pointer_id].current_pointer = this->hp->track_data[pointer_id].past_pointer = Point(50, 50);
 	this->sub_window.setup(this->window_name.c_str(), (this->hp->track_data[this->pointer_id].face.left() + this->hp->track_data[this->pointer_id].face.right()) / 2 - this->window_width / 4, (this->hp->track_data[this->pointer_id].face.top() + this->hp->track_data[this->pointer_id].face.bottom()) / 2 - this->window_height / 4, this->window_width / 2, this->window_height / 2, false);
+	// 最後の引数をtrueに変えれば枠なしのウィンドウ
 	this->sub_window.show();
 	this->scene = scene;
 	this->scene->setup(this->hp);
+	this->rect.set((this->hp->track_data[this->pointer_id].face.left() + this->hp->track_data[this->pointer_id].face.right()) / 2 - this->window_width / 4, (this->hp->track_data[this->pointer_id].face.top() + this->hp->track_data[this->pointer_id].face.bottom()) / 2 - this->window_height / 4, this->window_width / 2, this->window_height / 2);
 	/*
 	this->fbo.allocate(this->window_width, this->window_height, GL_RGBA);
 	this->fbo.begin();
@@ -48,10 +50,31 @@ void SubScene::draw() {
 	imshow(this->window_name, cv_img);
 	*/
 	this->sub_window.begin();
+	
+	//glViewport(200, 200, this->window_width / 2, this->window_height / 2);
+	gluLookAt(500, 500, 0, 500, 500, -1, 0, 1, 0);
+
 	ofBackground(255);
 	ofSetColor(ofColor::white);
 	this->scene->draw(); // シーンの描画
+
+	ofSetColor(ofColor::white);
+
+	/* 手ポインタの描画 */
+	int alpha = 255;
+	double r = 1;
+	for (int i = 0; i < 50; ++i) {
+		r += 0.6;
+		alpha -= 12;
+		ofSetColor(this->hp->track_data[this->pointer_id].pointer_color, alpha);
+		ofCircle(this->hp->track_data[this->pointer_id].current_pointer.x, this->hp->track_data[this->pointer_id].current_pointer.y, r);
+	}
+
 	this->sub_window.end();
+}
+
+bool SubScene::is_inside(const ofPoint &p) const {
+	return this->rect.inside(p);
 }
 
 SubScene::~SubScene() {

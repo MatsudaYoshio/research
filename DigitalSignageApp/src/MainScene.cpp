@@ -25,6 +25,16 @@ void MainScene::update() {
 	bool flag;
 	for (auto &i : this->icons) {
 		flag = false;
+		for (auto &p : this->pointer_id) {
+			if (i.second.is_inside(ofPoint(this->hp->track_data[p].current_pointer.x, this->hp->track_data[p].current_pointer.y))) {
+				pair<string, int> id(i.first, p); // アイコン名と手ポインタidの情報
+				ofNotifyEvent(this->point_event, id);
+				i.second.track_id = p;
+				flag = true;
+				break;
+			}
+		}
+		/*
 		for (auto &t : this->hp->track_data) {
 			if (i.second.is_inside(ofPoint(t.second.current_pointer.x, t.second.current_pointer.y))) {
 				pair<string, int> id(i.first, t.first); // アイコン名と手ポインタidの情報
@@ -34,6 +44,7 @@ void MainScene::update() {
 				break;
 			}
 		}
+		*/
 		if (!flag) {
 			i.second.change_state("None");
 		}
@@ -45,6 +56,20 @@ void MainScene::draw() {
 	/* アイコンを描画 */
 	for (auto &i : this->icons) {
 		i.second.draw();
+	}
+
+	ofSetColor(ofColor::white);
+
+	/* 手ポインタの描画 */
+	for (auto &p : this->pointer_id) {
+		int alpha = 255;
+		double r = 1;
+		for (int i = 0; i < 50; ++i) {
+			r += 0.6;
+			alpha -= 12;
+			ofSetColor(this->hp->track_data[p].pointer_color, alpha);
+			ofCircle(this->hp->track_data[p].current_pointer.x, this->hp->track_data[p].current_pointer.y, r);
+		}
 	}
 }
 

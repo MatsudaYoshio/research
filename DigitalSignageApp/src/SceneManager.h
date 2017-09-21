@@ -18,6 +18,7 @@ private:
 	ofPixels pixels;
 	ofImage img;
 	HandPointer* hp;
+	map<long long int, bool> pointer_log;
 public:
 	void setup(HandPointer* hp);
 	void update();
