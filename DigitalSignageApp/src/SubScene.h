@@ -8,16 +8,18 @@
 
 class SubScene {
 private:
-	static constexpr int window_width = 1920;
-	static constexpr int window_height = 1080;
+	static constexpr int main_window_width = 1920;
+	static constexpr int main_window_height = 1080;
 
 	BaseScene* scene;
 	HandPointer* hp;
 	ofFbo fbo;
 	ofPixels pixels;
 	ofImage img;
-	ofRectangle rect;
-
+	ofRectangle window_rect, view_rect;
+	unordered_map<string, ofTexture> cursor_texture;
+	string cursor_state;
+	int alpha = 255;
 	const string window_name = "sub_window";
 	ofxSecondWindow sub_window;
 	int pointer_id;
