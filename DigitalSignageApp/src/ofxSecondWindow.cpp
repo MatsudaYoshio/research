@@ -58,6 +58,10 @@ void ofxSecondWindow::hide(){
     hidden = true;
 }
 
+void ofxSecondWindow::close() {
+	glfwSetWindowShouldClose(auxWindow, GL_FALSE);
+}
+
 void ofxSecondWindow::toggleHidden() {
     if (hidden) {
         show();

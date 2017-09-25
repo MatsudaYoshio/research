@@ -23,12 +23,16 @@ private:
 	const string window_name = "sub_window";
 	ofxSecondWindow sub_window;
 	int pointer_id;
+	int scene_id;
+	int life = 100;
 public:
 	vector<int> track_id;
-	void setup(BaseScene* scene, HandPointer* hp, int pointer_id);
+	void setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scene_id);
 	void update();
 	void draw();
 	bool is_inside(const ofPoint &p) const;
+	ofEvent<int> delete_sub_window_event;
+	void exit();
 	~SubScene();
 };
 

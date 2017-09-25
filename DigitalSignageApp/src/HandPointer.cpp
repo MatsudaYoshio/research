@@ -7,7 +7,7 @@ using namespace cv;
 HandPointer::HandPointer() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0), mt(rd()) {
 	this->face_detector = get_frontal_face_detector();
 
-	deserialize("C:/Users/matsuda/workspace/machine_learning_data/20170813/linear_svm_function.dat") >> df; // ファイルから学習済みのモデルを読み込む
+	deserialize("C:/Users/matsuda/workspace/machine_learning_data/hand/20170813/linear_svm_function.dat") >> df; // ファイルから学習済みのモデルを読み込む
 
 	this->frame = Mat(Size(this->window_width, this->window_height), CV_8UC3);
 
@@ -22,8 +22,8 @@ HandPointer::HandPointer() :nms(this->overlap_ratio), face_thread_flag(false), h
 void HandPointer::update() {
 	++this->frame_count;
 
-	frc.NewFrame();
-	printf("fps : %lf\n", frc.GetFrameRate());
+	//frc.NewFrame();
+	//printf("fps : %lf\n", frc.GetFrameRate());
 
 	this->frame = this->cap.get_image(); // カメラから画像を取得
 

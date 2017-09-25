@@ -24,10 +24,12 @@ void SceneManager::setup(HandPointer* hp) {
 
 	this->current_scene = "main";
 	
+	/*
 	this->fbo.allocate(this->window_width, this->window_height, GL_RGBA);
 	fbo.begin();
 	ofClear(255, 255, 255, 0);
 	fbo.end();
+	*/
 }
 
 void SceneManager::update() {
@@ -39,8 +41,12 @@ void SceneManager::update() {
 	}
 
 	this->scenes[this->current_scene]->update();
+	while (!this->erase_scene_id.empty()) {
+		this->sub_scenes.erase(this->erase_scene_id.front());
+		this->erase_scene_id.pop();
+	}
 	for (auto &ss : this->sub_scenes) {
-		ss.update();
+		ss.second.update();
 	}
 }
 
@@ -48,9 +54,8 @@ void SceneManager::draw() {
 	this->scenes[this->current_scene]->draw();
 
 	for (auto &ss : this->sub_scenes) {
-		ss.draw();
+		ss.second.draw();
 	}
-
 	
 	//ofSetColor(ofColor::white);
 
@@ -86,11 +91,54 @@ void SceneManager::transition(int &pointer_id) {
 }
 
 void SceneManager::make_sub_window(int &pointer_id) {
+	/*
+	vector<ofRectangle> rects;
+	std::vector<std::vector<int>> hist(this->window_width, std::vector<int>(this->window_height, 1));
+	for (int x = 0; x < this->window_width; ++x) {
+		for (int y = 0; y < this->window_height; ++y) {
+			for (auto s : this->sub_scenes) {
+				if (s.is_inside(ofPoint(x, y))) {
+					hist[x][y] = 0;
+				}
+			}
+		}
+	}
+	for (int y = 1; y < this->window_height; ++y) {
+		for (int x = 0; x < this->window_width; ++x) {
+			if (hist[x][y] != 0) {
+				hist[x][y] = hist[x][y - 1] + 1;
+			}
+		}
+	}
+	for (int x = 0; x < this->window_width; ++x) {
+		stack<pair<int, int>> s;
+		for (int y = 0; y < this->window_height; ++y) {
+			if (s.empty()) {
+				s.push(make_pair(hist[x][y], y));
+			}
+			else if (s.top().first < hist[x][y]) {
+				s.push(make_pair(hist[x][y], y));
+			}
+			else if (s.top().first > hist[x][y]) {
+				while (!s.empty && s.top().first > hist[x][y]) {
+
+				}
+			}
+		}
+	}
+	*/
+
 	SubScene sub_scene;
-	sub_scene.setup(new DetailScene(), this->hp, pointer_id);
+	sub_scene.setup(new DetailScene(), this->hp, pointer_id, this->scene_id);
+	ofAddListener(sub_scene.delete_sub_window_event, this, &SceneManager::delete_sub_window);
 	sub_scene.track_id.emplace_back();
-	this->sub_scenes.emplace_back(sub_scene);
+	this->sub_scenes.insert(make_pair(this->scene_id++, sub_scene));
 	this->scenes["main"]->pointer_id.erase(remove(begin(this->scenes["main"]->pointer_id), end(this->scenes["main"]->pointer_id), pointer_id), end(this->scenes["main"]->pointer_id));
+}
+
+void SceneManager::delete_sub_window(int &scene_id) {
+	this->sub_scenes[scene_id].exit();
+	this->erase_scene_id.push(scene_id);
 }
 
 SceneManager::~SceneManager() {

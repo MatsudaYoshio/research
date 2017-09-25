@@ -11,6 +11,7 @@ public:
     void end();
     void show();
     void hide();
+	void close();
     void toggleHidden();
     
     void setWindowPosition(int x, int y);

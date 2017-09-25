@@ -6,7 +6,8 @@
 
 using namespace cv;
 
-void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id) {
+void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scene_id) {
+	this->scene_id = scene_id;
 	this->pointer_id = pointer_id;
 	this->hp = hp;
 	int window_width = this->main_window_width / 2;
@@ -47,6 +48,13 @@ void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id) {
 
 void SubScene::update() {
 	this->scene->update();
+
+	if (this->hp->track_data.find(this->pointer_id) == end(this->hp->track_data)) {
+		int id = this->scene_id;
+		ofNotifyEvent(this->delete_sub_window_event, id);
+		return;
+	}
+
 	if (!this->view_rect.inside(this->hp->track_data[this->pointer_id].current_pointer.x, this->hp->track_data[this->pointer_id].current_pointer.y)) {
 		alpha -= 10;
 	}
@@ -90,6 +98,7 @@ void SubScene::draw() {
 	cvtColor(cv_img, cv_img, CV_RGBA2BGRA);
 	imshow(this->window_name, cv_img);
 	*/
+
 	this->sub_window.begin();
 	
 	//glViewport(200, 200, this->window_width / 2, this->window_height / 2);
@@ -123,6 +132,12 @@ void SubScene::draw() {
 
 bool SubScene::is_inside(const ofPoint &p) const {
 	return this->window_rect.inside(p);
+}
+
+void SubScene::exit() {
+	//delete this->scene;
+	this->sub_window.hide();
+	this->sub_window.close();
 }
 
 SubScene::~SubScene() {

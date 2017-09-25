@@ -12,13 +12,15 @@ private:
 	static constexpr int window_height = 1080;
 
 	unordered_map<string, BaseScene*> scenes;
-	vector<SubScene> sub_scenes;
+	unordered_map<int, SubScene> sub_scenes;
 	string current_scene;
 	ofFbo fbo;
 	ofPixels pixels;
 	ofImage img;
 	HandPointer* hp;
 	map<long long int, bool> pointer_log;
+	long long int scene_id = 0;
+	queue<long long int> erase_scene_id;
 public:
 	void setup(HandPointer* hp);
 	void update();
@@ -26,6 +28,7 @@ public:
 	void pointed(pair<string, int> &id);
 	void transition(int &pointer_id);
 	void make_sub_window(int &pointer_id);
+	void delete_sub_window(int &scene_id);
 	~SceneManager();
 };
 
