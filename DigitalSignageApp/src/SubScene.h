@@ -27,7 +27,7 @@ private:
 	int life = 100;
 public:
 	vector<int> track_id;
-	void setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scene_id);
+	void setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scene_id, int x, int y, int w, int h);
 	void update();
 	void draw();
 	bool is_inside(const ofPoint &p) const;

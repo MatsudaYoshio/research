@@ -6,19 +6,23 @@
 
 using namespace cv;
 
-void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scene_id) {
+void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scene_id, int x, int y, int w, int h) {
 	this->scene_id = scene_id;
 	this->pointer_id = pointer_id;
 	this->hp = hp;
-	int window_width = this->main_window_width / 2;
-	int window_height = this->main_window_height / 2;
-	this->sub_window.setup(this->window_name.c_str(), (this->hp->track_data[this->pointer_id].face.left() + this->hp->track_data[this->pointer_id].face.right()) / 2 - this->main_window_width / 4, (this->hp->track_data[this->pointer_id].face.top() + this->hp->track_data[this->pointer_id].face.bottom()) / 2 - this->main_window_height / 4, window_width, window_height, false);
+	//int window_width = this->main_window_width / 2;
+	//int window_height = this->main_window_height / 2;
+	int window_width = w;
+	int window_height = h;
+	//this->sub_window.setup(this->window_name.c_str(), (this->hp->track_data[this->pointer_id].face.left() + this->hp->track_data[this->pointer_id].face.right()) / 2 - this->main_window_width / 4, (this->hp->track_data[this->pointer_id].face.top() + this->hp->track_data[this->pointer_id].face.bottom()) / 2 - this->main_window_height / 4, window_width, window_height, false);
 	// 最後の引数をtrueに変えれば枠なしのウィンドウ
+	this->sub_window.setup(this->window_name.c_str(), x, y, w, h, false);
 	this->sub_window.show();
 	this->scene = scene;
 	this->scene->setup(this->hp);
-	this->window_rect.set((this->hp->track_data[this->pointer_id].face.left() + this->hp->track_data[this->pointer_id].face.right()) / 2 - this->main_window_width / 4, (this->hp->track_data[this->pointer_id].face.top() + this->hp->track_data[this->pointer_id].face.bottom()) / 2 - this->main_window_height / 4, window_width, window_height);
-	this->view_rect.set(0, 0, window_width, window_height);
+	//this->window_rect.set((this->hp->track_data[this->pointer_id].face.left() + this->hp->track_data[this->pointer_id].face.right()) / 2 - this->main_window_width / 4, (this->hp->track_data[this->pointer_id].face.top() + this->hp->track_data[this->pointer_id].face.bottom()) / 2 - this->main_window_height / 4, window_width, window_height);
+	//this->view_rect.set(0, 0, window_width, window_height);
+	this->view_rect.set(0, 0, w, h);
 	ofPoint center = this->view_rect.getCenter();
 	this->hp->track_data[this->pointer_id].current_pointer = this->hp->track_data[this->pointer_id].past_pointer = Point(center.x, center.y);
 	ofTexture texture;
@@ -49,39 +53,53 @@ void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scen
 void SubScene::update() {
 	this->scene->update();
 
-	if (this->hp->track_data.find(this->pointer_id) == end(this->hp->track_data)) {
-		int id = this->scene_id;
-		ofNotifyEvent(this->delete_sub_window_event, id);
-		return;
-	}
+	if (this->hp->track_data.find(this->pointer_id) == end(this->hp->track_data) || this->cursor_state == "none") {
+		this->cursor_state = "none";
+		if (--this->life == 0 || (this->sub_window.getHeight() < 100 && this->sub_window.getWidth() < 100)) {
+			int id = this->scene_id;
+			ofNotifyEvent(this->delete_sub_window_event, id);
+			return;
+		}
 
-	if (!this->view_rect.inside(this->hp->track_data[this->pointer_id].current_pointer.x, this->hp->track_data[this->pointer_id].current_pointer.y)) {
-		alpha -= 10;
+		this->sub_window.setWindowSize(this->sub_window.getWidth()*0.9, this->sub_window.getHeight()*0.9);
+		this->view_rect.setWidth(this->sub_window.getWidth());
+		this->view_rect.setHeight(this->sub_window.getHeight());
 	}
 	else {
-		alpha = 255;
-	}
-	int width_threshold = this->view_rect.getWidth()*0.1;
-	int height_threshold = this->view_rect.getHeight()*0.1;
-	if (this->view_rect.getRight() - this->hp->track_data[this->pointer_id].current_pointer.x < width_threshold) {
-		this->view_rect.setX(this->view_rect.getX() + 30);
-		this->cursor_state = "arrow_right";
-	}else if (this->hp->track_data[this->pointer_id].current_pointer.x - this->view_rect.getLeft() < width_threshold) {
-		this->view_rect.setX(this->view_rect.getX() - 30);
-		this->cursor_state = "arrow_left";
-	}else if (this->view_rect.getBottom() - this->hp->track_data[this->pointer_id].current_pointer.y < height_threshold) {
-		this->view_rect.setY(this->view_rect.getY() + 30);
-		this->cursor_state = "arrow_down";
-	}else if (this->hp->track_data[this->pointer_id].current_pointer.y - this->view_rect.getTop() < height_threshold) {
-		this->view_rect.setY(this->view_rect.getY() - 30);
-		this->cursor_state = "arrow_up";
-	}
-	else {
-		this->cursor_state = "point";
+		this->life = 100;
+
+		if (!this->view_rect.inside(this->hp->track_data[this->pointer_id].current_pointer.x, this->hp->track_data[this->pointer_id].current_pointer.y)) {
+			alpha -= 10;
+		}
+		else {
+			alpha = 255;
+		}
+		int width_threshold = this->view_rect.getWidth()*0.1;
+		int height_threshold = this->view_rect.getHeight()*0.1;
+		if (this->view_rect.getRight() - this->hp->track_data[this->pointer_id].current_pointer.x < width_threshold) {
+			this->view_rect.setX(this->view_rect.getX() + 30);
+			this->cursor_state = "arrow_right";
+		}
+		else if (this->hp->track_data[this->pointer_id].current_pointer.x - this->view_rect.getLeft() < width_threshold) {
+			this->view_rect.setX(this->view_rect.getX() - 30);
+			this->cursor_state = "arrow_left";
+		}
+		else if (this->view_rect.getBottom() - this->hp->track_data[this->pointer_id].current_pointer.y < height_threshold) {
+			this->view_rect.setY(this->view_rect.getY() + 30);
+			this->cursor_state = "arrow_down";
+		}
+		else if (this->hp->track_data[this->pointer_id].current_pointer.y - this->view_rect.getTop() < height_threshold) {
+			this->view_rect.setY(this->view_rect.getY() - 30);
+			this->cursor_state = "arrow_up";
+		}
+		else {
+			this->cursor_state = "point";
+		}
+
+		this->hp->track_data[this->pointer_id].current_pointer.x = this->hp->track_data[this->pointer_id].past_pointer.x = max(min(this->hp->track_data[this->pointer_id].current_pointer.x, (int)this->view_rect.getRight()), (int)this->view_rect.getLeft());
+		this->hp->track_data[this->pointer_id].current_pointer.y = this->hp->track_data[this->pointer_id].past_pointer.y = max(min(this->hp->track_data[this->pointer_id].current_pointer.y, (int)this->view_rect.getBottom()), (int)this->view_rect.getTop());
 	}
 	
-	this->hp->track_data[this->pointer_id].current_pointer.x = this->hp->track_data[this->pointer_id].past_pointer.x = max(min(this->hp->track_data[this->pointer_id].current_pointer.x, (int)this->view_rect.getRight()), (int)this->view_rect.getLeft());
-	this->hp->track_data[this->pointer_id].current_pointer.y = this->hp->track_data[this->pointer_id].past_pointer.y = max(min(this->hp->track_data[this->pointer_id].current_pointer.y, (int)this->view_rect.getBottom()), (int)this->view_rect.getTop());
 }
 
 void SubScene::draw() {
@@ -123,7 +141,9 @@ void SubScene::draw() {
 			ofCircle(this->hp->track_data[this->pointer_id].current_pointer.x, this->hp->track_data[this->pointer_id].current_pointer.y, r);
 		}
 	}
-	else {
+	else if (this->cursor_state == "none") {
+	
+	}else{
 		this->cursor_texture[this->cursor_state].draw(this->hp->track_data[this->pointer_id].current_pointer.x, this->hp->track_data[this->pointer_id].current_pointer.y, 50, 50);
 	}
 
@@ -135,7 +155,7 @@ bool SubScene::is_inside(const ofPoint &p) const {
 }
 
 void SubScene::exit() {
-	//delete this->scene;
+	delete this->scene;
 	this->sub_window.hide();
 	this->sub_window.close();
 }
