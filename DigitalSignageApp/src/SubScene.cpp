@@ -21,6 +21,7 @@ void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scen
 	this->scene = scene;
 	this->scene->setup(this->hp);
 	//this->window_rect.set((this->hp->track_data[this->pointer_id].face.left() + this->hp->track_data[this->pointer_id].face.right()) / 2 - this->main_window_width / 4, (this->hp->track_data[this->pointer_id].face.top() + this->hp->track_data[this->pointer_id].face.bottom()) / 2 - this->main_window_height / 4, window_width, window_height);
+	this->window_rect.set(x, y, w, h);
 	//this->view_rect.set(0, 0, window_width, window_height);
 	this->view_rect.set(0, 0, w, h);
 	ofPoint center = this->view_rect.getCenter();

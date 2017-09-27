@@ -21,6 +21,12 @@ private:
 	map<long long int, bool> pointer_log;
 	long long int scene_id = 0;
 	queue<long long int> erase_scene_id;
+
+	ofxSecondWindow secondWindow;
+	int x = 50, y = 50, w = 500, h = 500;
+	double past_cost, current_cost;
+	int t = 2;
+	int f = 0;
 public:
 	void setup(HandPointer* hp);
 	void update();

@@ -10,7 +10,7 @@ void DigitalSignageApp::setup() {
 
 	ofSetWindowTitle("main window");
 
-	//secondWindow.setup("second window", 50, 50, 500, 500, false);
+	//this->secondWindow.setup("second window", 50, 50, 500, 500, false);
 	//this->secondWindow.setup("second window", ofGetScreenWidth(), 0, 1280, 800, true);
 }
 

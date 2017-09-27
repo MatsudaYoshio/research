@@ -7,6 +7,9 @@
 
 using namespace cv;
 
+double euclid_distance(const double x1, const double y1, const double x2, const double y2) {
+	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+}
 
 void SceneManager::setup(HandPointer* hp) {
 	this->scenes.insert(make_pair("main", new MainScene()));
@@ -30,9 +33,75 @@ void SceneManager::setup(HandPointer* hp) {
 	ofClear(255, 255, 255, 0);
 	fbo.end();
 	*/
+
+	this->secondWindow.setup("second window", this->x, this->y, this->w, this->h, false);
+	ofPoint center_point = ofPoint(this->x + this->w / 2, this->y + this->h / 2);
+	//this->past_cost = euclid_distance(this->window_width / 2, this->window_height / 2, center_point.x, center_point.y);
+	this->past_cost = this->current_cost = 10000000;
+	for (auto &t : this->hp->track_data) {
+		if (euclid_distance(t.second.current_pointer.x, t.second.current_pointer.y, center_point.x, center_point.y) != 0) {
+			this->past_cost += 1 / euclid_distance(t.second.current_pointer.x, t.second.current_pointer.y, center_point.x, center_point.y);
+		}
+	}
+	if (this->x < 0 || this->x > this->window_width || this->y < 0 || this->y > this->window_height || this->w > this->window_width/2 || this->h > this->window_height/2) {
+		this->past_cost = this->past_cost*this->past_cost;
+	}
 }
 
 void SceneManager::update() {
+	if(this->f == 50){
+		this->past_cost = 9999999999;
+		this->t = 2;
+		this->f = 0;
+	}
+	++this->f;
+	int p = ofRandom(0, 4);
+	int x_tmp = this->x, y_tmp = this->y, w_tmp = this->w, h_tmp = this->h;
+	if (p == 0) {
+		this->x += ofRandom(-this->window_width/2, this->window_width/2);
+	}
+	else if (p == 1) {
+		this->y += ofRandom(-this->window_height / 2, this->window_height / 2);
+	}
+	else if (p == 2) {
+		this->w = ofRandom(30, this->window_width / 2);
+	}
+	else {
+		this->h = ofRandom(30, this->window_height / 2);
+	}
+	ofPoint center_point = ofPoint(this->x + this->w / 2, this->y + this->h / 2);
+	this->current_cost = log(euclid_distance(this->window_width / 2, this->window_height / 2, center_point.x, center_point.y));
+	//this->current_cost = 0;
+	for (auto &t : this->hp->track_data) {
+		if (euclid_distance(t.second.current_pointer.x, t.second.current_pointer.y, center_point.x, center_point.y) != 0) {
+			this->current_cost = 0.5*log(1 / euclid_distance(t.second.current_pointer.x, t.second.current_pointer.y, center_point.x, center_point.y));
+		}
+	}
+	this->current_cost += 100000/(this->w*this->h);
+	if (this->x < 0 || this->x > this->window_width || this->y < 0 || this->y > this->window_height || this->w > this->window_width / 2 || this->h > this->window_height / 2 || this->x + this->w > this->window_width || this->x + this->w < 0 || this->y + this->h > this->window_height || this->y + this->h < 0) {
+		this->current_cost = this->current_cost*this->current_cost;
+	}
+	cout << this->current_cost << endl;
+	if (this->current_cost < this->past_cost) {
+		this->past_cost = this->current_cost;
+	}
+	else {
+		if (ofRandom(0, t) == 0) {
+			this->past_cost = this->current_cost;
+		}
+		else {
+			this->x = x_tmp;
+			this->y = y_tmp;
+			this->w = w_tmp;
+			this->h = h_tmp;
+		}
+	}
+	t++;
+	this->secondWindow.setWindowPosition(this->x, this->y);
+	this->secondWindow.setWindowSize(this->w, this->h);
+	this->secondWindow.show();
+	
+
 	for (auto &t : this->hp->track_data) {
 		if (this->pointer_log.find(t.first) == end(this->pointer_log)) {
 			this->pointer_log.insert(make_pair(t.first, true));
@@ -95,7 +164,7 @@ void SceneManager::transition(int &pointer_id) {
 }
 
 void SceneManager::make_sub_window(int &pointer_id) {
-	if (0 && this->sub_scenes.empty()) {
+	if (!this->sub_scenes.empty()) {
 		SubScene sub_scene;
 		sub_scene.setup(new DetailScene(), this->hp, pointer_id, this->scene_id, 200, 200, this->window_width/2, this->window_height/2);
 		ofAddListener(sub_scene.delete_sub_window_event, this, &SceneManager::delete_sub_window);
@@ -108,12 +177,17 @@ void SceneManager::make_sub_window(int &pointer_id) {
 		std::vector<std::vector<int>> hist(this->window_height, std::vector<int>(this->window_width, 1));
 		for (int x = 0; x < this->window_width; ++x) {
 			for (int y = 0; y < this->window_height; ++y) {
+				/*
 				if (x >= 100 && x <= 500 && y >= 200 && y <= 700) {
 					hist[y][x] = 0;
 				}
 				if (x >= 900 && x <= 1100 && y >= 500 && y <= 900) {
 					hist[y][x] = 0;
 				}
+				if (x >= 1700 && x <= 1800 && y >= 900 && y <= 1000) {
+					hist[y][x] = 0;
+				}
+				*/
 				for (auto &s : this->sub_scenes) {
 					if (s.second.is_inside(ofPoint(x, y))) {
 						hist[y][x] = 0;
@@ -139,7 +213,6 @@ void SceneManager::make_sub_window(int &pointer_id) {
 				}
 				else if (s.top().first > hist[y][x]) {
 					while (!s.empty() && s.top().first >= hist[y][x]) {
-						//rects.emplace_back(ofRectangle(ofPoint(s.top().second, y - s.top().first), x - s.top().second, s.top().first));
 						rects.emplace_back(ofRectangle(max(s.top().second, 0), max(y - s.top().first, 0), max(x - s.top().second,1), max(s.top().first, 1)));
 						s.pop();
 					}
@@ -151,7 +224,8 @@ void SceneManager::make_sub_window(int &pointer_id) {
 				s.pop();
 			}
 		}
-		ofRectangle r = rects[ofRandom(0, rects.size())];
+		ofRectangle r = *max_element(begin(rects), end(rects), [](ofRectangle r1, ofRectangle r2) {return r1.getArea() < r2.getArea(); });
+		//ofRectangle r = rects[ofRandom(0, rects.size())];
 
 		SubScene sub_scene;
 		sub_scene.setup(new DetailScene(), this->hp, pointer_id, this->scene_id, r.x, r.y, r.width, r.height);
