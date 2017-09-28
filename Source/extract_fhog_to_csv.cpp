@@ -2,22 +2,15 @@
 
 #include <iostream>
 #include <fstream>
-#include <random>
 #include <vector>
 #include <cstdio>
 
 #include <Windows.h>
 
-#include <opencv2/opencv.hpp>
-
-#include <dlib/gui_widgets.h>
 #include <dlib/image_io.h>
 #include <dlib/image_transforms.h>
-#include <dlib/svm_threaded.h>
-#include <dlib/opencv.h>
 
 using namespace std;
-using namespace cv;
 using namespace dlib;
 
 int main() {
