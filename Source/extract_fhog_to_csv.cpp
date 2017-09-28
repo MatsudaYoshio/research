@@ -33,7 +33,7 @@ int main() {
 
 	ofstream ofs(path + "fhog.csv");
 
-	int n = 1;
+	//int n = 1; // 確認のためのカウンタ
 
 	do {
 		filename = win32fd.cFileName;
@@ -45,14 +45,14 @@ int main() {
 		extract_fhog_features(img, fhog);
 
 		/* ラベル付け */
-		if (filename.substr(0, 8) == "positive") {
+		if (filename.substr(0, 8) == "positive") { // ファイル名の先頭が"positive"ならば正のデータ
 			ofs << +1;
 		}
 		else {
 			ofs << -1;
 		}
 
-		for (int r = 0, j = 0; r < fhog.nr(); ++r) {
+		for (int r = 0; r < fhog.nr(); ++r) {
 			for (int c = 0; c < fhog.nc(); ++c) {
 				for (int i = 0; i < 31; ++i) {
 					ofs << "," << fhog[r][c](i);
