@@ -20,6 +20,10 @@ void ofxSecondWindow::setup(const char *name, int xpos, int ypos, int width, int
     hidden = false;
 }
 
+void ofxSecondWindow::setup(const char *name, ofRectangle rect, bool undecorated) {
+	this->setup(name, rect.x, rect.y, rect.width, rect.height, undecorated);
+}
+
 void ofxSecondWindow::setWindowPosition(int x, int y) {
     glfwSetWindowPos(auxWindow, x, y);
 }

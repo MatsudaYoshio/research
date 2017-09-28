@@ -10,13 +10,10 @@ void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scen
 	this->scene_id = scene_id;
 	this->pointer_id = pointer_id;
 	this->hp = hp;
-	//int window_width = this->main_window_width / 2;
-	//int window_height = this->main_window_height / 2;
 	int window_width = w;
 	int window_height = h;
-	//this->sub_window.setup(this->window_name.c_str(), (this->hp->track_data[this->pointer_id].face.left() + this->hp->track_data[this->pointer_id].face.right()) / 2 - this->main_window_width / 4, (this->hp->track_data[this->pointer_id].face.top() + this->hp->track_data[this->pointer_id].face.bottom()) / 2 - this->main_window_height / 4, window_width, window_height, false);
-	// ÅŒã‚Ìˆø”‚ðtrue‚É•Ï‚¦‚ê‚Î˜g‚È‚µ‚ÌƒEƒBƒ“ƒhƒE
-	this->sub_window.setup(this->window_name.c_str(), x, y, w, h, false);
+
+	this->sub_window.setup(this->window_name.c_str(), x, y, w, h, false); // ÅŒã‚Ìˆø”‚ðtrue‚É•Ï‚¦‚ê‚Î˜g‚È‚µ‚ÌƒEƒBƒ“ƒhƒE
 	this->sub_window.show();
 	this->scene = scene;
 	this->scene->setup(this->hp);
@@ -24,6 +21,49 @@ void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scen
 	this->window_rect.set(x, y, w, h);
 	//this->view_rect.set(0, 0, window_width, window_height);
 	this->view_rect.set(0, 0, w, h);
+	ofPoint center = this->view_rect.getCenter();
+	this->hp->track_data[this->pointer_id].current_pointer = this->hp->track_data[this->pointer_id].past_pointer = Point(center.x, center.y);
+	ofTexture texture;
+	ofLoadImage(texture, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/mark_arrow_down.png");
+	this->cursor_texture.insert(make_pair("arrow_down", texture));
+	ofLoadImage(texture, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/mark_arrow_left.png");
+	this->cursor_texture.insert(make_pair("arrow_left", texture));
+	ofLoadImage(texture, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/mark_arrow_right.png");
+	this->cursor_texture.insert(make_pair("arrow_right", texture));
+	ofLoadImage(texture, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/mark_arrow_up.png");
+	this->cursor_texture.insert(make_pair("arrow_up", texture));
+	this->cursor_state = "point";
+	/*
+	this->fbo.allocate(this->window_width, this->window_height, GL_RGBA);
+	this->fbo.begin();
+	ofClear(255, 255, 255, 0);
+	this->fbo.end();
+
+	this->scene = scene;
+	this->scene.setup(this->hp);
+
+	HWND a = FindWindowA(NULL, this->window_name.c_str());
+	SetWindowLongPtr(a, GWL_STYLE, WS_THICKFRAME); //WS_THICKFRAME : ×˜g | WS_POPUP ˜g‚Ù‚Ú‚È‚µ
+	SetWindowPos(a, NULL, 0, 0, this->window_width / 2, this->window_height / 2, SWP_DRAWFRAME | SWP_SHOWWINDOW | SWP_FRAMECHANGED); //‚±‚ê‚ª‚È‚¢‚ÆÄ•`‰æ‚³‚ê‚È‚¢
+	*/
+}
+
+void SubScene::setup(BaseScene* scene, HandPointer* hp, int pointer_id, int scene_id, ofRectangle rect) {
+	this->scene_id = scene_id;
+	this->pointer_id = pointer_id;
+	this->hp = hp;
+	//int window_width = w;
+	//int window_height = h;
+
+	this->sub_window.setup(this->window_name.c_str(), rect.x, rect.y, rect.width, rect.height, false); // ÅŒã‚Ìˆø”‚ðtrue‚É•Ï‚¦‚ê‚Î˜g‚È‚µ‚ÌƒEƒBƒ“ƒhƒE
+	this->sub_window.show();
+	this->scene = scene;
+	this->scene->setup(this->hp);
+	//this->window_rect.set((this->hp->track_data[this->pointer_id].face.left() + this->hp->track_data[this->pointer_id].face.right()) / 2 - this->main_window_width / 4, (this->hp->track_data[this->pointer_id].face.top() + this->hp->track_data[this->pointer_id].face.bottom()) / 2 - this->main_window_height / 4, window_width, window_height);
+	this->window_rect = rect;
+	//this->view_rect.set(0, 0, window_width, window_height);
+	this->view_rect = rect;
+	this->view_rect.setPosition(0, 0);
 	ofPoint center = this->view_rect.getCenter();
 	this->hp->track_data[this->pointer_id].current_pointer = this->hp->track_data[this->pointer_id].past_pointer = Point(center.x, center.y);
 	ofTexture texture;

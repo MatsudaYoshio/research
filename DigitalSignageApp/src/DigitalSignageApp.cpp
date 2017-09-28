@@ -1,6 +1,7 @@
 #include "DigitalSignageApp.h"
 #include "MainScene.h"
 #include "DetailScene.h"
+#include "MoveWindowPosition.h"
 
 void DigitalSignageApp::setup() {
 	//ofSetFrameRate(60);
