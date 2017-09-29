@@ -36,6 +36,7 @@ public:
 	void transition(int &pointer_id);
 	void make_sub_window(int &pointer_id);
 	void delete_sub_window(int &scene_id);
+	void change_cursor_to_main_window(int &user_id);
 	void test(int old_x, int old_y, int old_w, int old_h, int new_x, int new_y, int new_w, int new_h);
 	~SceneManager();
 };

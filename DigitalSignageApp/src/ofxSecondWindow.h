@@ -18,11 +18,13 @@ public:
     void setWindowPosition(int x, int y);
     void setWindowSize(int width, int height);
     
-    int getWidth() { return width; }
-    int getHeight() { return height; }
-    
+	int getWidth() const;
+	int getHeight() const;
+
+	bool is_inside(const ofPoint &p) const;
+
 private:
     GLFWwindow *mainWindow, *auxWindow;
-    int width, height;
     bool hidden;
+	ofRectangle rect;
 };
