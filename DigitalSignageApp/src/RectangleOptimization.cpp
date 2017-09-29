@@ -43,9 +43,9 @@ void RectangleOptimization::calculate() {
 		}
 	}
 
-	for (int y = 0; y < this->field_width; ++y) {
+	for (int y = 0; y < this->field_height; ++y) {
 		stack<pair<int, int>> s;
-		for (int x = 0; x < this->field_height; ++x) {
+		for (int x = 0; x < this->field_width; ++x) {
 			if (s.empty()) {
 				s.push(make_pair(this->histogram[y][x], x));
 			}
