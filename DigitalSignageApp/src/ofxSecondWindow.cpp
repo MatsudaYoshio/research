@@ -46,6 +46,10 @@ bool ofxSecondWindow::is_inside(const ofPoint &p) const {
 	return this->rect.inside(p);
 }
 
+ofRectangle ofxSecondWindow::get_rect() const {
+	return this->rect;
+}
+
 void ofxSecondWindow::begin(){
     glfwMakeContextCurrent(auxWindow);
     int width, height;

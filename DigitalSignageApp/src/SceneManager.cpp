@@ -3,6 +3,7 @@
 #include "DetailScene.h"
 #include "windows.h"
 #include "MoveWindowPosition.h"
+#include "RectangleOptimization.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -58,13 +59,13 @@ void SceneManager::test(int old_x, int old_y, int old_w, int old_h, int new_x, i
 	this->flag = false;
 }
 
-void SceneManager::setup(HandPointer* hp) {
+void SceneManager::setup(HandCursor* hc) {
 	this->scenes.insert(make_pair("main", new MainScene()));
 	this->scenes.insert(make_pair("detail", new DetailScene()));
 
-	this->hp = hp;
-	this->scenes["main"]->setup(hp);
-	this->scenes["detail"]->setup(hp);
+	this->hc = hc;
+	this->scenes["main"]->setup(hc);
+	this->scenes["detail"]->setup(hc);
 
 	for (auto s : this->scenes) {
 		ofAddListener(s.second->point_event, this, &SceneManager::pointed);
@@ -85,7 +86,7 @@ void SceneManager::setup(HandPointer* hp) {
 	//ofPoint center_point = ofPoint(this->x + this->w / 2, this->y + this->h / 2);
 	////this->past_cost = euclid_distance(this->window_width / 2, this->window_height / 2, center_point.x, center_point.y);
 	//this->past_cost = this->current_cost = 10000000;
-	//for (auto &t : this->hp->track_data) {
+	//for (auto &t : this->hc->track_data) {
 	//	if (euclid_distance(t.second.current_pointer.x, t.second.current_pointer.y, center_point.x, center_point.y) != 0) {
 	//		this->past_cost += 1 / euclid_distance(t.second.current_pointer.x, t.second.current_pointer.y, center_point.x, center_point.y);
 	//	}
@@ -96,6 +97,7 @@ void SceneManager::setup(HandPointer* hp) {
 }
 
 void SceneManager::update() {
+
 	//if (!this->flag) {
 	//	void(SceneManager::*funcp)() = &SceneManager::test;
 	//	thread th(funcp, this);
@@ -127,7 +129,7 @@ void SceneManager::update() {
 	//	ofPoint center_point = ofPoint(this->x + this->w / 2, this->y + this->h / 2);
 	//	this->current_cost = log(euclid_distance(this->window_width / 2, this->window_height / 2, center_point.x, center_point.y));
 	//	//this->current_cost = 0;
-	//	for (auto &t : this->hp->track_data) {
+	//	for (auto &t : this->hc->track_data) {
 	//		/*
 	//		if (euclid_distance(t.second.current_pointer.x, t.second.current_pointer.y, center_point.x, center_point.y) != 0) {
 	//			this->current_cost = 0.5*log(1 / euclid_distance(t.second.current_pointer.x, t.second.current_pointer.y, center_point.x, center_point.y));
@@ -166,11 +168,20 @@ void SceneManager::update() {
 
 	//this->secondWindow.show();
 
-
-	for (auto &t : this->hp->track_data) {
+	
+	for (auto &t : this->hc->track_data) {
 		if (this->pointer_log.find(t.first) == end(this->pointer_log)) {
 			this->pointer_log.insert(make_pair(t.first, true));
 			this->scenes["main"]->pointer_id.emplace_back(t.first);
+		}
+	}
+
+	for (auto id = begin(this->scenes["main"]->pointer_id); id != end(this->scenes["main"]->pointer_id);) {
+		if (this->hc->track_data.find(*id) == end(this->hc->track_data)) {
+			id = this->scenes["main"]->pointer_id.erase(id);
+		}
+		else {
+			++id;
 		}
 	}
 
@@ -199,7 +210,7 @@ void SceneManager::draw() {
 
 	/* Žèƒ|ƒCƒ“ƒ^‚Ì•`‰æ */
 	/*
-	for (auto &t : this->hp->track_data) {
+	for (auto &t : this->hc->track_data) {
 		int alpha = 255;
 		double r = 1;
 		for (int i = 0; i < 50; ++i) {
@@ -235,7 +246,7 @@ void SceneManager::change_cursor_to_main_window(int &id) {
 void SceneManager::make_sub_window(int &pointer_id) {
 	if (this->sub_scenes.empty()) {
 		SubScene sub_scene;
-		sub_scene.setup(new DetailScene(), this->hp, pointer_id, this->scene_id, ofRectangle(200, 200, this->window_width / 2, this->window_height / 2));
+		sub_scene.setup(new DetailScene(), this->hc, pointer_id, this->scene_id, ofRectangle(200, 200, this->window_width / 2, this->window_height / 2));
 		ofAddListener(sub_scene.delete_sub_window_event, this, &SceneManager::delete_sub_window);
 		ofAddListener(sub_scene.user_leave_event, this, &SceneManager::change_cursor_to_main_window);
 		sub_scene.track_id.emplace_back();
@@ -243,126 +254,29 @@ void SceneManager::make_sub_window(int &pointer_id) {
 		this->scenes["main"]->pointer_id.erase(remove(begin(this->scenes["main"]->pointer_id), end(this->scenes["main"]->pointer_id), pointer_id), end(this->scenes["main"]->pointer_id));
 	}
 	else {
-		vector<ofRectangle> rects;
-		std::vector<std::vector<int>> hist(this->window_height, std::vector<int>(this->window_width, 1));
+		RectangleOptimization ro(this->window_width, this->window_height);
 
-		for (int x = 0; x < this->window_width; ++x) {
-			for (int y = 0; y < this->window_height; ++y) {
-				/*
-				if (x >= 100 && x <= 500 && y >= 200 && y <= 700) {
-					hist[y][x] = 0;
-				}
-				if (x >= 900 && x <= 1100 && y >= 500 && y <= 900) {
-					hist[y][x] = 0;
-				}
-				if (x >= 1700 && x <= 1800 && y >= 900 && y <= 1000) {
-					hist[y][x] = 0;
-				}
-				*/
+		for (auto &s : this->sub_scenes) {
+			ro.add_block(s.second.get_rect());
+		}
 
-				if (x <= this->window_width*0.1 || x >= this->window_width*0.9 || y <= this->window_height*0.1 || y >= this->window_height*0.9) {
-					hist[y][x] = 0;
-				}
+		for (auto &td : this->hc->track_data) {
+			if (td.first == pointer_id) {
+				continue;
+			}
+			ro.add_block(ofPoint(td.second.current_pointer.x, td.second.current_pointer.y));
+		}
 
-				for (auto &s : this->sub_scenes) {
-					if (s.second.is_inside(ofPoint(x, y))) {
-						hist[y][x] = 0;
-					}
-				}
-			}
-		}
-		for (int y = 1; y < this->window_height; ++y) {
-			for (int x = 0; x < this->window_width; ++x) {
-				if (hist[y][x] != 0) {
-					hist[y][x] = hist[y - 1][x] + 1;
-				}
-			}
-		}
-		for (int y = 0; y < this->window_height; ++y) {
-			stack<pair<int, int>> s;
-			for (int x = 0; x < this->window_width; ++x) {
-				if (s.empty()) {
-					s.push(make_pair(hist[y][x], x));
-				}
-				else if (s.top().first < hist[y][x]) {
-					s.push(make_pair(hist[y][x], x));
-				}
-				else if (s.top().first > hist[y][x]) {
-					while (!s.empty() && s.top().first >= hist[y][x]) {
-						rects.emplace_back(ofRectangle(max(s.top().second, 0), max(y - s.top().first, 0), max(x - s.top().second, 1), max(s.top().first, 1)));
-						s.pop();
-					}
-					s.push(make_pair(hist[y][x], x));
-				}
-			}
-			while (!s.empty()) {
-				rects.emplace_back(ofRectangle(max(s.top().second, 0), max(y - s.top().first, 0), max(this->window_width - s.top().second, 1), max(s.top().first, 1)));
-				s.pop();
-			}
-		}
-		ofRectangle r = *max_element(begin(rects), end(rects), [](ofRectangle r1, ofRectangle r2) {return r1.getArea() < r2.getArea(); });
-		//ofRectangle r = rects[ofRandom(0, rects.size())];
+		ro.calculate();
 
 		SubScene sub_scene;
-		sub_scene.setup(new DetailScene(), this->hp, pointer_id, this->scene_id, r);
+		sub_scene.setup(new DetailScene(), this->hc, pointer_id, this->scene_id, ro.get_max_area_rect());
 		ofAddListener(sub_scene.delete_sub_window_event, this, &SceneManager::delete_sub_window);
 		ofAddListener(sub_scene.user_leave_event, this, &SceneManager::change_cursor_to_main_window);
 		sub_scene.track_id.emplace_back();
 		this->sub_scenes.insert(make_pair(this->scene_id++, sub_scene));
 		this->scenes["main"]->pointer_id.erase(remove(begin(this->scenes["main"]->pointer_id), end(this->scenes["main"]->pointer_id), pointer_id), end(this->scenes["main"]->pointer_id));
 	}
-
-	/*
-	vector<ofRectangle> rects;
-	std::vector<std::vector<int>> hist(this->window_width, std::vector<int>(this->window_height, 1));
-	for (int x = 0; x < this->window_width; ++x) {
-		for (int y = 0; y < this->window_height; ++y) {
-			for (auto &s : this->sub_scenes) {
-				if (s.second.is_inside(ofPoint(x, y))) {
-					hist[x][y] = 0;
-				}
-			}
-		}
-	}
-	for (int y = 0; y < this->window_height; ++y) {
-		for (int x = 1; x < this->window_width; ++x) {
-			if (hist[x][y] != 0) {
-				hist[x][y] = hist[x - 1][y] + 1;
-			}
-		}
-	}
-	for (int x = 0; x < this->window_width; ++x) {
-		stack<pair<int, int>> s;
-		for (int y = 0; y < this->window_height; ++y) {
-			if (s.empty()) {
-				s.push(make_pair(hist[x][y], y));
-			}
-			else if (s.top().first < hist[x][y]) {
-				s.push(make_pair(hist[x][y], y));
-			}
-			else if (s.top().first > hist[x][y]) {
-				while (!s.empty() && s.top().first > hist[x][y]) {
-					rects.emplace_back(ofRectangle(ofPoint(s.top().second, x - s.top().first), y - s.top().second, s.top().first));
-					s.pop();
-				}
-				s.push(make_pair(hist[x][y], y));
-			}
-		}
-		while (!s.empty()) {
-			rects.emplace_back(ofRectangle(ofPoint(s.top().second, x - s.top().first), this->window_width - s.top().second, s.top().first));
-			s.pop();
-		}
-	}
-
-	ofRectangle r = rects[ofRandom(0, rects.size())];
-
-	SubScene sub_scene;
-	sub_scene.setup(new DetailScene(), this->hp, pointer_id, this->scene_id, r.x, r.y, r.width, r.height);
-	ofAddListener(sub_scene.delete_sub_window_event, this, &SceneManager::delete_sub_window);
-	sub_scene.track_id.emplace_back();
-	this->sub_scenes.insert(make_pair(this->scene_id++, sub_scene));
-	this->scenes["main"]->pointer_id.erase(remove(begin(this->scenes["main"]->pointer_id), end(this->scenes["main"]->pointer_id), pointer_id), end(this->scenes["main"]->pointer_id));
-	*/
 }
 
 void SceneManager::delete_sub_window(int &scene_id) {

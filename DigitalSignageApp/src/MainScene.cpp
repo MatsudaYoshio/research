@@ -1,6 +1,6 @@
 #include "MainScene.h"
 
-void MainScene::setup(HandPointer* hp) {
+void MainScene::setup(HandCursor* hc) {
 	ofSetBackgroundAuto(true);
 
 	/* アイコンを生成 */
@@ -14,7 +14,7 @@ void MainScene::setup(HandPointer* hp) {
 	this->icons.insert(make_pair("tea", Icon(3*x_unit, 3*y_unit, x_unit, y_unit, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/petbottle_tea_koucha.png")));
 	this->icons.insert(make_pair("suisosui", Icon(5*x_unit, 3*y_unit, x_unit, y_unit, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/water_bottle_suisosui.png")));
 	
-	this->hp = hp;
+	this->hc = hc;
 
 	for (auto &i : this->icons) {
 		ofAddListener(i.second.transition_event, this, &MainScene::transition);
@@ -26,7 +26,7 @@ void MainScene::update() {
 	for (auto &i : this->icons) {
 		flag = false;
 		for (auto &p : this->pointer_id) {
-			if (i.second.is_inside(ofPoint(this->hp->track_data[p].current_pointer.x, this->hp->track_data[p].current_pointer.y))) {
+			if (i.second.is_inside(ofPoint(this->hc->track_data[p].current_pointer.x, this->hc->track_data[p].current_pointer.y))) {
 				pair<string, int> id(i.first, p); // アイコン名と手ポインタidの情報
 				ofNotifyEvent(this->point_event, id);
 				i.second.track_id = p;
@@ -35,7 +35,7 @@ void MainScene::update() {
 			}
 		}
 		/*
-		for (auto &t : this->hp->track_data) {
+		for (auto &t : this->hc->track_data) {
 			if (i.second.is_inside(ofPoint(t.second.current_pointer.x, t.second.current_pointer.y))) {
 				pair<string, int> id(i.first, t.first); // アイコン名と手ポインタidの情報
 				ofNotifyEvent(this->point_event, id);
@@ -67,18 +67,18 @@ void MainScene::draw() {
 		for (int i = 0; i < 50; ++i) {
 			r += 0.6;
 			alpha -= 12;
-			ofSetColor(this->hp->track_data[p].pointer_color, alpha);
-			ofCircle(this->hp->track_data[p].current_pointer.x, this->hp->track_data[p].current_pointer.y, r);
+			ofSetColor(this->hc->track_data[p].cursor_color, alpha);
+			ofCircle(this->hc->track_data[p].current_pointer.x, this->hc->track_data[p].current_pointer.y, r);
 		}
 	}
 }
 
 void MainScene::transition(int &pointer_id) {
-	if (hp->track_data.size() == 1) {
+	if (hc->track_data.size() == 1) {
 		ofNotifyEvent(this->make_sub_window_event, pointer_id);
 		//ofNotifyEvent(this->transition_event, pointer_id);
 	}
-	else if (hp->track_data.size() >= 2) {
+	else if (hc->track_data.size() >= 2) {
 		ofNotifyEvent(this->make_sub_window_event, pointer_id);
 	}
 }

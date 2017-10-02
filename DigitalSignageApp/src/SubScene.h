@@ -12,7 +12,7 @@ private:
 	static constexpr int main_window_height = 1080;
 	static constexpr double max_life = 100;
 	BaseScene* scene;
-	HandPointer* hp;
+	HandCursor* hc;
 	ofRectangle view_rect;
 	unordered_map<string, ofTexture> cursor_texture;
 	string cursor_state;
@@ -25,11 +25,13 @@ private:
 	int tmp_width, tmp_height;
 public:
 	vector<int> track_id;
-	void setup(BaseScene* scene, HandPointer* hp, int user_id, int scene_id, int x, int y, int w, int h);
-	void setup(BaseScene* scene, HandPointer* hp, int user_id, int scene_id, ofRectangle rect);
+	void setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_id, int x, int y, int w, int h);
+	void setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_id, ofRectangle rect);
 	void update();
 	void draw();
 	bool is_inside(const ofPoint &p) const;
+	ofRectangle get_rect() const;
+	int get_user_id() const;
 	ofEvent<int> delete_sub_window_event;
 	ofEvent<int> user_leave_event;
 	void exit();

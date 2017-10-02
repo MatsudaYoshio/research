@@ -7,7 +7,7 @@ void DigitalSignageApp::setup() {
 	//ofSetFrameRate(60);
 	// ofHideCursor(); // カーソル非表示
 	ofEnableAlphaBlending(); // アルファチャンネルを使用可能にする
-	this->sm.setup(&this->hp); // シーンの準備
+	this->sm.setup(&this->hc); // シーンの準備
 
 	ofSetWindowTitle("main window");
 
@@ -16,7 +16,7 @@ void DigitalSignageApp::setup() {
 }
 
 void DigitalSignageApp::update() {
-	this->hp.update(); // 手ポインタの更新
+	this->hc.update(); // 手ポインタの更新
 	this->sm.update(); // シーンの更新
 }
 
@@ -43,5 +43,5 @@ void DigitalSignageApp::draw() {
 }
 
 void DigitalSignageApp::exit() {
-	this->hp.exit();
+	this->hc.exit();
 }

@@ -8,10 +8,10 @@
 
 class DetailScene : public BaseScene {
 private:
-	HandPointer* hp;
+	HandCursor* hc;
 	ofxTrueTypeFontUC font;
 public:
-	void setup(HandPointer *hp);
+	void setup(HandCursor *hc);
 	void update();
 	void draw();
 };

@@ -1,6 +1,6 @@
 #include "RectangleOptimization.h"
 
-RectangleOptimization::RectangleOptimization(const int &field_width, const int &field_height, double exclude_edge_ratio = 0.1) :field_width(field_width), field_height(field_width) {
+RectangleOptimization::RectangleOptimization(const int &field_width, const int &field_height, double exclude_edge_ratio) :field_width(field_width), field_height(field_height) {
 	this->histogram = vector<vector<int>>(field_height, vector<int>(field_width, 1));
 
 	for (int y = 0; y < field_height; ++y) {
@@ -12,7 +12,7 @@ RectangleOptimization::RectangleOptimization(const int &field_width, const int &
 	}
 }
 
-void RectangleOptimization::add_block(ofRectangle rect, double exclude_edge_ratio = 0.1) {
+void RectangleOptimization::add_block(ofRectangle rect, double exclude_edge_ratio) {
 	rect.set(max((int)(rect.x - rect.width*exclude_edge_ratio), 0), max((int)(rect.y - rect.height*exclude_edge_ratio), 0), rect.width*(1 + 2 * exclude_edge_ratio), rect.height*(1 + 2 * exclude_edge_ratio));
 
 	for (int y = 0; y < this->field_height; ++y) {
@@ -24,7 +24,7 @@ void RectangleOptimization::add_block(ofRectangle rect, double exclude_edge_rati
 	}
 }
 
-void RectangleOptimization::add_block(const ofPoint &p, int exclude_pixel = 50) {
+void RectangleOptimization::add_block(const ofPoint &p, int exclude_pixel) {
 	for (int y = 0; y < this->field_height; ++y) {
 		for (int x = 0; x < this->field_width; ++x) {
 			if (x >= p.x - exclude_pixel && x <= p.x + exclude_pixel && y >= p.y - exclude_pixel && y <= p.y + exclude_pixel) {

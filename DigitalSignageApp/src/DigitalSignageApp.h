@@ -3,7 +3,7 @@
 #define ___Class_DigitalSignageApp
 
 #include "ofMain.h"
-#include "HandPointer.h"
+#include "HandCursor.h"
 #include "Icon.h"
 #include "BaseScene.h"
 #include "SceneManager.h"
@@ -17,7 +17,7 @@ public:
 
 	void exit();
 
-	HandPointer hp;
+	HandCursor hc;
 	SceneManager sm;
 
 	ofxSecondWindow secondWindow;

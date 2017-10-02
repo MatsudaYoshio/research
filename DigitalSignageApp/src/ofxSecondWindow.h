@@ -22,6 +22,7 @@ public:
 	int getHeight() const;
 
 	bool is_inside(const ofPoint &p) const;
+	ofRectangle get_rect() const;
 
 private:
     GLFWwindow *mainWindow, *auxWindow;

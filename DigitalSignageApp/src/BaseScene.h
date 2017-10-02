@@ -3,7 +3,7 @@
 #define ___Class_BaseScene
 
 #include "ofMain.h"
-#include "HandPointer.h"
+#include "HandCursor.h"
 #include "Icon.h"
 
 class BaseScene {
@@ -12,7 +12,7 @@ public:
 	static constexpr int window_height = 1080;
 
 	virtual void setup() {};
-	virtual void setup(HandPointer *hp) {};
+	virtual void setup(HandCursor *hc) {};
 	virtual void update() {};
 	virtual void draw() {};
 	virtual void change_icon_state (string icon_id, string state) {};

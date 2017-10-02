@@ -1,9 +1,9 @@
 #include "DetailScene.h"
 
-void DetailScene::setup(HandPointer *hp) {
+void DetailScene::setup(HandCursor *hc) {
 	this->icons.insert(make_pair("return", Icon(this->window_width - 200, 100, 100, 100, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/return.jpeg")));
 
-	this->hp = hp;
+	this->hc = hc;
 
 	font.loadFont("meiryob.ttc", 30);
 }
@@ -12,7 +12,7 @@ void DetailScene::update() {
 	bool flag;
 	for (auto &i : this->icons) {
 		flag = false;
-		for (auto &t : this->hp->track_data) {
+		for (auto &t : this->hc->track_data) {
 			if (i.second.is_inside(ofPoint(t.second.current_pointer.x, t.second.current_pointer.y))) {
 				pair<string, int> id(i.first, t.first); // アイコン名と手ポインタidの情報
 				ofNotifyEvent(this->point_event, id);
@@ -27,7 +27,7 @@ void DetailScene::update() {
 	}
 	/* 手ポインタがアイコンに触れたらイベントを発火 */
 	/*
-	for (auto t : this->hp->track_data) {
+	for (auto t : this->hc->track_data) {
 		for (auto i : this->icons) {
 			if (i.second.is_inside(ofPoint(t.second.current_pointer.x, t.second.current_pointer.y))) {
 				pair<string, int> id(i.first, t.first); // アイコン名と手ポインタidの情報

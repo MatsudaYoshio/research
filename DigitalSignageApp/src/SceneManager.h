@@ -3,7 +3,7 @@
 #define ___Class_SceneManager
 
 #include "BaseScene.h"
-#include "HandPointer.h"
+#include "HandCursor.h"
 #include "SubScene.h"
 
 class SceneManager {
@@ -17,7 +17,7 @@ private:
 	ofFbo fbo;
 	ofPixels pixels;
 	ofImage img;
-	HandPointer* hp;
+	HandCursor* hc;
 	map<long long int, bool> pointer_log;
 	long long int scene_id = 0;
 	queue<long long int> erase_scene_id;
@@ -28,8 +28,9 @@ private:
 	int t = 2;
 	int f = 0;
 	bool flag = false;
+	unordered_map<int, string> cursor_assignment;
 public:
-	void setup(HandPointer* hp);
+	void setup(HandCursor* hc);
 	void update();
 	void draw();
 	void pointed(pair<string, int> &id);

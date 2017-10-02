@@ -7,11 +7,11 @@
 
 class MainScene : public BaseScene {
 private:
-	HandPointer* hp;
+	HandCursor* hc;
 public:
 	ofImage img;
 
-	void setup(HandPointer *hp);
+	void setup(HandCursor *hc);
 	void update();
 	void draw();
 	void transition(int &pointer_id);
