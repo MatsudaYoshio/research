@@ -31,9 +31,10 @@ public:
 	void draw();
 	bool is_inside(const ofPoint &p) const;
 	ofRectangle get_rect() const;
+	void set_rect(const ofRectangle &rect);
 	int get_user_id() const;
 	ofEvent<int> delete_sub_window_event;
-	ofEvent<int> user_leave_event;
+	ofEvent<pair<int, int>> user_leave_event;
 	void exit();
 	~SubScene();
 private:

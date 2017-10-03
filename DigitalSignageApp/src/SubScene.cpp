@@ -69,7 +69,7 @@ void SubScene::update() {
 			this->tmp_width = this->sub_window.getWidth();
 			this->tmp_height = this->sub_window.getHeight();
 			this->cursor_state = "none";
-			int id = this->user_id;
+			pair<int, int> id(this->scene_id, this->user_id);
 			ofNotifyEvent(this->user_leave_event, id);
 			return;
 		}
@@ -139,6 +139,11 @@ void SubScene::draw() {
 
 ofRectangle SubScene::get_rect() const {
 	return this->sub_window.get_rect();
+}
+
+void SubScene::set_rect(const ofRectangle &rect) {
+	this->sub_window.setWindowPosition(rect.x, rect.y);
+	this->sub_window.setWindowSize(rect.width, rect.height);
 }
 
 int SubScene::get_user_id() const {
