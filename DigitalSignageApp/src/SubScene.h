@@ -24,7 +24,6 @@ private:
 	double life;
 	int tmp_width, tmp_height;
 public:
-	vector<int> track_id;
 	void setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_id, int x, int y, int w, int h);
 	void setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_id, ofRectangle rect);
 	void update();
@@ -35,6 +34,7 @@ public:
 	int get_user_id() const;
 	ofEvent<int> delete_sub_window_event;
 	ofEvent<pair<int, int>> user_leave_event;
+	ofEvent<int> cursor_disappear_event;
 	void exit();
 	~SubScene();
 private:

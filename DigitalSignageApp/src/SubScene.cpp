@@ -38,7 +38,13 @@ void SubScene::setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_id
 void SubScene::update() {
 	this->scene->update();
 
+	this->view_rect.setWidth(this->sub_window.getWidth());
+	this->view_rect.setHeight(this->sub_window.getHeight());
+
 	if (this->hc->track_data.find(this->user_id) == end(this->hc->track_data) || this->cursor_state == "none") {
+		int id = this->scene_id;
+		ofNotifyEvent(this->cursor_disappear_event, id);
+
 		if (this->cursor_state != "none") {
 			this->tmp_width = this->sub_window.getWidth();
 			this->tmp_height = this->sub_window.getHeight();

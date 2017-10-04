@@ -25,6 +25,7 @@ private:
 	unordered_map<int, string> cursor_assignment;
 	double calculate_cost();
 	vector<int> active_scene_id_list;
+	int past_component_num = -1;
 public:
 	void setup(HandCursor* hc);
 	void update();
@@ -34,6 +35,7 @@ public:
 	void make_sub_window(int &pointer_id);
 	void delete_sub_window(int &scene_id);
 	void change_cursor_to_main_window(pair<int, int> &id);
+	void inactivate_sub_window(int &scene_id);
 	void transform(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects);
 	~SceneManager();
 };
