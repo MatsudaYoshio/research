@@ -19,90 +19,32 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 	const double change_rate = 0.05;
 	const int change_times = 20;
 
-	for (auto &s : this->sub_scenes) {
-		int x_sign = (new_rects[s.first].x > old_rects[s.first].x) ? +1 : -1;
-		int y_sign = (new_rects[s.first].y > old_rects[s.first].y) ? +1 : -1;
-		double x_change_val = change_rate*abs(new_rects[s.first].x - old_rects[s.first].x)*x_sign;
-		double y_change_val = change_rate*abs(new_rects[s.first].y - old_rects[s.first].y)*y_sign;
+	for (const auto &id : this->active_scene_id_list) {
+		int x_sign = (new_rects[id].x > old_rects[id].x) ? +1 : -1;
+		int y_sign = (new_rects[id].y > old_rects[id].y) ? +1 : -1;
+		double x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
+		double y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
 
 		for (int i = 0; i < change_times; ++i) {
-			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), s.first) == end(this->active_scene_id_list)) {
-				break;
-			}
-			s.second.set_rect(old_rects[s.first]);
-			old_rects[s.first].setX(old_rects[s.first].x + x_change_val);
-			old_rects[s.first].setY(old_rects[s.first].y + y_change_val);
+			this->sub_scenes[id].set_rect(old_rects[id]);
+			old_rects[id].setX(old_rects[id].x + x_change_val);
+			old_rects[id].setY(old_rects[id].y + y_change_val);
 		}
 
-		int w_sign = (new_rects[s.first].width > old_rects[s.first].width) ? +1 : -1;
-		int h_sign = (new_rects[s.first].height > old_rects[s.first].height) ? +1 : -1;
-		double w_change_val = change_rate*abs(new_rects[s.first].width - old_rects[s.first].width)*w_sign;
-		double h_change_val = change_rate*abs(new_rects[s.first].height - old_rects[s.first].height)*h_sign;
+		int w_sign = (new_rects[id].width > old_rects[id].width) ? +1 : -1;
+		int h_sign = (new_rects[id].height > old_rects[id].height) ? +1 : -1;
+		double w_change_val = change_rate*abs(new_rects[id].width - old_rects[id].width)*w_sign;
+		double h_change_val = change_rate*abs(new_rects[id].height - old_rects[id].height)*h_sign;
 
 		for (int i = 0; i < change_times; ++i) {
-			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), s.first) == end(this->active_scene_id_list)) {
+			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), id) == end(this->active_scene_id_list)) {
 				break;
 			}
-			s.second.set_rect(old_rects[s.first]);
-			old_rects[s.first].setWidth(old_rects[s.first].width + w_change_val);
-			old_rects[s.first].setHeight(old_rects[s.first].height + h_change_val);
+			this->sub_scenes[id].set_rect(old_rects[id]);
+			old_rects[id].setWidth(old_rects[id].width + w_change_val);
+			old_rects[id].setHeight(old_rects[id].height + h_change_val);
 		}
-
 	}
-
-	/*for (auto &s : this->sub_scenes) {
-		if (old_rects[s.first].x < new_rects[s.first].x) {
-			while (old_rects[s.first].x < new_rects[s.first].x) {
-				s.second.set_rect(old_rects[s.first]);
-				old_rects[s.first].setX(old_rects[s.first].x + 10);
-			}
-		}
-		else {
-			while (old_rects[s.first].x > new_rects[s.first].x) {
-				s.second.set_rect(old_rects[s.first]);
-				old_rects[s.first].setX(old_rects[s.first].x - 10);
-			}
-		}
-
-		if (old_rects[s.first].y < new_rects[s.first].y) {
-			while (old_rects[s.first].y < new_rects[s.first].y) {
-				s.second.set_rect(old_rects[s.first]);
-				old_rects[s.first].setY(old_rects[s.first].y + 10);
-			}
-		}
-		else {
-			while (old_rects[s.first].y > new_rects[s.first].y) {
-				s.second.set_rect(old_rects[s.first]);
-				old_rects[s.first].setY(old_rects[s.first].y - 10);
-			}
-		}
-
-		if (old_rects[s.first].width < new_rects[s.first].width) {
-			while (old_rects[s.first].width < new_rects[s.first].width) {
-				s.second.set_rect(old_rects[s.first]);
-				old_rects[s.first].setWidth(old_rects[s.first].width + 10);
-			}
-		}
-		else {
-			while (old_rects[s.first].width > new_rects[s.first].width) {
-				s.second.set_rect(old_rects[s.first]);
-				old_rects[s.first].setWidth(old_rects[s.first].width - 10);
-			}
-		}
-
-		if (old_rects[s.first].height < new_rects[s.first].height) {
-			while (old_rects[s.first].height < new_rects[s.first].height) {
-				s.second.set_rect(old_rects[s.first]);
-				old_rects[s.first].setHeight(old_rects[s.first].height + 10);
-			}
-		}
-		else {
-			while (old_rects[s.first].height > new_rects[s.first].height) {
-				s.second.set_rect(old_rects[s.first]);
-				old_rects[s.first].setHeight(old_rects[s.first].height - 10);
-			}
-		}
-	}*/
 
 	this->flag = false;
 }
@@ -128,6 +70,7 @@ void SceneManager::setup(HandCursor* hc) {
 void SceneManager::update() {
 
 	if (!this->flag && !this->sub_scenes.empty() && !this->active_scene_id_list.empty()) {
+		this->best_cost = this->past_cost = DBL_MAX;
 		int current_component_num = this->active_scene_id_list.size() + this->hc->track_data.size();
 
 		if (this->past_component_num != current_component_num) {
@@ -145,7 +88,7 @@ void SceneManager::update() {
 
 		this->best_rects = this->old_rects = this->rects_tmp;
 
-		for (int i = 0; i < 1000; ++i) {
+		for (int i = 0; i < 3000; ++i) {
 			int modify_window_num = this->active_scene_id_list[ofRandom(0, this->active_scene_id_list.size())];
 
 			int p = ofRandom(0, 4);
@@ -156,10 +99,10 @@ void SceneManager::update() {
 				this->rects_tmp[modify_window_num].setY(this->rects_tmp[modify_window_num].y + ofRandom(-100, 100));
 			}
 			else if (p == 2) {
-				this->rects_tmp[modify_window_num].setWidth(ofRandom(30, this->window_width / 2));
+				this->rects_tmp[modify_window_num].setWidth(ofRandom(50, this->window_width / 2));
 			}
 			else {
-				this->rects_tmp[modify_window_num].setHeight(ofRandom(30, this->window_height / 2));
+				this->rects_tmp[modify_window_num].setHeight(ofRandom(50, this->window_height / 2));
 			}
 
 			this->current_cost = this->calculate_cost();
@@ -248,19 +191,24 @@ double SceneManager::calculate_cost() {
 		else if (aspect_ratio >= 1.6) {
 			cost += 1000 * (1.6 - aspect_ratio);
 		}
-		cost += euclid_distance(this->window_width / 2, this->window_height / 2, r.second.getCenter().x, r.second.getCenter().y);
-		cost -= r.second.getArea();
+		cost += 10*euclid_distance(this->window_width / 2, this->window_height / 2, r.second.getCenter().x, r.second.getCenter().y);
+		cost -= 11*r.second.getArea();
 		cost -= r.second.getIntersection(main_rect).getArea();
 		for (const auto &td : this->hc->track_data) {
 			if (this->sub_scenes[r.first].get_user_id() == td.first) {
-				cost += 100*euclid_distance(r.second.x, r.second.y, td.second.face.left() + td.second.face.width() / 2, td.second.face.top() + td.second.face.height() / 2);
+				cost += 10*euclid_distance(r.second.x, r.second.y, td.second.face.left() + td.second.face.width() / 2, td.second.face.top() + td.second.face.height() / 2);
 				continue;
 			}
-			cost -= euclid_distance(r.second.x, r.second.y, td.second.current_pointer.x, td.second.current_pointer.y);
+			cost -= 200*euclid_distance(r.second.x, r.second.y, td.second.current_pointer.x, td.second.current_pointer.y);
 		}
 		if (r.second.getLeft() < 0 || r.second.getRight() > this->window_width || r.second.getTop() < 0 || r.second.getBottom() > this->window_height) {
 			cost += 100000;
 		}
+		
+		for (const auto &r2 : this->rects_tmp) {
+			cost += 10*r.second.getIntersection(r2.second).getArea();
+		}
+		
 	}
 
 	return cost;

@@ -105,11 +105,10 @@ void SubScene::update() {
 		this->hc->track_data[this->user_id].current_pointer.x = this->hc->track_data[this->user_id].past_pointer.x = max(min(this->hc->track_data[this->user_id].current_pointer.x, (int)this->view_rect.getRight()), (int)this->view_rect.getLeft());
 		this->hc->track_data[this->user_id].current_pointer.y = this->hc->track_data[this->user_id].past_pointer.y = max(min(this->hc->track_data[this->user_id].current_pointer.y, (int)this->view_rect.getBottom()), (int)this->view_rect.getTop());
 	}
-
 }
 
 void SubScene::draw() {
-
+	if (this->sub_window.getWidth() == 0 && this->sub_window.getHeight() == 0) cout << "!\n";
 	this->sub_window.begin();
 
 	gluLookAt(this->view_rect.getX(), this->view_rect.getY(), 0, this->view_rect.getX(), this->view_rect.getY(), -1, 0, 1, 0);
@@ -136,9 +135,6 @@ void SubScene::draw() {
 	else {
 		this->cursor_texture[this->cursor_state].draw(this->hc->track_data[this->user_id].current_pointer.x, this->hc->track_data[this->user_id].current_pointer.y, 50, 50);
 	}
-
-	ofSetColor(ofColor::red);
-	ofCircle(this->main_window_width, 0, 10);
 
 	this->sub_window.end();
 }
