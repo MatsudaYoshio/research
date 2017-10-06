@@ -2,21 +2,21 @@
 
 void ofxSecondWindow::setup(const char *name, int xpos, int ypos, int width, int height, bool undecorated) {
 	this->rect.set(xpos, ypos, width, height);
-    glfwWindowHint(GLFW_DECORATED, !undecorated);
-    mainWindow = glfwGetCurrentContext();
-    auxWindow = glfwCreateWindow(width, height, name, NULL, mainWindow);
-    glfwSetWindowPos(auxWindow, xpos, ypos);
-    
-    /* enable alpha blending by default */
-    glfwMakeContextCurrent(auxWindow);
-    glEnable(GL_BLEND);
+	glfwWindowHint(GLFW_DECORATED, !undecorated);
+	mainWindow = glfwGetCurrentContext();
+	auxWindow = glfwCreateWindow(width, height, name, NULL, mainWindow);
+	glfwSetWindowPos(auxWindow, xpos, ypos);
+
+	/* enable alpha blending by default */
+	glfwMakeContextCurrent(auxWindow);
+	glEnable(GL_BLEND);
 #ifndef TARGET_OPENGLES
-    glBlendEquation(GL_FUNC_ADD);
+	glBlendEquation(GL_FUNC_ADD);
 #endif
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glfwMakeContextCurrent(mainWindow);
-    
-    hidden = false;
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glfwMakeContextCurrent(mainWindow);
+
+	hidden = false;
 }
 
 void ofxSecondWindow::setup(const char *name, ofRectangle rect, bool undecorated) {
@@ -25,13 +25,13 @@ void ofxSecondWindow::setup(const char *name, ofRectangle rect, bool undecorated
 
 void ofxSecondWindow::setWindowPosition(int x, int y) {
 	this->rect.setPosition(x, y);
-    glfwSetWindowPos(auxWindow, x, y);
+	glfwSetWindowPos(auxWindow, x, y);
 }
 
 void ofxSecondWindow::setWindowSize(int width, int height) {
 	this->rect.setWidth(width);
 	this->rect.setHeight(height);
-    glfwSetWindowSize(auxWindow, this->rect.width, this->rect.height);
+	glfwSetWindowSize(auxWindow, this->rect.width, this->rect.height);
 }
 
 int ofxSecondWindow::getWidth() const {
@@ -50,32 +50,32 @@ ofRectangle ofxSecondWindow::get_rect() const {
 	return this->rect;
 }
 
-void ofxSecondWindow::begin(){
-    glfwMakeContextCurrent(auxWindow);
-    int width, height;
-    glfwGetFramebufferSize(auxWindow, &width, &height);
-    glViewport(0, 0, width, height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, width, height, 0, -1, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+void ofxSecondWindow::begin() {
+	glfwMakeContextCurrent(auxWindow);
+	int width, height;
+	glfwGetFramebufferSize(auxWindow, &width, &height);
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, width, height, 0, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 
-void ofxSecondWindow::end(){
-    glfwSwapBuffers(auxWindow);
-    glfwPollEvents();
-    glfwMakeContextCurrent(mainWindow);
+void ofxSecondWindow::end() {
+	glfwSwapBuffers(auxWindow);
+	glfwPollEvents();
+	glfwMakeContextCurrent(mainWindow);
 }
 
-void ofxSecondWindow::show(){
-    glfwShowWindow(auxWindow);
-    hidden = false;
+void ofxSecondWindow::show() {
+	glfwShowWindow(auxWindow);
+	hidden = false;
 }
 
-void ofxSecondWindow::hide(){
-    glfwHideWindow(auxWindow);
-    hidden = true;
+void ofxSecondWindow::hide() {
+	glfwHideWindow(auxWindow);
+	hidden = true;
 }
 
 void ofxSecondWindow::close() {
@@ -83,9 +83,10 @@ void ofxSecondWindow::close() {
 }
 
 void ofxSecondWindow::toggleHidden() {
-    if (hidden) {
-        show();
-    } else {
-        hide();
-    }
+	if (hidden) {
+		show();
+	}
+	else {
+		hide();
+	}
 }

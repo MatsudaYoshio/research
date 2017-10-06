@@ -88,25 +88,42 @@ void SceneManager::update() {
 
 		this->best_rects = this->old_rects = this->rects_tmp;
 
-		for (int i = 0; i < 3000; ++i) {
+		for (int i = 0; i < 2000; ++i) {
 			int modify_window_num = this->active_scene_id_list[ofRandom(0, this->active_scene_id_list.size())];
 
 			int p = ofRandom(0, 4);
 			if (p == 0) {
-				this->rects_tmp[modify_window_num].setX(this->rects_tmp[modify_window_num].x + ofRandom(-100, 100));
+				this->rects_tmp[modify_window_num].setX(this->rects_tmp[modify_window_num].x + ofRandom(-500, 500));
 			}
 			else if (p == 1) {
-				this->rects_tmp[modify_window_num].setY(this->rects_tmp[modify_window_num].y + ofRandom(-100, 100));
+				this->rects_tmp[modify_window_num].setY(this->rects_tmp[modify_window_num].y + ofRandom(-500, 500));
 			}
 			else if (p == 2) {
-				this->rects_tmp[modify_window_num].setWidth(ofRandom(50, this->window_width / 2));
+				this->rects_tmp[modify_window_num].setWidth(ofRandom(30, this->window_width / 2));
 			}
 			else {
-				this->rects_tmp[modify_window_num].setHeight(ofRandom(50, this->window_height / 2));
+				this->rects_tmp[modify_window_num].setHeight(ofRandom(30, this->window_height / 2));
 			}
 
 			this->current_cost = this->calculate_cost();
 
+			if (this->current_cost > this->past_cost) {
+				double diff = this->past_cost - this->current_cost;
+				double t = (double)i / 2000.0;
+				if (ofRandomuf() > exp(diff / t)) {
+					this->rects_tmp[modify_window_num] = this->sub_scenes[modify_window_num].get_rect();
+				}
+			}
+			else {
+				this->past_cost = this->current_cost;
+
+				if (this->current_cost < this->best_cost) {
+					this->best_cost = this->current_cost;
+					this->best_rects = this->rects_tmp;
+				}
+			}
+
+			/*
 			if (this->current_cost > this->past_cost && ofRandom(0, i + 2) == 0) {
 				this->rects_tmp[modify_window_num] = this->sub_scenes[modify_window_num].get_rect();
 			}
@@ -118,6 +135,7 @@ void SceneManager::update() {
 					this->best_rects = this->rects_tmp;
 				}
 			}
+			*/
 		}
 
 		void(SceneManager::*funcp)(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects) = &SceneManager::transform;
@@ -186,20 +204,20 @@ double SceneManager::calculate_cost() {
 	for (const auto &r : this->rects_tmp) {
 		double aspect_ratio = r.second.width / r.second.height;
 		if (aspect_ratio < 0.625) {
-			cost += 1000 * (0.625 - aspect_ratio);
+			cost += 100 * (0.625 - aspect_ratio);
 		}
 		else if (aspect_ratio >= 1.6) {
-			cost += 1000 * (1.6 - aspect_ratio);
+			cost += 100 * (1.6 - aspect_ratio);
 		}
 		cost += 10*euclid_distance(this->window_width / 2, this->window_height / 2, r.second.getCenter().x, r.second.getCenter().y);
 		cost -= 11*r.second.getArea();
-		cost -= r.second.getIntersection(main_rect).getArea();
+		cost -= 10*r.second.getIntersection(main_rect).getArea();
 		for (const auto &td : this->hc->track_data) {
 			if (this->sub_scenes[r.first].get_user_id() == td.first) {
 				cost += 10*euclid_distance(r.second.x, r.second.y, td.second.face.left() + td.second.face.width() / 2, td.second.face.top() + td.second.face.height() / 2);
 				continue;
 			}
-			cost -= 200*euclid_distance(r.second.x, r.second.y, td.second.current_pointer.x, td.second.current_pointer.y);
+			cost -= 2000*euclid_distance(r.second.x, r.second.y, td.second.current_pointer.x, td.second.current_pointer.y);
 		}
 		if (r.second.getLeft() < 0 || r.second.getRight() > this->window_width || r.second.getTop() < 0 || r.second.getBottom() > this->window_height) {
 			cost += 100000;

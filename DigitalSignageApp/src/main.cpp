@@ -3,19 +3,22 @@
 
 //========================================================================
 int main(){
-	ofSetupOpenGL(1920, 1080, OF_WINDOW);			// <-------- setup the GL context
+	/* メインウィンドウの起動 */
+	//ofSetupOpenGL(1920, 1080, OF_WINDOW);
 
-	/*
 	ofGLFWWindowSettings settings;
-	settings.setGLVersion(2, 1); //version of opengl corresponding to your GLSL version
+	settings.setGLVersion(2, 1);
 	settings.width = 1920;
 	settings.height = 1080;
+	settings.resizable = false;
 	ofCreateWindow(settings);
-	*/
+	
+	/* ウィンドウの枠を消す(フルスクリーンにする) */
+	HWND hWnd = WindowFromDC(wglGetCurrentDC());
+	LONG lStyle;
+	lStyle = GetWindowLong(hWnd, GWL_STYLE);
+	lStyle &= ~WS_CAPTION;
+	lStyle = SetWindowLong(hWnd, GWL_STYLE, lStyle);
 
-	// this kicks off the running of my app
-	// can be OF_WINDOW or OF_FULLSCREEN
-	// pass in width and height too:
 	ofRunApp(new DigitalSignageApp());
-
 }

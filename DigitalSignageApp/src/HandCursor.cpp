@@ -40,7 +40,7 @@ void HandCursor::update() {
 		this->new_thread_hand_detect();
 	}
 
-	//this->show_detect_window();
+	this->show_detect_window();
 }
 
 void HandCursor::exit() {
