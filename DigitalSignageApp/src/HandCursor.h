@@ -46,8 +46,6 @@ private:
 	};
 
 	static constexpr int resize_size = 80;
-	static constexpr int window_width = 1920;
-	static constexpr int window_height = 1080;
 	static constexpr double decision_ratio = 0.5;
 	static constexpr double overlap_ratio = 0.1;
 

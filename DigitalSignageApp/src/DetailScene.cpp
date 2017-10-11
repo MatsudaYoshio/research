@@ -1,7 +1,9 @@
 #include "DetailScene.h"
 
+using namespace param;
+
 void DetailScene::setup(HandCursor *hc) {
-	this->icons.insert(make_pair("return", Icon(this->window_width - 200, 100, 100, 100, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/return.jpeg")));
+	this->icons.insert(make_pair("return", Icon(W - 200, 100, 100, 100, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/return.jpeg")));
 
 	this->hc = hc;
 

@@ -8,16 +8,13 @@
 
 class SubScene {
 private:
-	static constexpr int main_window_width = 1920;
-	static constexpr int main_window_height = 1080;
 	static constexpr double max_life = 100;
 	BaseScene* scene;
 	HandCursor* hc;
-	ofRectangle view_rect;
+	ofRectangle view_rect, frame;
 	unordered_map<string, ofTexture> cursor_texture;
 	string cursor_state;
-	int alpha = 255;
-	const string window_name = "sub_window";
+	const string window_name = "sub window";
 	ofxSecondWindow sub_window;
 	int user_id;
 	int scene_id;

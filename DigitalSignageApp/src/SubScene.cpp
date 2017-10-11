@@ -1,24 +1,28 @@
 #include "SubScene.h"
 #include "MainScene.h"
 #include "DetailScene.h"
+#include "AppParameters.h"
 
 #include <opencv2/opencv.hpp>
 
 using namespace cv;
+using namespace param;
 
 void SubScene::setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_id, int x, int y, int w, int h) {
 	this->scene_id = scene_id;
 	this->user_id = user_id;
 	this->hc = hc;
 
-	this->sub_window.setup(this->window_name.c_str(), x, y, w, h, false); // 最後の引数をtrueに変えれば枠なしのウィンドウ
+	this->sub_window.setup(this->window_name.c_str(), x, y, w, h, true); // 最後の引数をtrueに変えれば枠なしのウィンドウ
 	this->sub_window.show();
 	
 	this->scene = scene;
 	this->scene->setup(this->hc);
 	
 	this->view_rect.set(0, 0, w, h);
+	this->frame.set(x-4, y-4, w+7, h+7);
 	
+	/* ユーザのカーソルをサブウィンドウの中心に移動させる */
 	ofPoint center = this->view_rect.getCenter();
 	this->hc->track_data[this->user_id].current_pointer = this->hc->track_data[this->user_id].past_pointer = Point(center.x, center.y);
 	
@@ -40,38 +44,33 @@ void SubScene::update() {
 
 	this->view_rect.setWidth(this->sub_window.getWidth());
 	this->view_rect.setHeight(this->sub_window.getHeight());
+	this->frame.set(this->sub_window.getX() - 4, this->sub_window.getY() - 4, this->sub_window.getWidth() + 7, this->sub_window.getHeight() + 7);
+
 
 	if (this->hc->track_data.find(this->user_id) == end(this->hc->track_data) || this->cursor_state == "none") {
-		int id = this->scene_id;
-		ofNotifyEvent(this->cursor_disappear_event, id);
-
-		if (this->cursor_state != "none") {
+		if (this->life == this->max_life) {
+			int id = this->scene_id;
+			ofNotifyEvent(this->cursor_disappear_event, id); // カーソル消滅イベント発火
 			this->tmp_width = this->sub_window.getWidth();
 			this->tmp_height = this->sub_window.getHeight();
 			this->cursor_state = "none";
 		}
 		
-		if (this->sub_window.getWidth() < 200 && this->sub_window.getHeight() < 200) {
-			int id = this->scene_id;
-			ofNotifyEvent(this->delete_sub_window_event, id);
-			return;
-		}
-
-		this->life -= 0.5;
-		this->sub_window.setWindowSize(this->tmp_width*this->life/this->max_life, this->tmp_height*this->life/this->max_life);
+		/* サブウィンドウのライフを徐々に減らしてサイズを小さくしていく */
+		this->life -= 2;
+		this->sub_window.setWindowSize(this->tmp_width*this->life / this->max_life, this->tmp_height*this->life / this->max_life);
 		this->view_rect.setWidth(this->sub_window.getWidth());
 		this->view_rect.setHeight(this->sub_window.getHeight());
+
+		/* サブウィンドウが一定のサイズ以下になったらサブウィンドウを消す */
+		if (this->sub_window.getWidth() < 200 && this->sub_window.getHeight() < 200) {
+			int id = this->scene_id;
+			ofNotifyEvent(this->delete_sub_window_event, id); // サブウィンドウ削除イベント発火
+			return;
+		}
 	}
 	else {
-		this->life = this->max_life;
-
-		if (!this->view_rect.inside(this->hc->track_data[this->user_id].current_pointer.x, this->hc->track_data[this->user_id].current_pointer.y)) {
-			alpha -= 10;
-		}
-		else {
-			alpha = 255;
-		}
-		if ((this->hc->track_data[this->user_id].current_pointer.x <= 50 && this->hc->track_data[this->user_id].current_pointer.y <= 50) || (abs(this->hc->track_data[this->user_id].current_pointer.x - this->main_window_width) <= 50 && this->hc->track_data[this->user_id].current_pointer.y <= 50) || (this->hc->track_data[this->user_id].current_pointer.x <= 50 && abs(this->hc->track_data[this->user_id].current_pointer.y - this->main_window_height) <= 50) || (abs(this->hc->track_data[this->user_id].current_pointer.x - this->main_window_width) <= 50 && abs(this->hc->track_data[this->user_id].current_pointer.y - this->main_window_height) <= 50)) {
+		if ((this->hc->track_data[this->user_id].current_pointer.x <= 50 && this->hc->track_data[this->user_id].current_pointer.y <= 50) || (abs(this->hc->track_data[this->user_id].current_pointer.x - W) <= 50 && this->hc->track_data[this->user_id].current_pointer.y <= 50) || (this->hc->track_data[this->user_id].current_pointer.x <= 50 && abs(this->hc->track_data[this->user_id].current_pointer.y - H) <= 50) || (abs(this->hc->track_data[this->user_id].current_pointer.x - W) <= 50 && abs(this->hc->track_data[this->user_id].current_pointer.y - H) <= 50)) {
 			this->tmp_width = this->sub_window.getWidth();
 			this->tmp_height = this->sub_window.getHeight();
 			this->cursor_state = "none";
@@ -108,16 +107,20 @@ void SubScene::update() {
 }
 
 void SubScene::draw() {
-	if (this->sub_window.getWidth() == 0 && this->sub_window.getHeight() == 0) cout << "!\n";
+	ofSetColor(ofColor::orange);
+	ofNoFill();
+	ofSetLineWidth(5);
+	ofDrawRectangle(this->frame);
+
 	this->sub_window.begin();
 
 	gluLookAt(this->view_rect.getX(), this->view_rect.getY(), 0, this->view_rect.getX(), this->view_rect.getY(), -1, 0, 1, 0);
 
 	ofBackground(255);
-	ofSetColor(ofColor::white, this->alpha);
+	ofSetColor(ofColor::white);
 	this->scene->draw(); // シーンの描画
 
-	ofSetColor(ofColor::white, this->alpha);
+	ofSetColor(ofColor::white);
 
 	if (this->cursor_state == "point") {
 		int alpha = 255;

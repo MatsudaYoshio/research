@@ -1,32 +1,43 @@
 #include "HandCursor.h"
+#include "AppParameters.h"
 
 using namespace std;
 using namespace dlib;
 using namespace cv;
+using namespace param;
 
 HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0), mt(rd()) {
 	this->face_detector = get_frontal_face_detector();
 
 	deserialize("C:/Users/matsuda/workspace/machine_learning_data/hand/20170813/linear_svm_function.dat") >> df; // ファイルから学習済みのモデルを読み込む
 
-	this->frame = Mat(Size(this->window_width, this->window_height), CV_8UC3);
+	this->frame = Mat(Size(W, H), CV_8UC3);
 	this->cursor_color_list.emplace_back(ofColor::blue);
 	this->cursor_color_list.emplace_back(ofColor::red);
 	this->cursor_color_list.emplace_back(ofColor::green);
-	this->cursor_color_list.emplace_back(ofColor::yellow);
 	this->cursor_color_list.emplace_back(ofColor::black);
-	this->rn_color = uniform_int_distribution<int>(0, this->cursor_color_list.size());
-
+	this->rn_color = uniform_int_distribution<int>(0, this->cursor_color_list.size()-1);
+	
+	
 	this->track_data[-1].current_pointer.x = 400;
 	this->track_data[-1].current_pointer.y = 400;
 	this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
-	this->track_data[-1].cursor_color_id = 100;
+	this->track_data[-1].cursor_color_id = 0;
 	this->track_data[-1].cursor_color = ofColor::blue;
+	
+	
+	this->track_data[-2].current_pointer.x = 1000;
+	this->track_data[-2].current_pointer.y = 400;
+	this->track_data[-2].face = dlib::rectangle(450, 600, 50, 50);
+	this->track_data[-2].cursor_color_id = 1;
+	this->track_data[-2].cursor_color = ofColor::red;
+	
 }
 
 void HandCursor::update() {
 	++this->frame_count;
 
+	/* fpsを表示 */
 	//frc.NewFrame();
 	//printf("fps : %lf\n", frc.GetFrameRate());
 
@@ -40,7 +51,7 @@ void HandCursor::update() {
 		this->new_thread_hand_detect();
 	}
 
-	this->show_detect_window();
+	//this->show_detect_window(); // 検出チェック用のウィンドウを表示
 }
 
 void HandCursor::exit() {
@@ -117,9 +128,9 @@ void HandCursor::hand_detect() {
 	for (const auto &fd : face_dets_tmp) {
 		//* 顔の周辺のスライディングウィンドウを作成(ウィンドウサイズが顔より大きくて異なる3種類) */
 		std::vector<std::vector<dlib::rectangle>> sliding_windows(3);
-		SlidingWindows sw(fd.width(), fd.width() / 5, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, this->window_width), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, this->window_height));
-		SlidingWindows sw2(fd.width() + 50, fd.width() / 5 + 10, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, this->window_width), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, this->window_height));
-		SlidingWindows sw3(fd.width() + 100, fd.width() / 5 + 20, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, this->window_width), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, this->window_height));
+		SlidingWindows sw(fd.width(), fd.width() / 5, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, W), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, H));
+		SlidingWindows sw2(fd.width() + 50, fd.width() / 5 + 10, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, W), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, H));
+		SlidingWindows sw3(fd.width() + 100, fd.width() / 5 + 20, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, W), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, H));
 		sliding_windows[0] = sw.get_windows();
 		sliding_windows[1] = sw2.get_windows();
 		sliding_windows[2] = sw3.get_windows();
@@ -228,14 +239,14 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 		this->track_data[user_id].hand = this->track_data[user_id].current_pos = current_pos;
 
 		/* 現在の追跡位置の周辺のスライディングウィンドウを作成して手を検出 */
-		SlidingWindows local_sw(current_pos.width(), current_pos.width() / 5, std::max((int)current_pos.left() - 100, 0), std::min((int)current_pos.right() + 100, this->window_width), std::max((int)current_pos.top() - 100, 0), std::min((int)current_pos.bottom() + 100, this->window_height));
+		SlidingWindows local_sw(current_pos.width(), current_pos.width() / 5, std::max((int)current_pos.left() - 100, 0), std::min((int)current_pos.right() + 100, W), std::max((int)current_pos.top() - 100, 0), std::min((int)current_pos.bottom() + 100, H));
 		this->hand_detect(local_sw.get_windows(), user_id);
 
 		/* 現在の追跡位置(矩形の中心座標)を得る */
 		double x = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x座標
 		double y = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y座標
 
-		Point2f cp(std::max(std::min(this->track_data[user_id].past_pointer.x - 10 * x, (double)this->window_width), 0.0), std::max(std::min((this->track_data[user_id].past_pointer.y + 10 * y), (double)this->window_height), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
+		Point2f cp(std::max(std::min(this->track_data[user_id].past_pointer.x - W / this->track_data[user_id].face.width() * x, (double)W), 0.0), std::max(std::min((this->track_data[user_id].past_pointer.y + H / this->track_data[user_id].face.width() * y), (double)H), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
 
 		this->track_data[user_id].current_pointer = this->track_data[user_id].past_pointer = cp; // ポインタの位置を更新
 

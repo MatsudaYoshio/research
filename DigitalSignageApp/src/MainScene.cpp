@@ -1,11 +1,13 @@
 #include "MainScene.h"
 
+using namespace param;
+
 void MainScene::setup(HandCursor* hc) {
 	ofSetBackgroundAuto(true);
 
 	/* ƒAƒCƒRƒ“‚ð¶¬ */
-	const int x_unit = this->window_width / 7;
-	const int y_unit = this->window_height / 5;
+	const int x_unit = W / 7;
+	const int y_unit = H / 5;
 
 	this->icons.insert(make_pair("syoukousyu", Icon(x_unit, y_unit, x_unit, y_unit, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/cooking_syoukousyu.png")));
 	this->icons.insert(make_pair("energy", Icon(3*x_unit, y_unit, x_unit, y_unit, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/drink_energy.png")));

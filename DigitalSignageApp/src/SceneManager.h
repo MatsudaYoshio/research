@@ -8,9 +8,6 @@
 
 class SceneManager {
 private:
-	static constexpr int window_width = 1920;
-	static constexpr int window_height = 1080;
-
 	unordered_map<string, BaseScene*> scenes;
 	unordered_map<int, SubScene> sub_scenes;
 	string current_scene;

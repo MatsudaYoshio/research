@@ -17,6 +17,8 @@ public:
     void setWindowPosition(int x, int y);
     void setWindowSize(int width, int height);
     
+	int getX() const;
+	int getY() const;
 	int getWidth() const;
 	int getHeight() const;
 

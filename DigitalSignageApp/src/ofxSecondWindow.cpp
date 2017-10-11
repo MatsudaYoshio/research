@@ -34,6 +34,14 @@ void ofxSecondWindow::setWindowSize(int width, int height) {
 	glfwSetWindowSize(auxWindow, this->rect.width, this->rect.height);
 }
 
+int ofxSecondWindow::getX() const {
+	return this->rect.x;
+}
+
+int ofxSecondWindow::getY() const {
+	return this->rect.y;
+}
+
 int ofxSecondWindow::getWidth() const {
 	return this->rect.width;
 }

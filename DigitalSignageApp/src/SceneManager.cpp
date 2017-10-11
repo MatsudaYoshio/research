@@ -2,12 +2,13 @@
 #include "MainScene.h"
 #include "DetailScene.h"
 #include "windows.h"
-#include "MoveWindowPosition.h"
 #include "RectangleOptimization.h"
+#include "AppParameters.h"
 
 #include <opencv2/opencv.hpp>
 
 using namespace cv;
+using namespace param;
 
 double euclid_distance(const double x1, const double y1, const double x2, const double y2) {
 	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
@@ -71,12 +72,14 @@ void SceneManager::update() {
 
 	if (!this->flag && !this->sub_scenes.empty() && !this->active_scene_id_list.empty()) {
 		this->best_cost = this->past_cost = DBL_MAX;
+		/*
 		int current_component_num = this->active_scene_id_list.size() + this->hc->track_data.size();
 
 		if (this->past_component_num != current_component_num) {
 			this->past_component_num = current_component_num;
 			this->best_cost = this->past_cost = DBL_MAX;
 		}
+		*/
 
 		this->rects_tmp.clear();
 		this->best_rects.clear();
@@ -99,10 +102,24 @@ void SceneManager::update() {
 				this->rects_tmp[modify_window_num].setY(this->rects_tmp[modify_window_num].y + ofRandom(-500, 500));
 			}
 			else if (p == 2) {
-				this->rects_tmp[modify_window_num].setWidth(ofRandom(30, this->window_width / 2));
+				this->rects_tmp[modify_window_num].setWidth(ofRandom(30, W / 2));
 			}
 			else {
-				this->rects_tmp[modify_window_num].setHeight(ofRandom(30, this->window_height / 2));
+				this->rects_tmp[modify_window_num].setHeight(ofRandom(30, H / 2));
+			}
+
+			bool flag = false;
+
+			for (const auto &r : this->rects_tmp) {
+				if (r.second.getLeft() < 0 || r.second.getRight() > W || r.second.getTop() < 0 || r.second.getBottom() > H || r.second.width > W / 2 || r.second.height > H / 2) {
+					this->rects_tmp[modify_window_num] = this->sub_scenes[modify_window_num].get_rect();
+					flag = true;
+					break;
+				}
+			}
+
+			if (flag) {
+				continue;
 			}
 
 			this->current_cost = this->calculate_cost();
@@ -200,31 +217,45 @@ void SceneManager::draw() {
 
 double SceneManager::calculate_cost() {
 	double cost = 0.0;
-	ofRectangle main_rect(0, 0, this->window_width, this->window_height);
+	//ofRectangle main_rect(0, 0, this->window_width, this->window_height);
+	constexpr double a = 100;
+	constexpr double b = 1.6;
+	constexpr double c = 1000;
 	for (const auto &r : this->rects_tmp) {
 		double aspect_ratio = r.second.width / r.second.height;
-		if (aspect_ratio < 0.625) {
-			cost += 100 * (0.625 - aspect_ratio);
+		if (1.0 / b < aspect_ratio && aspect_ratio < b) {
+			cost += a*exp(-pow(aspect_ratio-((b*b+1)/(2*b)),2));
 		}
-		else if (aspect_ratio >= 1.6) {
-			cost += 100 * (1.6 - aspect_ratio);
+		else {
+			cost += c;
 		}
-		cost += 10*euclid_distance(this->window_width / 2, this->window_height / 2, r.second.getCenter().x, r.second.getCenter().y);
-		cost -= 11*r.second.getArea();
-		cost -= 10*r.second.getIntersection(main_rect).getArea();
+
+		//cost += 10*euclid_distance(this->window_width / 2, this->window_height / 2, r.second.getCenter().x, r.second.getCenter().y);
+		cost -= 110*r.second.getArea();
+		//cost -= 10*r.second.getIntersection(main_rect).getArea();
+		for (const auto &c : this->scenes["main"]->pointer_id) {
+			if (r.second.inside(this->hc->track_data[c].current_pointer.x, this->hc->track_data[c].current_pointer.y)) {
+				cost += 100000;
+			}
+			cost -= 5000 * euclid_distance(r.second.x, r.second.y, this->hc->track_data[c].current_pointer.x, this->hc->track_data[c].current_pointer.y);
+		}
+		
 		for (const auto &td : this->hc->track_data) {
 			if (this->sub_scenes[r.first].get_user_id() == td.first) {
 				cost += 10*euclid_distance(r.second.x, r.second.y, td.second.face.left() + td.second.face.width() / 2, td.second.face.top() + td.second.face.height() / 2);
 				continue;
 			}
-			cost -= 2000*euclid_distance(r.second.x, r.second.y, td.second.current_pointer.x, td.second.current_pointer.y);
+			//cost -= 5000*euclid_distance(r.second.x, r.second.y, td.second.current_pointer.x, td.second.current_pointer.y);
 		}
+
+		/*
 		if (r.second.getLeft() < 0 || r.second.getRight() > this->window_width || r.second.getTop() < 0 || r.second.getBottom() > this->window_height) {
 			cost += 100000;
 		}
+		*/
 		
 		for (const auto &r2 : this->rects_tmp) {
-			cost += 10*r.second.getIntersection(r2.second).getArea();
+			cost += 100*r.second.getIntersection(r2.second).getArea();
 		}
 		
 	}
@@ -263,7 +294,7 @@ void SceneManager::inactivate_sub_window(int &scene_id) {
 void SceneManager::make_sub_window(int &pointer_id) {
 	if (this->sub_scenes.empty()) {
 		SubScene sub_scene;
-		sub_scene.setup(new DetailScene(), this->hc, pointer_id, this->scene_id, ofRectangle(200, 200, this->window_width / 2, this->window_height / 2));
+		sub_scene.setup(new DetailScene(), this->hc, pointer_id, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
 		ofAddListener(sub_scene.delete_sub_window_event, this, &SceneManager::delete_sub_window);
 		ofAddListener(sub_scene.user_leave_event, this, &SceneManager::change_cursor_to_main_window);
 		ofAddListener(sub_scene.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
@@ -273,7 +304,7 @@ void SceneManager::make_sub_window(int &pointer_id) {
 		this->active_scene_id_list.emplace_back(this->scene_id++);
 	}
 	else {
-		RectangleOptimization ro(this->window_width, this->window_height);
+		RectangleOptimization ro(W, H);
 
 		for (auto &s : this->sub_scenes) {
 			ro.add_block(s.second.get_rect());
