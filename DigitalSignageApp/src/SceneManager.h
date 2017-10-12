@@ -6,6 +6,8 @@
 #include "HandCursor.h"
 #include "SubScene.h"
 
+#include <mutex>
+
 class SceneManager {
 private:
 	unordered_map<string, BaseScene*> scenes;
@@ -14,15 +16,14 @@ private:
 	HandCursor* hc;
 	map<long long int, bool> cursor_log;
 	long long int scene_id = 0;
-	queue<long long int> erase_scene_id;
-
-	double past_cost = DBL_MAX, current_cost, best_cost = DBL_MAX;
+	queue<int> erase_scene_id;
+	double past_cost, current_cost, best_cost;
 	unordered_map<int, ofRectangle> rects_tmp, best_rects, old_rects;
-	bool flag = false;
+	bool transform_thread_flag = false;
 	unordered_map<int, string> cursor_assignment;
 	double calculate_cost();
-	vector<int> active_scene_id_list;
-	int past_component_num = -1;
+	vector<int> active_scene_id_list, active_scene_id_list_tmp;
+	std::mutex mtx;
 public:
 	void setup(HandCursor* hc);
 	void update();
@@ -31,7 +32,6 @@ public:
 	void transition(int &pointer_id);
 	void make_sub_window(int &pointer_id);
 	void delete_sub_window(int &scene_id);
-	void change_cursor_to_main_window(pair<int, int> &id);
 	void inactivate_sub_window(int &scene_id);
 	void transform(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects);
 	~SceneManager();

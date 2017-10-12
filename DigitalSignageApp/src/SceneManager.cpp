@@ -15,19 +15,21 @@ double euclid_distance(const double x1, const double y1, const double x2, const 
 }
 
 void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects) {
-	this->flag = true;
+	this->transform_thread_flag = true;
 
 	const double change_rate = 0.05;
 	const int change_times = 20;
 
-	for (const auto &id : this->active_scene_id_list) {
+	for (const auto &id : this->active_scene_id_list_tmp) {
 		int x_sign = (new_rects[id].x > old_rects[id].x) ? +1 : -1;
 		int y_sign = (new_rects[id].y > old_rects[id].y) ? +1 : -1;
 		double x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
 		double y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
 
 		for (int i = 0; i < change_times; ++i) {
+			this->mtx.lock();
 			this->sub_scenes[id].set_rect(old_rects[id]);
+			this->mtx.unlock();
 			old_rects[id].setX(old_rects[id].x + x_change_val);
 			old_rects[id].setY(old_rects[id].y + y_change_val);
 		}
@@ -38,16 +40,15 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 		double h_change_val = change_rate*abs(new_rects[id].height - old_rects[id].height)*h_sign;
 
 		for (int i = 0; i < change_times; ++i) {
-			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), id) == end(this->active_scene_id_list)) {
-				break;
-			}
+			this->mtx.lock();
 			this->sub_scenes[id].set_rect(old_rects[id]);
+			this->mtx.unlock();
 			old_rects[id].setWidth(old_rects[id].width + w_change_val);
 			old_rects[id].setHeight(old_rects[id].height + h_change_val);
 		}
 	}
 
-	this->flag = false;
+	this->transform_thread_flag = false;
 }
 
 void SceneManager::setup(HandCursor* hc) {
@@ -65,22 +66,22 @@ void SceneManager::setup(HandCursor* hc) {
 	}
 
 	this->current_scene = "main";
-
 }
 
 void SceneManager::update() {
 
-	if (!this->flag && !this->sub_scenes.empty() && !this->active_scene_id_list.empty()) {
-		this->best_cost = this->past_cost = DBL_MAX;
-		/*
-		int current_component_num = this->active_scene_id_list.size() + this->hc->track_data.size();
-
-		if (this->past_component_num != current_component_num) {
-			this->past_component_num = current_component_num;
-			this->best_cost = this->past_cost = DBL_MAX;
+	if (!this->transform_thread_flag) {
+		while (!this->erase_scene_id.empty()) {
+			this->sub_scenes.erase(this->erase_scene_id.front());
+			this->active_scene_id_list.erase(find(begin(this->active_scene_id_list), end(this->active_scene_id_list), this->erase_scene_id.front()));
+			this->erase_scene_id.pop();
 		}
-		*/
+	}
 
+	if (!this->transform_thread_flag && !this->sub_scenes.empty() && !this->active_scene_id_list.empty()) {
+		this->best_cost = this->past_cost = DBL_MAX;
+
+		this->active_scene_id_list_tmp.clear();
 		this->rects_tmp.clear();
 		this->best_rects.clear();
 		this->old_rects.clear();
@@ -90,9 +91,10 @@ void SceneManager::update() {
 		}
 
 		this->best_rects = this->old_rects = this->rects_tmp;
+		this->active_scene_id_list_tmp = this->active_scene_id_list;
 
 		for (int i = 0; i < 2000; ++i) {
-			int modify_window_num = this->active_scene_id_list[ofRandom(0, this->active_scene_id_list.size())];
+			int modify_window_num = this->active_scene_id_list_tmp[ofRandom(0, this->active_scene_id_list_tmp.size())];
 
 			int p = ofRandom(0, 4);
 			if (p == 0) {
@@ -160,6 +162,7 @@ void SceneManager::update() {
 		th.detach();
 	}
 
+	/* 新しく検出したカーソルがあればmainシーンのカーソルリストに追加する */
 	for (auto &t : this->hc->track_data) {
 		if (this->cursor_log.find(t.first) == end(this->cursor_log)) {
 			this->cursor_log.insert(make_pair(t.first, true));
@@ -167,6 +170,7 @@ void SceneManager::update() {
 		}
 	}
 
+	/* 消滅したカーソルがあればmainシーンのカーソルリストから消す */
 	for (auto id = begin(this->scenes["main"]->pointer_id); id != end(this->scenes["main"]->pointer_id);) {
 		if (this->hc->track_data.find(*id) == end(this->hc->track_data)) {
 			id = this->scenes["main"]->pointer_id.erase(id);
@@ -177,11 +181,7 @@ void SceneManager::update() {
 	}
 
 	this->scenes[this->current_scene]->update();
-	while (!this->erase_scene_id.empty()) {
-		this->sub_scenes.erase(this->erase_scene_id.front());
-		this->active_scene_id_list.erase(find(begin(this->active_scene_id_list), end(this->active_scene_id_list), this->erase_scene_id.front()));
-		this->erase_scene_id.pop();
-	}
+
 	for (auto &ss : this->sub_scenes) {
 		ss.second.update();
 	}
@@ -194,25 +194,10 @@ void SceneManager::draw() {
 		this->sub_scenes.erase(this->erase_scene_id.front());
 		this->erase_scene_id.pop();
 	}
+
 	for (auto &ss : this->sub_scenes) {
 		ss.second.draw();
 	}
-
-	//ofSetColor(ofColor::white);
-
-	/* 手ポインタの描画 */
-	/*
-	for (auto &t : this->hc->track_data) {
-		int alpha = 255;
-		double r = 1;
-		for (int i = 0; i < 50; ++i) {
-			r += 0.6;
-			alpha -= 12;
-			ofSetColor(t.second.pointer_color, alpha);
-			ofCircle(t.second.current_pointer.x, t.second.current_pointer.y, r);
-		}
-	}
-	*/
 }
 
 double SceneManager::calculate_cost() {
@@ -279,11 +264,6 @@ void SceneManager::transition(int &pointer_id) {
 	this->current_scene = "detail";
 }
 
-void SceneManager::change_cursor_to_main_window(pair<int, int> &id) {
-	this->scenes["main"]->pointer_id.emplace_back(id.second);
-	this->inactivate_sub_window(id.first);
-}
-
 void SceneManager::inactivate_sub_window(int &scene_id) {
 	auto ite = find(begin(this->active_scene_id_list), end(this->active_scene_id_list), scene_id);
 	if (ite != end(this->active_scene_id_list)) {
@@ -296,7 +276,6 @@ void SceneManager::make_sub_window(int &pointer_id) {
 		SubScene sub_scene;
 		sub_scene.setup(new DetailScene(), this->hc, pointer_id, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
 		ofAddListener(sub_scene.delete_sub_window_event, this, &SceneManager::delete_sub_window);
-		ofAddListener(sub_scene.user_leave_event, this, &SceneManager::change_cursor_to_main_window);
 		ofAddListener(sub_scene.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
 		this->sub_scenes.insert(make_pair(this->scene_id, sub_scene));
 		this->scenes["main"]->pointer_id.erase(remove(begin(this->scenes["main"]->pointer_id), end(this->scenes["main"]->pointer_id), pointer_id), end(this->scenes["main"]->pointer_id));
@@ -322,7 +301,6 @@ void SceneManager::make_sub_window(int &pointer_id) {
 		SubScene sub_scene;
 		sub_scene.setup(new DetailScene(), this->hc, pointer_id, this->scene_id, ro.get_max_area_rect());
 		ofAddListener(sub_scene.delete_sub_window_event, this, &SceneManager::delete_sub_window);
-		ofAddListener(sub_scene.user_leave_event, this, &SceneManager::change_cursor_to_main_window);
 		ofAddListener(sub_scene.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
 		this->sub_scenes.insert(make_pair(this->scene_id, sub_scene));
 		this->scenes["main"]->pointer_id.erase(remove(begin(this->scenes["main"]->pointer_id), end(this->scenes["main"]->pointer_id), pointer_id), end(this->scenes["main"]->pointer_id));

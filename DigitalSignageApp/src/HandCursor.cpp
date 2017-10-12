@@ -12,10 +12,12 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	deserialize("C:/Users/matsuda/workspace/machine_learning_data/hand/20170813/linear_svm_function.dat") >> df; // ファイルから学習済みのモデルを読み込む
 
 	this->frame = Mat(Size(W, H), CV_8UC3);
+
 	this->cursor_color_list.emplace_back(ofColor::blue);
 	this->cursor_color_list.emplace_back(ofColor::red);
 	this->cursor_color_list.emplace_back(ofColor::green);
 	this->cursor_color_list.emplace_back(ofColor::black);
+	this->cursor_color_list.emplace_back(ofColor::pink);
 	this->rn_color = uniform_int_distribution<int>(0, this->cursor_color_list.size()-1);
 	
 	
@@ -31,7 +33,6 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	this->track_data[-2].face = dlib::rectangle(450, 600, 50, 50);
 	this->track_data[-2].cursor_color_id = 1;
 	this->track_data[-2].cursor_color = ofColor::red;
-	
 }
 
 void HandCursor::update() {

@@ -46,7 +46,6 @@ void SubScene::update() {
 	this->view_rect.setHeight(this->sub_window.getHeight());
 	this->frame.set(this->sub_window.getX() - 4, this->sub_window.getY() - 4, this->sub_window.getWidth() + 7, this->sub_window.getHeight() + 7);
 
-
 	if (this->hc->track_data.find(this->user_id) == end(this->hc->track_data) || this->cursor_state == "none") {
 		if (this->life == this->max_life) {
 			int id = this->scene_id;
@@ -70,15 +69,6 @@ void SubScene::update() {
 		}
 	}
 	else {
-		if ((this->hc->track_data[this->user_id].current_pointer.x <= 50 && this->hc->track_data[this->user_id].current_pointer.y <= 50) || (abs(this->hc->track_data[this->user_id].current_pointer.x - W) <= 50 && this->hc->track_data[this->user_id].current_pointer.y <= 50) || (this->hc->track_data[this->user_id].current_pointer.x <= 50 && abs(this->hc->track_data[this->user_id].current_pointer.y - H) <= 50) || (abs(this->hc->track_data[this->user_id].current_pointer.x - W) <= 50 && abs(this->hc->track_data[this->user_id].current_pointer.y - H) <= 50)) {
-			this->tmp_width = this->sub_window.getWidth();
-			this->tmp_height = this->sub_window.getHeight();
-			this->cursor_state = "none";
-			pair<int, int> id(this->scene_id, this->user_id);
-			ofNotifyEvent(this->user_leave_event, id);
-			return;
-		}
-
 		int width_threshold = this->view_rect.getWidth()*0.1;
 		int height_threshold = this->view_rect.getHeight()*0.1;
 		if (this->view_rect.getRight() - this->hc->track_data[this->user_id].current_pointer.x < width_threshold) {
@@ -101,6 +91,7 @@ void SubScene::update() {
 			this->cursor_state = "point";
 		}
 
+		/* カーソルがウィンドウ外に出ないための補正 */
 		this->hc->track_data[this->user_id].current_pointer.x = this->hc->track_data[this->user_id].past_pointer.x = max(min(this->hc->track_data[this->user_id].current_pointer.x, (int)this->view_rect.getRight()), (int)this->view_rect.getLeft());
 		this->hc->track_data[this->user_id].current_pointer.y = this->hc->track_data[this->user_id].past_pointer.y = max(min(this->hc->track_data[this->user_id].current_pointer.y, (int)this->view_rect.getBottom()), (int)this->view_rect.getTop());
 	}
@@ -111,6 +102,7 @@ void SubScene::draw() {
 	ofNoFill();
 	ofSetLineWidth(5);
 	ofDrawRectangle(this->frame);
+	ofFill();
 
 	this->sub_window.begin();
 
