@@ -8,11 +8,14 @@
 
 class OptimizedForm {
 private:
+	static constexpr int MAX_ITERATION = 1000;
+
+	int split_x, split_y;
 	vector<vector<int>> field;
 	vector<vector<ofRectangle>> all_rects;
-	vector<ofRectangle> active_rects;
+	vector<ofRectangle> active_rects, active_rects_tmp, best_rects;
 	vector<ofPoint> cursors;
-	double past_cost, current_cost;
+	double past_cost, current_cost, best_cost;
 public:
 	OptimizedForm();
 	OptimizedForm(const int &w, const int &h, const int &split_x, const int &split_y);

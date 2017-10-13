@@ -132,6 +132,9 @@ void SceneManager::update() {
 				if (ofRandomuf() > exp(diff / t)) {
 					this->rects_tmp[modify_window_num] = this->sub_scenes[modify_window_num].get_rect();
 				}
+				else {
+					this->past_cost = this->current_cost;
+				}
 			}
 			else {
 				this->past_cost = this->current_cost;
