@@ -4,11 +4,11 @@
 
 using namespace cv;
 
-Icon::Icon(const int x, const int y, const int width, const int height, const string img_path) :frame_r(255), frame_g(255), frame_b(255), alpha(255), state("None") {
+Icon::Icon(const int &x, const int &y, const int &width, const int &height, const string &img_path) :frame_r(255), frame_g(255), frame_b(255), alpha(255), state("None") {
 	this->setup(x, y, width, height, img_path);
 }
 
-void Icon::setup(const int x, const int y, const int width, const int height, const string img_path) {
+void Icon::setup(const int &x, const int &y, const int &width, const int &height, const string &img_path) {
 	this->rect.set(x, y, width, height);
 	this->tl.set(x + width * this->frame_ratio / 2, y + height * this->frame_ratio / 2);
 	this->tr.set(x + width * (1 - this->frame_ratio / 2), y + height * this->frame_ratio / 2);
@@ -18,7 +18,6 @@ void Icon::setup(const int x, const int y, const int width, const int height, co
 }
 
 void Icon::update() {
-
 	if (this->state == "point") {
 		this->frame_r -= 15;
 		this->frame_b -= 15;

@@ -6,19 +6,17 @@
 
 class Icon {
 private:
-	ofRectangle rect;
+	ofRectangle rect; // アイコンの矩形
 	ofPoint tl, tr, bl, br; // 左上、右上、左下、右下の4点
-	ofTexture texture;
-	static constexpr double frame_ratio = 0.2;
+	ofTexture texture; // アイコンに表示するテクスチャ
+	static constexpr double frame_ratio = 0.2; // アイコンの矩形に対する枠の比率
 	int frame_r, frame_g, frame_b;
 	int alpha;
 	string state;
 	int pointer_id;
 public:
-	int track_id;
-
-	Icon(const int x, const int y, const int width, const int height, const string img_path);
-	void setup(const int x, const int y, const int width, const int height, const string img_path);
+	Icon(const int &x, const int &y, const int &width, const int &height, const string &img_path);
+	void setup(const int &x, const int &y, const int &width, const int &height, const string &img_path);
 	void update();
 	void draw();
 	bool is_inside(const ofPoint &p) const;

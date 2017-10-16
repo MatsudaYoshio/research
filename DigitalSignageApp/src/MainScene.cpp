@@ -31,7 +31,6 @@ void MainScene::update() {
 			if (i.second.is_inside(ofPoint(this->hc->track_data[p].current_pointer.x, this->hc->track_data[p].current_pointer.y))) {
 				pair<string, int> id(i.first, p); // アイコン名と手ポインタidの情報
 				ofNotifyEvent(this->point_event, id);
-				i.second.track_id = p;
 				flag = true;
 				break;
 			}

@@ -17,11 +17,11 @@ int main(){
 	ofCreateWindow(settings);
 	
 	/* ウィンドウの枠を消す(フルスクリーンにする) */
-	//HWND hWnd = WindowFromDC(wglGetCurrentDC());
-	//LONG lStyle;
-	//lStyle = GetWindowLong(hWnd, GWL_STYLE);
-	//lStyle &= ~WS_CAPTION;
-	//lStyle = SetWindowLong(hWnd, GWL_STYLE, lStyle);
+	HWND hWnd = WindowFromDC(wglGetCurrentDC());
+	LONG lStyle;
+	lStyle = GetWindowLong(hWnd, GWL_STYLE);
+	lStyle &= ~WS_CAPTION;
+	lStyle = SetWindowLong(hWnd, GWL_STYLE, lStyle);
 
 	ofRunApp(new DigitalSignageApp());
 }

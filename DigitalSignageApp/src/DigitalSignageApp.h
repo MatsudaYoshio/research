@@ -5,7 +5,7 @@
 #include "ofMain.h"
 #include "HandCursor.h"
 #include "SceneManager.h"
-#include "OptimizedForm.h"
+//#include "OptimizedForm.h"
 
 class DigitalSignageApp : public ofBaseApp {
 	void setup();
@@ -15,7 +15,7 @@ class DigitalSignageApp : public ofBaseApp {
 private:
 	HandCursor hc;
 	SceneManager sm;
-	OptimizedForm optf;
+	//OptimizedForm optf;
 };
 
 #endif
