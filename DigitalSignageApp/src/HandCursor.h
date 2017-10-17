@@ -84,7 +84,7 @@ private:
 	void hand_detect(const std::vector<dlib::rectangle> &sliding_windows, const int &user_id);
 	bool is_hand(dlib::array2d<unsigned char> &img);
 	void tracking(dlib::correlation_tracker &ct, const int user_id);
-	void new_thread_tracking(dlib::correlation_tracker &ct, int n);
+	void new_thread_tracking(dlib::correlation_tracker &ct, const int track_id);
 	void new_thread_hand_detect();
 	void new_thread_face_detect();
 	void fhog_to_feature_vector(X_type &feature_vector, const fhog_type &fhog);

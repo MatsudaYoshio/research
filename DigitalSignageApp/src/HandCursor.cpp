@@ -18,30 +18,31 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	this->cursor_color_list.emplace_back(ofColor::green);
 	this->cursor_color_list.emplace_back(ofColor::black);
 	this->cursor_color_list.emplace_back(ofColor::pink);
-	this->rn_color = uniform_int_distribution<int>(0, this->cursor_color_list.size()-1);
+	this->rn_color = uniform_int_distribution<int>(0, this->cursor_color_list.size() - 1);
+
 	
-	/*
 	this->track_data[-1].current_pointer.x = 400;
 	this->track_data[-1].current_pointer.y = 400;
 	this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
 	this->track_data[-1].cursor_color_id = 0;
 	this->track_data[-1].cursor_color = ofColor::blue;
 	
+
 	
 	this->track_data[-2].current_pointer.x = 1000;
 	this->track_data[-2].current_pointer.y = 400;
 	this->track_data[-2].face = dlib::rectangle(450, 600, 50, 50);
 	this->track_data[-2].cursor_color_id = 1;
 	this->track_data[-2].cursor_color = ofColor::red;
-	*/
+	
 }
 
 void HandCursor::update() {
 	++this->frame_count;
 
 	/* fpsを表示 */
-	//frc.NewFrame();
-	//printf("fps : %lf\n", frc.GetFrameRate());
+	/*frc.NewFrame();
+	printf("fps : %lf\n", frc.GetFrameRate());*/
 
 	this->frame = this->cap.get_image(); // カメラから画像を取得
 
@@ -171,20 +172,18 @@ void HandCursor::hand_detect() {
 
 			this->track_data[this->track_id].current_pointer = this->track_data[this->track_id].past_pointer = Point((this->hand_dets[0].left() + this->hand_dets[0].right()) / 2, (this->hand_dets[0].top() + this->hand_dets[0].bottom()) / 2);
 
+			/* カーソルの色をかぶらないように選ぶ */
 			do {
+			SAME:
 				int color_id = this->rn_color(this->mt);
-				bool flag = false;
-				for (auto t : this->track_data) {
+				for (const auto &t : this->track_data) {
 					if (t.second.cursor_color_id == color_id) {
-						flag = true;
-						break;
+						goto SAME;
 					}
 				}
-				if (!flag) {
-					this->track_data[this->track_id].cursor_color_id = color_id;
-					this->track_data[this->track_id].cursor_color = this->cursor_color_list[color_id];
-					break;
-				}
+				this->track_data[this->track_id].cursor_color_id = color_id;
+				this->track_data[this->track_id].cursor_color = this->cursor_color_list[color_id];
+				break;
 			} while (1);
 
 			this->new_thread_tracking(ct, this->track_id++);
@@ -259,9 +258,9 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 	}
 }
 
-void HandCursor::new_thread_tracking(correlation_tracker &ct, int n) {
-	void(HandCursor::*funcp)(correlation_tracker&, int) = &HandCursor::tracking;
-	thread th(funcp, this, ct, n);
+void HandCursor::new_thread_tracking(correlation_tracker &ct, const int track_id) {
+	void(HandCursor::*funcp)(correlation_tracker&, const int) = &HandCursor::tracking;
+	thread th(funcp, this, ct, track_id);
 	th.detach();
 }
 

@@ -59,7 +59,7 @@ void SceneManager::setup(HandCursor* hc) {
 	this->scenes["main"]->setup(hc);
 	this->scenes["detail"]->setup(hc);
 
-	for (auto s : this->scenes) {
+	for (auto &s : this->scenes) {
 		ofAddListener(s.second->point_event, this, &SceneManager::pointed);
 		ofAddListener(s.second->transition_event, this, &SceneManager::transition);
 		ofAddListener(s.second->make_sub_window_event, this, &SceneManager::make_sub_window);
@@ -253,8 +253,7 @@ double SceneManager::calculate_cost() {
 
 void SceneManager::pointed(pair<string, int> &id) {
 	if (this->current_scene == "main") {
-		this->scenes[this->current_scene]->change_icon_state(id.first, "point");
-		this->scenes[this->current_scene]->set_icon_pointer_id(id.first, id.second);
+		this->scenes[this->current_scene]->select_icon(id.first, id.second);
 	}
 	else if (this->current_scene == "detail") {
 		if (id.first == "return") {

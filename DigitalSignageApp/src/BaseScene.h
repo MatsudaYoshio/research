@@ -13,8 +13,8 @@ public:
 	virtual void setup(HandCursor *hc) {};
 	virtual void update() {};
 	virtual void draw() {};
-	virtual void change_icon_state (string icon_id, string state) {};
-	virtual void set_icon_pointer_id(string icon_id, int pointer_id) {};
+
+	virtual void select_icon(const string &icon_id, const int &user_id) {};
 
 	vector<int> pointer_id;
 	ofEvent<pair<string,int>> point_event;

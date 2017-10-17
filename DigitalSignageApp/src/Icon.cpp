@@ -28,7 +28,7 @@ void Icon::update() {
 	}
 
 	if (this->frame_r < 0) {
-		int pointer_id = this->pointer_id;
+		int pointer_id = this->selected_user_id;
 		ofNotifyEvent(this->transition_event, pointer_id);
 		this->state = "None";
 		this->frame_r = this->frame_g = this->frame_b = this->alpha = 255;
@@ -49,10 +49,10 @@ bool Icon::is_inside(const ofPoint &p) const {
 	return this->rect.inside(p);
 }
 
-void Icon::change_state(string state) {
+void Icon::change_state(const string &state) {
 	this->state = state;
 }
 
-void Icon::set_pointer_id(int pointer_id) {
-	this->pointer_id = pointer_id;
+void Icon::set_user_id(const int &user_id) {
+	this->selected_user_id = user_id;
 }
