@@ -10,24 +10,28 @@ Icon::Icon(const int &x, const int &y, const int &width, const int &height, cons
 
 void Icon::setup(const int &x, const int &y, const int &width, const int &height, const string &img_path) {
 	this->rect.set(x, y, width, height);
+	
 	this->tl.set(x + width * this->frame_ratio / 2, y + height * this->frame_ratio / 2);
 	this->tr.set(x + width * (1 - this->frame_ratio / 2), y + height * this->frame_ratio / 2);
 	this->bl.set(x + width * this->frame_ratio / 2, y + height * (1 - this->frame_ratio / 2));
 	this->br.set(x + width * (1 - this->frame_ratio / 2), y + height * (1 - this->frame_ratio / 2));
+	
 	ofLoadImage(this->texture, img_path);
+
+	this->pb.setup(this->rect.getCenter(), 1.1*width/2, 36, 10, ofColor::green);
 }
 
 void Icon::update() {
 	if (this->state == "point") {
-		this->frame_r -= 15;
-		this->frame_b -= 15;
+		this->pb.forward_state(2);
 		this->alpha = 100;
 	}
 	else if (this->state == "None") {
+		this->pb.reset_state();
 		this->frame_r = this->frame_g = this->frame_b = this->alpha = 255;
 	}
 
-	if (this->frame_r < 0) {
+	if (this->pb.is_max_state()) {
 		int pointer_id = this->selected_user_id;
 		ofNotifyEvent(this->transition_event, pointer_id);
 		this->state = "None";
@@ -36,13 +40,13 @@ void Icon::update() {
 }
 
 void Icon::draw() {
-	ofSetColor(this->frame_r, this->frame_g, this->frame_b);
-	ofNoFill();
-	ofSetLineWidth(10);
-	ofRect(this->rect);
 	ofSetColor(ofColor::white, this->alpha);
 	this->texture.draw(this->tl, this->tr, this->br, this->bl);
 	ofFill();
+
+	if (this->state == "point") {
+		this->pb.draw();
+	}
 }
 
 bool Icon::is_inside(const ofPoint &p) const {

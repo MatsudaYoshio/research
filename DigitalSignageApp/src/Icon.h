@@ -3,6 +3,7 @@
 #define ___Class_Icon
 
 #include "ofMain.h"
+#include "ProgressBar.h"
 
 class Icon {
 private:
@@ -14,6 +15,7 @@ private:
 	int alpha;
 	string state; // アイコンの状態
 	int selected_user_id; // アイコンを選択したユーザのid
+	ProgressBar pb;
 public:
 	ofEvent<int> transition_event;
 

@@ -20,6 +20,9 @@ public:
 
 	void change_state(const int &n);
 	void forward_state(const int &n);
+	void backward_state(const int &n);
+	void reset_state();
+	bool is_max_state() const;
 };
 
 #endif

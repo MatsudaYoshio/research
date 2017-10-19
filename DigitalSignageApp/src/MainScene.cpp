@@ -52,8 +52,8 @@ void MainScene::draw() {
 	for (auto &p : this->pointer_id) {
 		int alpha = 255;
 		double r = 1;
-		for (int i = 0; i < 50; ++i) {
-			r += 0.6;
+		for (int i = 0; i < 100; ++i) {
+			r += 3;
 			alpha -= 12;
 			ofSetColor(this->hc->track_data[p].cursor_color, alpha);
 			ofCircle(this->hc->track_data[p].current_pointer.x, this->hc->track_data[p].current_pointer.y, r);

@@ -19,12 +19,11 @@ void ProgressBar::setup(const ofPoint &p, const int &br, const int &g, const int
 	for (int i = 0; i < g; ++i) {
 		theta = i * 2 * PI / g - PI / 2;
 		this->weight[i] = make_pair(cos(theta), sin(theta));
-		this->position[i] = ofPoint(this->weight[i].first*br, this->weight[i].second*br);
+		this->position[i] = ofPoint(this->weight[i].first*br+this->center_point.x, this->weight[i].second*br+this->center_point.y);
 	}
 }
 
 void ProgressBar::draw() const {
-	ofTranslate(this->center_point);
 	ofSetColor(this->color, 255);
 	for (int i = 1; i <= this->progress_state; ++i) {
 		ofDrawCircle(this->position[i-1], this->small_radius);
@@ -41,4 +40,16 @@ void ProgressBar::change_state(const int &n) {
 
 void ProgressBar::forward_state(const int &n) {
 	this->change_state(this->progress_state + n);
+}
+
+void ProgressBar::backward_state(const int &n) {
+	this->change_state(this->progress_state - n);
+}
+
+void ProgressBar::reset_state() {
+	this->change_state(0);
+}
+
+bool ProgressBar::is_max_state() const {
+	return (this->progress_state == this->granularity);
 }

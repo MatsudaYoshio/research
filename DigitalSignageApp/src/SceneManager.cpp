@@ -201,6 +201,7 @@ void SceneManager::draw() {
 	for (auto &ss : this->sub_scenes) {
 		ss.second.draw();
 	}
+
 }
 
 double SceneManager::calculate_cost() {
