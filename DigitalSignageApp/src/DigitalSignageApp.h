@@ -16,6 +16,7 @@ private:
 	HandCursor hc;
 	SceneManager sm;
 	//OptimizedForm optf;
+	int i = 0;
 };
 
 #endif

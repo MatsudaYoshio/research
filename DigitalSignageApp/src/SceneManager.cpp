@@ -27,6 +27,9 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 		double y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
 
 		for (int i = 0; i < change_times; ++i) {
+			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), id) == end(this->active_scene_id_list)) {
+				goto FINISH;
+			}
 			this->mtx.lock();
 			this->sub_scenes[id].set_rect(old_rects[id]);
 			this->mtx.unlock();
@@ -40,6 +43,9 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 		double h_change_val = change_rate*abs(new_rects[id].height - old_rects[id].height)*h_sign;
 
 		for (int i = 0; i < change_times; ++i) {
+			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), id) == end(this->active_scene_id_list)) {
+				goto FINISH;
+			}
 			this->mtx.lock();
 			this->sub_scenes[id].set_rect(old_rects[id]);
 			this->mtx.unlock();
@@ -47,7 +53,7 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 			old_rects[id].setHeight(old_rects[id].height + h_change_val);
 		}
 	}
-
+	FINISH:
 	this->transform_thread_flag = false;
 }
 

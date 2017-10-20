@@ -4,10 +4,12 @@
 
 #include "ofMain.h"
 #include "BaseScene.h"
+#include "DrawBackground.h"
 
 class MainScene : public BaseScene {
 private:
 	HandCursor* hc;
+	DrawBackground db;
 public:
 	ofImage img;
 

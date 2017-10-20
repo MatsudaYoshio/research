@@ -21,6 +21,8 @@ void MainScene::setup(HandCursor* hc) {
 	for (auto &i : this->icons) {
 		ofAddListener(i.second.transition_event, this, &MainScene::transition);
 	}
+
+	this->db.setup(ofColor::aquamarine, ofColor::blueSteel);
 }
 
 void MainScene::update() {
@@ -41,6 +43,8 @@ void MainScene::update() {
 }
 
 void MainScene::draw() {
+	this->db.draw();
+
 	/* ƒAƒCƒRƒ“‚ð•`‰æ */
 	for (auto &i : this->icons) {
 		i.second.draw();
