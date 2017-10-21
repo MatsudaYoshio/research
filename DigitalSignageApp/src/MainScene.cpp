@@ -22,7 +22,7 @@ void MainScene::setup(HandCursor* hc) {
 		ofAddListener(i.second.transition_event, this, &MainScene::transition);
 	}
 
-	this->db.setup(ofColor::aquamarine, ofColor::blueSteel);
+	this->db.setup(ofColor::aquamarine, ofColor::blueSteel, 120);
 }
 
 void MainScene::update() {

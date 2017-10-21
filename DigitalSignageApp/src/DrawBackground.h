@@ -6,10 +6,11 @@
 
 class DrawBackground{
 private:
-	pair<ofColor, ofColor> color_grad[100];
+	vector<pair<ofColor, ofColor>> color_grad;
 	int n;
+	int granularity;
 public:
-	void setup(const ofColor& color1, const ofColor& color2);
+	void setup(const ofColor& color1, const ofColor& color2, const int& g = 100);
 	void draw();
 };
 
