@@ -15,20 +15,8 @@ void DigitalSignageApp::update() {
 }
 
 void DigitalSignageApp::draw() {
-	//ofBackground(255);
-	//int test[101] = {};
-	//test[50] = -50;
-	//for (int i = 0; i < 50; ++i) {
-	//	test[i] = test[100 - i] = -1 * i;
-	//}
-	//
-	////int test[] = { -5, -10, -15, -20, -25, -30, -35, -40, -45, -50, -45, -40, -30, -20, -15, -10, -5 };
-	//ofBackgroundGradient(ofColor::aquamarine+test[i], ofColor::blueSteel + test[i], OF_GRADIENT_CIRCULAR);
-	//i %= 100;
-	//i++;
 	this->sm.draw();
 	ofSetColor(ofColor::black);
-	//ofDrawBitmapString(ofToString((int)ofGetFrameRate()), 100, 100);
 	//this->optf.draw();
 }
 

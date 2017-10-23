@@ -13,7 +13,7 @@ void SubScene::setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_id
 	this->user_id = user_id;
 	this->hc = hc;
 
-	this->sub_window.setup(this->window_name.c_str(), x, y, w, h, false); // 最後の引数をtrueに変えれば枠なしのウィンドウ
+	this->sub_window.setup(this->window_name.c_str(), x, y, w, h, true); // 最後の引数をtrueに変えれば枠なしのウィンドウ
 	this->sub_window.show();
 	
 	this->scene = scene;

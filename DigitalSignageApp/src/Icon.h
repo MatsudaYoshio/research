@@ -8,14 +8,13 @@
 class Icon {
 private:
 	ofRectangle rect; // アイコンの矩形
-	ofPoint tl, tr, bl, br; // 左上、右上、左下、右下の4点
 	ofTexture texture; // アイコンに表示するテクスチャ
-	static constexpr double frame_ratio = 0.2; // アイコンの矩形に対する枠の比率
-	int frame_r, frame_g, frame_b;
 	int alpha;
 	string state; // アイコンの状態
 	int selected_user_id; // アイコンを選択したユーザのid
-	ProgressBar pb;
+	ProgressBar pb; // プログレスバー
+	double angle = 0.0, rotate_speed = 10.0;
+	int resize_speed = 4;
 public:
 	ofEvent<int> transition_event;
 

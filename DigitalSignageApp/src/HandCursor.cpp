@@ -39,8 +39,8 @@ void HandCursor::update() {
 	++this->frame_count;
 
 	/* fpsを表示 */
-	/*frc.NewFrame();
-	printf("fps : %lf\n", frc.GetFrameRate());*/
+	//frc.NewFrame();
+	//printf("fps : %lf\n", frc.GetFrameRate());
 
 	this->frame = this->cap.get_image(); // カメラから画像を取得
 
@@ -217,9 +217,13 @@ bool HandCursor::is_hand(array2d<unsigned char> &img) {
 }
 
 void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
+	int m;
+	double x, y;
+	drectangle past_pos, current_pos;
+
 	while (1) {
 		/* 直近のフレームで検出した手以外を消す */
-		int m = 0;
+		m = 0;
 		for (const auto &d : this->track_data[user_id].track_hand_dets) {
 			if (d.first < this->frame_count - 30) {
 				++m;
@@ -229,12 +233,12 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 		}
 		this->track_data[user_id].track_hand_dets.erase(begin(this->track_data[user_id].track_hand_dets), begin(this->track_data[user_id].track_hand_dets) + m);
 
-		drectangle past_pos = ct.get_position(); // 直近フレームの手の位置を得る
+		past_pos = ct.get_position(); // 直近フレームの手の位置を得る
 
 		ct.update(this->image_org); // 追跡位置の更新
 
 		/* 現在の追跡位置(矩形)を得る */
-		drectangle current_pos = ct.get_position();
+		current_pos = ct.get_position();
 		this->track_data[user_id].hand = this->track_data[user_id].current_pos = current_pos;
 
 		/* 現在の追跡位置の周辺のスライディングウィンドウを作成して手を検出 */
@@ -242,8 +246,8 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 		this->hand_detect(local_sw.get_windows(), user_id);
 
 		/* 現在の追跡位置(矩形の中心座標)を得る */
-		double x = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x座標
-		double y = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y座標
+		x = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x座標
+		y = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y座標
 
 		Point2f cp(std::max(std::min(this->track_data[user_id].past_pointer.x - W / this->track_data[user_id].face.width() * x, (double)W), 0.0), std::max(std::min((this->track_data[user_id].past_pointer.y + H / this->track_data[user_id].face.width() * y), (double)H), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
 
@@ -282,7 +286,7 @@ void HandCursor::fhog_to_feature_vector(X_type &feature_vector, const fhog_type 
 	for (int r = 0, j = 0; r < fhog.nr(); ++r) {
 		for (int c = 0; c < fhog.nc(); ++c) {
 			for (int i = 0; i < 31; ++i) {
-				feature_vector.insert(make_pair(j++, fhog[r][c](i)));
+				feature_vector.emplace_hint(end(feature_vector), j++, fhog[r][c](i));
 			}
 		}
 	}
