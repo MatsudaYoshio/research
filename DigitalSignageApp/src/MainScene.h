@@ -11,8 +11,6 @@ private:
 	HandCursor* hc;
 	DrawBackground db;
 public:
-	ofImage img;
-
 	void setup(HandCursor *hc);
 	void update();
 	void draw();

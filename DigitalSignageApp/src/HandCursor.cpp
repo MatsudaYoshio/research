@@ -19,7 +19,6 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	this->cursor_color_list.emplace_back(ofColor::black);
 	this->cursor_color_list.emplace_back(ofColor::pink);
 	this->rn_color = uniform_int_distribution<int>(0, this->cursor_color_list.size() - 1);
-
 	
 	/*this->track_data[-1].current_pointer.x = 400;
 	this->track_data[-1].current_pointer.y = 400;
@@ -63,15 +62,15 @@ void HandCursor::show_detect_window() {
 	this->view_frame = this->frame;
 
 	parallel_for(0, this->hand_dets.size(), [&](long i) {
-		cv::rectangle(view_frame, Point(this->hand_dets[i].left(), this->hand_dets[i].top()), Point(this->hand_dets[i].right(), this->hand_dets[i].bottom()), ColorParam::RED, 5);
+		cv::rectangle(view_frame, Point(this->hand_dets[i].left(), this->hand_dets[i].top()), Point(this->hand_dets[i].right(), this->hand_dets[i].bottom()), this->RED, 5);
 	});
 
 	parallel_for(0, this->face_dets.size(), [&](long i) {
-		cv::rectangle(view_frame, Point(this->face_dets[i].left(), this->face_dets[i].top()), Point(this->face_dets[i].right(), this->face_dets[i].bottom()), ColorParam::BLUE, 5);
+		cv::rectangle(view_frame, Point(this->face_dets[i].left(), this->face_dets[i].top()), Point(this->face_dets[i].right(), this->face_dets[i].bottom()), this->BLUE, 5);
 	});
 
 	for (const auto &t : this->track_data) {
-		cv::rectangle(view_frame, Point(t.second.current_pos.left(), t.second.current_pos.top()), Point(t.second.current_pos.right(), t.second.current_pos.bottom()), ColorParam::ORANGE, 5);
+		cv::rectangle(view_frame, Point(t.second.current_pos.left(), t.second.current_pos.top()), Point(t.second.current_pos.right(), t.second.current_pos.bottom()), this->ORANGE, 5);
 	}
 
 	imshow("detect window", view_frame);

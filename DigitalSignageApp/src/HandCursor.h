@@ -25,7 +25,6 @@
 
 #include "SlidingWindows.h"
 #include "NonMaximumSuppression.h"
-#include "ColorParam.h"
 #include "UEyeVideoCapture.h"
 #include "FrameRateCounter.h"
 #include "ofColor.h"
@@ -48,6 +47,9 @@ private:
 	static constexpr int resize_size = 80;
 	static constexpr double decision_ratio = 0.5;
 	static constexpr double overlap_ratio = 0.1;
+	const cv::Scalar RED = cv::Scalar(0, 0, 255);
+	const cv::Scalar BLUE = cv::Scalar(255, 0, 0);
+	const cv::Scalar ORANGE = cv::Scalar(76, 183, 255);
 
 	std::vector<dlib::rectangle> face_dets, hand_dets;
 	dlib::frontal_face_detector face_detector; // ê≥ñ äÁåüèoäÌ

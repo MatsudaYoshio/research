@@ -27,17 +27,30 @@ void MainScene::setup(HandCursor* hc) {
 
 void MainScene::update() {
 	for (auto &i : this->icons) {
-		for (const auto &p : this->pointer_id) {
-			if (i.second.is_inside(ofPoint(this->hc->track_data[p].current_pointer.x, this->hc->track_data[p].current_pointer.y))) {
-				pair<string, int> id(i.first, p); // アイコンidとユーザidの情報
-				ofNotifyEvent(this->point_event, id);
-				goto DETECT;
+		switch (i.second.state) {
+		case static_cast<int>(Icon::STATE::FADEOUT) :
+		case static_cast<int>(Icon::STATE::FADEIN) :
+			goto CONTINUE_LOOP;
+		case static_cast<int>(Icon::STATE::INACTIVE) :
+			/* ここでたまにアイコンを変更する処理を書く */
+			if (0) {
+				i.second.change_state(Icon::STATE::FADEOUT);
+				goto CONTINUE_LOOP;
 			}
+		case static_cast<int>(Icon::STATE::POINT) :
+			for (const auto &p : this->pointer_id) {
+				if (i.second.is_inside(ofPoint(this->hc->track_data[p].current_pointer.x, this->hc->track_data[p].current_pointer.y))) {
+					pair<string, int> id(i.first, p); // アイコンidとユーザidの情報
+					ofNotifyEvent(this->point_event, id);
+					goto CONTINUE_LOOP;
+				}
+			}
+			break;
 		}
 
-		i.second.change_state("None");
+		i.second.change_state(Icon::STATE::INACTIVE);
 
-	DETECT:
+	CONTINUE_LOOP:
 		i.second.update();
 	}
 }
@@ -76,6 +89,6 @@ void MainScene::transition(int &pointer_id) {
 }
 
 void MainScene::select_icon(const string &icon_id, const int &user_id) {
-	this->icons.at(icon_id).change_state("point");
+	this->icons.at(icon_id).change_state(Icon::STATE::POINT);
 	this->icons.at(icon_id).set_user_id(user_id);
 }
