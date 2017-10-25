@@ -51,7 +51,7 @@ void HandCursor::update() {
 		this->new_thread_hand_detect();
 	}
 
-	//this->show_detect_window(); // 検出チェック用のウィンドウを表示
+	this->show_detect_window(); // 検出チェック用のウィンドウを表示
 }
 
 void HandCursor::exit() {
@@ -109,7 +109,6 @@ void HandCursor::hand_detect() {
 	this->hand_dets.clear();
 
 	std::vector<dlib::rectangle> face_dets_tmp = this->face_dets, hand_dets_tmp;
-	const int face_num = face_dets_tmp.size(); // 検出された顔の数
 	std::vector<dlib::rectangle> windows; // スライディングウィンドウ用の矩形
 	array2d<unsigned char> roi;
 
@@ -247,7 +246,7 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 		/* 現在の追跡位置(矩形の中心座標)を得る */
 		x = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x座標
 		y = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y座標
-
+		
 		Point2f cp(std::max(std::min(this->track_data[user_id].past_pointer.x - W / this->track_data[user_id].face.width() * x, (double)W), 0.0), std::max(std::min((this->track_data[user_id].past_pointer.y + H / this->track_data[user_id].face.width() * y), (double)H), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
 
 		this->track_data[user_id].current_pointer = this->track_data[user_id].past_pointer = cp; // ポインタの位置を更新

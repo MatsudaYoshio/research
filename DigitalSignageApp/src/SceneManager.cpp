@@ -20,11 +20,14 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 	const double change_rate = 0.05;
 	const int change_times = 20;
 
+	int x_sign, y_sign, w_sign, h_sign;
+	double x_change_val, y_change_val, w_change_val, h_change_val;
+
 	for (const auto &id : this->active_scene_id_list_tmp) {
-		int x_sign = (new_rects[id].x > old_rects[id].x) ? +1 : -1;
-		int y_sign = (new_rects[id].y > old_rects[id].y) ? +1 : -1;
-		double x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
-		double y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
+		x_sign = (new_rects[id].x > old_rects[id].x) ? +1 : -1;
+		y_sign = (new_rects[id].y > old_rects[id].y) ? +1 : -1;
+		x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
+		y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
 
 		for (int i = 0; i < change_times; ++i) {
 			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), id) == end(this->active_scene_id_list)) {
@@ -37,10 +40,10 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 			old_rects[id].setY(old_rects[id].y + y_change_val);
 		}
 
-		int w_sign = (new_rects[id].width > old_rects[id].width) ? +1 : -1;
-		int h_sign = (new_rects[id].height > old_rects[id].height) ? +1 : -1;
-		double w_change_val = change_rate*abs(new_rects[id].width - old_rects[id].width)*w_sign;
-		double h_change_val = change_rate*abs(new_rects[id].height - old_rects[id].height)*h_sign;
+		w_sign = (new_rects[id].width > old_rects[id].width) ? +1 : -1;
+		h_sign = (new_rects[id].height > old_rects[id].height) ? +1 : -1;
+		w_change_val = change_rate*abs(new_rects[id].width - old_rects[id].width)*w_sign;
+		h_change_val = change_rate*abs(new_rects[id].height - old_rects[id].height)*h_sign;
 
 		for (int i = 0; i < change_times; ++i) {
 			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), id) == end(this->active_scene_id_list)) {
@@ -237,7 +240,7 @@ double SceneManager::calculate_cost() {
 		
 		for (const auto &td : this->hc->track_data) {
 			if (this->sub_scenes[r.first].get_user_id() == td.first) {
-				cost += 10*euclid_distance(r.second.x, r.second.y, td.second.face.left() + td.second.face.width() / 2, td.second.face.top() + td.second.face.height() / 2);
+				cost += 10*euclid_distance(r.second.x, r.second.y, W - td.second.face.left() + td.second.face.width() / 2, td.second.face.top() + td.second.face.height() / 2);
 				continue;
 			}
 			//cost -= 5000*euclid_distance(r.second.x, r.second.y, td.second.current_pointer.x, td.second.current_pointer.y);
