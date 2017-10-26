@@ -67,6 +67,9 @@ void HandCursor::show_detect_window() {
 
 	parallel_for(0, this->face_dets.size(), [&](long i) {
 		cv::rectangle(view_frame, Point(this->face_dets[i].left(), this->face_dets[i].top()), Point(this->face_dets[i].right(), this->face_dets[i].bottom()), this->BLUE, 5);
+		//double x = W / this->face_dets[i].width();
+		//double y = H / this->face_dets[i].height();
+		//cv::rectangle(view_frame, cv::Rect(this->face_dets[i].left() - 2*W/x, this->face_dets[i].top() - 2*H/y, this->face_dets[i].width()+4*W/x, this->face_dets[i].height()+4*H/y), this->RED, 5);
 	});
 
 	for (const auto &t : this->track_data) {
@@ -216,8 +219,10 @@ bool HandCursor::is_hand(array2d<unsigned char> &img) {
 
 void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 	int m;
-	double x, y;
+	int dx, dy;
 	drectangle past_pos, current_pos;
+	const double dx_rate = W / this->track_data[user_id].face.width();
+	const double dy_rate = H / this->track_data[user_id].face.height();
 
 	while (1) {
 		/* 直近のフレームで検出した手以外を消す */
@@ -240,14 +245,15 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 		this->track_data[user_id].hand = this->track_data[user_id].current_pos = current_pos;
 
 		/* 現在の追跡位置の周辺のスライディングウィンドウを作成して手を検出 */
-		SlidingWindows local_sw(current_pos.width(), current_pos.width() / 5, std::max((int)current_pos.left() - 100, 0), std::min((int)current_pos.right() + 100, W), std::max((int)current_pos.top() - 100, 0), std::min((int)current_pos.bottom() + 100, H));
+		/* 周辺とは追跡している手の矩形1個分周辺の範囲 */
+		SlidingWindows local_sw(current_pos.width(), current_pos.width() / 5, std::max(static_cast<int>(current_pos.left() - this->track_data[user_id].hand.width()), 0), std::min(static_cast<int>(current_pos.right() + this->track_data[user_id].hand.width()), W), std::max(static_cast<int>(current_pos.top() - this->track_data[user_id].hand.height()), 0), std::min(static_cast<int>(current_pos.bottom() + this->track_data[user_id].hand.height()), H));
 		this->hand_detect(local_sw.get_windows(), user_id);
 
-		/* 現在の追跡位置(矩形の中心座標)を得る */
-		x = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x座標
-		y = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y座標
+		/* 現在の追跡位置と直前の追跡位置の差 */
+		dx = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x方向
+		dy = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y方向
 		
-		Point2f cp(std::max(std::min(this->track_data[user_id].past_pointer.x - W / this->track_data[user_id].face.width() * x, (double)W), 0.0), std::max(std::min((this->track_data[user_id].past_pointer.y + H / this->track_data[user_id].face.width() * y), (double)H), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
+		Point2f cp(std::max(std::min(this->track_data[user_id].past_pointer.x + dx_rate * dx, static_cast<double>(W)), 0.0), std::max(std::min((this->track_data[user_id].past_pointer.y + dy_rate * dy), static_cast<double>(H)), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
 
 		this->track_data[user_id].current_pointer = this->track_data[user_id].past_pointer = cp; // ポインタの位置を更新
 

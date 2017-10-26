@@ -39,7 +39,7 @@ void MainScene::update() {
 			}
 		case static_cast<int>(Icon::STATE::POINT) :
 			for (const auto &p : this->pointer_id) {
-				if (i.second.is_inside(ofPoint(this->hc->track_data[p].current_pointer.x, this->hc->track_data[p].current_pointer.y))) {
+				if (i.second.is_inside(ofPoint(W-this->hc->track_data[p].current_pointer.x, this->hc->track_data[p].current_pointer.y))) {
 					pair<string, int> id(i.first, p); // アイコンidとユーザidの情報
 					ofNotifyEvent(this->point_event, id);
 					goto CONTINUE_LOOP;
@@ -73,7 +73,7 @@ void MainScene::draw() {
 			r += 3;
 			alpha -= 12;
 			ofSetColor(this->hc->track_data[p].cursor_color, alpha);
-			ofCircle(this->hc->track_data[p].current_pointer.x, this->hc->track_data[p].current_pointer.y, r);
+			ofCircle(W-this->hc->track_data[p].current_pointer.x, this->hc->track_data[p].current_pointer.y, r);
 		}
 	}
 }
