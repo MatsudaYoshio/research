@@ -12,12 +12,12 @@ private:
 	std::pair<double, double> center_point;
 	std::vector<dlib::rectangle> windows;
 public:
-	SlidingWindows(int window_size, int step, int min_width, int max_width, int min_height, int max_height);
-	std::vector<dlib::rectangle> get_windows() const;
+	SlidingWindows(const int &window_size, const int &step, const int &min_width, const int &max_width, const int &min_height, const int &max_height);
+	const std::vector<dlib::rectangle>& get_windows();
 	void center_sort();
 private:
-	double euclidean_distance(double x1, double y1, double x2, double y2) const;
-	double center_distance(dlib::rectangle window) const;
+	double euclidean_distance(const double &x1, const double &y1, const double &x2, const double &y2) const;
+	double center_distance(const dlib::rectangle& window) const;
 };
 
 #endif

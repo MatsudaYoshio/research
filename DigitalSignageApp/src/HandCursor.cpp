@@ -20,13 +20,13 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	this->cursor_color_list.emplace_back(ofColor::pink);
 	this->rn_color = uniform_int_distribution<int>(0, this->cursor_color_list.size() - 1);
 	
-	/*this->track_data[-1].current_pointer.x = 400;
-	this->track_data[-1].current_pointer.y = 400;
-	this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
-	this->track_data[-1].cursor_color_id = 0;
-	this->track_data[-1].cursor_color = ofColor::blue;
+	//this->track_data[-1].current_pointer.x = 400;
+	//this->track_data[-1].current_pointer.y = 400;
+	//this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
+	//this->track_data[-1].cursor_color_id = 0;
+	//this->track_data[-1].cursor_color = ofColor::blue;
 	
-	this->track_data[-2].current_pointer.x = 1000;
+	/*this->track_data[-2].current_pointer.x = 1000;
 	this->track_data[-2].current_pointer.y = 400;
 	this->track_data[-2].face = dlib::rectangle(450, 600, 50, 50);
 	this->track_data[-2].cursor_color_id = 1;
@@ -67,9 +67,6 @@ void HandCursor::show_detect_window() {
 
 	parallel_for(0, this->face_dets.size(), [&](long i) {
 		cv::rectangle(view_frame, Point(this->face_dets[i].left(), this->face_dets[i].top()), Point(this->face_dets[i].right(), this->face_dets[i].bottom()), this->BLUE, 5);
-		//double x = W / this->face_dets[i].width();
-		//double y = H / this->face_dets[i].height();
-		//cv::rectangle(view_frame, cv::Rect(this->face_dets[i].left() - 2*W/x, this->face_dets[i].top() - 2*H/y, this->face_dets[i].width()+4*W/x, this->face_dets[i].height()+4*H/y), this->RED, 5);
 	});
 
 	for (const auto &t : this->track_data) {

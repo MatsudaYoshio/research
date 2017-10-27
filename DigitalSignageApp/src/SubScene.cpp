@@ -71,11 +71,11 @@ void SubScene::update() {
 	else {
 		int width_threshold = this->view_rect.getWidth()*0.1;
 		int height_threshold = this->view_rect.getHeight()*0.1;
-		if (this->view_rect.getRight() - this->hc->track_data[this->user_id].current_pointer.x < width_threshold) {
+		if (this->view_rect.getRight() - W + this->hc->track_data[this->user_id].current_pointer.x < width_threshold) {
 			this->view_rect.setX(this->view_rect.getX() + 30);
 			this->cursor_state = "arrow_right";
 		}
-		else if (this->hc->track_data[this->user_id].current_pointer.x - this->view_rect.getLeft() < width_threshold) {
+		else if (W-this->hc->track_data[this->user_id].current_pointer.x - this->view_rect.getLeft() < width_threshold) {
 			this->view_rect.setX(this->view_rect.getX() - 30);
 			this->cursor_state = "arrow_left";
 		}
@@ -92,7 +92,13 @@ void SubScene::update() {
 		}
 
 		/* カーソルがウィンドウ外に出ないための補正 */
-		this->hc->track_data[this->user_id].current_pointer.x = this->hc->track_data[this->user_id].past_pointer.x = max(min(this->hc->track_data[this->user_id].current_pointer.x, (int)this->view_rect.getRight()), (int)this->view_rect.getLeft());
+		if (W - this->hc->track_data[this->user_id].current_pointer.x < (int)this->view_rect.getLeft()) {
+			this->hc->track_data[this->user_id].current_pointer.x = this->hc->track_data[this->user_id].past_pointer.x = (int)this->view_rect.getLeft();
+		}
+		else if (W - this->hc->track_data[this->user_id].current_pointer.x > (int)this->view_rect.getRight()) {
+			this->hc->track_data[this->user_id].current_pointer.x = this->hc->track_data[this->user_id].past_pointer.x = (int)this->view_rect.getRight();
+		}
+		//this->hc->track_data[this->user_id].current_pointer.x = this->hc->track_data[this->user_id].past_pointer.x = max(min(this->hc->track_data[this->user_id].current_pointer.x, (int)this->view_rect.getRight()), (int)this->view_rect.getLeft());
 		this->hc->track_data[this->user_id].current_pointer.y = this->hc->track_data[this->user_id].past_pointer.y = max(min(this->hc->track_data[this->user_id].current_pointer.y, (int)this->view_rect.getBottom()), (int)this->view_rect.getTop());
 	}
 }
@@ -123,14 +129,14 @@ void SubScene::draw() {
 			r += 0.6;
 			alpha -= 12;
 			ofSetColor(this->hc->track_data[this->user_id].cursor_color, alpha);
-			ofCircle(this->hc->track_data[this->user_id].current_pointer.x, this->hc->track_data[this->user_id].current_pointer.y, r);
+			ofCircle(W-this->hc->track_data[this->user_id].current_pointer.x, this->hc->track_data[this->user_id].current_pointer.y, r);
 		}
 	}
 	else if (this->cursor_state == "none") {
 
 	}
 	else {
-		this->cursor_texture[this->cursor_state].draw(this->hc->track_data[this->user_id].current_pointer.x, this->hc->track_data[this->user_id].current_pointer.y, 50, 50);
+		this->cursor_texture[this->cursor_state].draw(W-this->hc->track_data[this->user_id].current_pointer.x, this->hc->track_data[this->user_id].current_pointer.y, 50, 50);
 	}
 
 	this->sub_window.end();
