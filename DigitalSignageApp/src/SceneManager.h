@@ -4,15 +4,16 @@
 
 #include "BaseScene.h"
 #include "HandCursor.h"
-#include "SubScene.h"
+#include "SubWindow.h"
+#include "MainScene.h"
 
 #include <mutex>
 
 class SceneManager {
 private:
+	MainScene main_scene;
 	unordered_map<string, BaseScene*> scenes;
-	unordered_map<int, SubScene> sub_scenes;
-	string current_scene;
+	unordered_map<int, SubWindow> sub_windows;
 	HandCursor* hc;
 	map<long long int, bool> cursor_log;
 	long long int scene_id = 0;
@@ -29,7 +30,6 @@ public:
 	void update();
 	void draw();
 	void pointed(pair<string, int> &id);
-	void transition(int &pointer_id);
 	void make_sub_window(int &pointer_id);
 	void delete_sub_window(int &scene_id);
 	void inactivate_sub_window(int &scene_id);

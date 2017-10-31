@@ -5,19 +5,15 @@ void DigitalSignageApp::setup() {
 	ofEnableAlphaBlending(); // アルファチャンネルを使用可能にする
 
 	this->sm.setup(&this->hc);
-	//this->optf.setup(1920, 1080, 24, 9);
 }
 
 void DigitalSignageApp::update() {
 	this->hc.update(); // 手カーソルの更新
 	this->sm.update();
-	//this->optf.update(ofPoint(mouseX, mouseY));
 }
 
 void DigitalSignageApp::draw() {
 	this->sm.draw();
-	ofSetColor(ofColor::black);
-	//this->optf.draw();
 }
 
 void DigitalSignageApp::exit() {

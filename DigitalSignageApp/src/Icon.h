@@ -20,8 +20,8 @@ private:
 public:
 	ofEvent<int> transition_event;
 	int state; // ƒAƒCƒRƒ“‚Ìó‘Ô
-	static const enum class STATE {
-		INACTIVE, POINT, FADEOUT, FADEIN
+	const enum class STATE {
+		INACTIVE, POINT
 	};
 
 	Icon(const int &x, const int &y, const int &width, const int &height, const string &img_path);

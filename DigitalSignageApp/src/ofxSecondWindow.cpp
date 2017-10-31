@@ -1,6 +1,6 @@
 #include "ofxSecondWindow.h"
 
-void ofxSecondWindow::setup(const char *name, int xpos, int ypos, int width, int height, bool undecorated) {
+void ofxSecondWindow::setup(int xpos, int ypos, int width, int height, bool undecorated, const char* name) {
 	this->rect.set(xpos, ypos, width, height);
 	glfwWindowHint(GLFW_DECORATED, !undecorated);
 	mainWindow = glfwGetCurrentContext();
@@ -19,8 +19,8 @@ void ofxSecondWindow::setup(const char *name, int xpos, int ypos, int width, int
 	hidden = false;
 }
 
-void ofxSecondWindow::setup(const char *name, ofRectangle rect, bool undecorated) {
-	this->setup(name, rect.x, rect.y, rect.width, rect.height, undecorated);
+void ofxSecondWindow::setup(ofRectangle rect, bool undecorated, const char *name) {
+	this->setup(rect.x, rect.y, rect.width, rect.height, undecorated, name);
 }
 
 void ofxSecondWindow::setWindowPosition(int x, int y) {

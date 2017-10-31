@@ -5,8 +5,8 @@
 class ofxSecondWindow {
     
 public:
-    void setup(const char *name, int xpos, int ypos, int width, int height, bool undecorated);
-	void setup(const char *name, ofRectangle rect, bool undecorated);
+    void setup(int xpos, int ypos, int width, int height, bool undecorated, const char *name = "sub window");
+	void setup(ofRectangle rect, bool undecorated, const char *name = "sub window");
     void begin();
     void end();
     void show();

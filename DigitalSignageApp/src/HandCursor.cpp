@@ -51,7 +51,7 @@ void HandCursor::update() {
 		this->new_thread_hand_detect();
 	}
 
-	this->show_detect_window(); // 検出チェック用のウィンドウを表示
+	//this->show_detect_window(); // 検出チェック用のウィンドウを表示
 }
 
 void HandCursor::exit() {

@@ -36,22 +36,6 @@ void Icon::update() {
 		this->pb.forward_state(2);
 		this->alpha = 100;
 		break;
-	case static_cast<int>(STATE::FADEOUT) :
-		this->angle += this->rotate_speed;
-		this->rect.setWidth(max((int)this->rect.width - this->resize_speed, 30));
-		this->rect.setHeight(max((int)this->rect.height - this->resize_speed, 30));
-		if (this->rect.width == 30 && this->rect.height == 30) {
-			this->change_state(STATE::FADEIN);
-		}
-		break;
-	case static_cast<int>(STATE::FADEIN) :
-		this->angle += this->rotate_speed;
-		this->rect.width = min((int)this->rect.width + this->resize_speed, this->default_w);
-		this->rect.height = min((int)this->rect.height + this->resize_speed, this->default_h);
-		if (this->rect.width == this->default_w && this->rect.height == this->default_h) {
-			this->change_state(STATE::INACTIVE);
-		}
-		break;
 	case static_cast<int>(STATE::INACTIVE) :
 		this->pb.reset_state();
 		this->alpha = 255;
@@ -61,17 +45,6 @@ void Icon::update() {
 
 void Icon::draw() {
 	switch (this->state) {
-	case static_cast<int>(STATE::FADEIN) :
-	case static_cast<int>(STATE::FADEOUT) :
-		ofPushMatrix();
-		
-		ofTranslate(this->rect.getCenter());
-		ofRotateZ(this->angle);
-		ofSetColor(ofColor::white, this->alpha);
-		this->texture.draw(ofPoint(-this->rect.width / 2, -this->rect.height / 2), ofPoint(this->rect.width / 2, -this->rect.height / 2), ofPoint(this->rect.width / 2, this->rect.height / 2), ofPoint(-this->rect.width / 2, this->rect.height / 2));
-
-		ofPopMatrix();
-		break;
 	case static_cast<int>(STATE::POINT) : 
 		this->pb.draw();
 	case static_cast<int>(STATE::INACTIVE) :
