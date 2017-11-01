@@ -7,9 +7,10 @@
 
 class GridForm {
 private:
-	array<array<bool, param::FORM_H>, param::FORM_W> grid_bits;
 	array<array<ofRectangle, param::FORM_H>, param::FORM_W> grid_rects;
 public:
+	array<array<bool, param::FORM_H>, param::FORM_W> grid_bits;
+
 	GridForm();
 	int get_area();
 	void draw() const;
