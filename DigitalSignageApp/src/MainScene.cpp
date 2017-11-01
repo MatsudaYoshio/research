@@ -16,11 +16,12 @@ void MainScene::setup(HandCursor* hc) {
 	this->curve_vertices[5].set(0.964*W, 0.926*H);
 	this->curve_vertices[6].set(1.042*W, H);
 
-	this->icons.insert(make_pair("kyoto tower", Icon(800, 780, 200, 200, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/kyoto_tower.png")));
-	this->icons.insert(make_pair("Higashi Honganji", Icon(700, 450, 250, 250, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple.png")));
+	this->icons.resize(2);
+	this->icons[static_cast<int>(CONTENT_ID::KYOTO_TOWER)].setup(800, 780, 200, 200, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/kyoto_tower.png", static_cast<int>(CONTENT_ID::KYOTO_TOWER));
+	this->icons[static_cast<int>(CONTENT_ID::HIGASHIHONGANJI)].setup(700, 450, 250, 250, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple.png", static_cast<int>(CONTENT_ID::HIGASHIHONGANJI));
 
 	for (auto &i : this->icons) {
-		ofAddListener(i.second.transition_event, this, &MainScene::select_icon);
+		ofAddListener(i.select_event, this, &MainScene::select_icon);
 	}
 
 	this->db.setup(ofColor::whiteSmoke, ofColor::silver, 80);
@@ -28,12 +29,12 @@ void MainScene::setup(HandCursor* hc) {
 
 void MainScene::update() {
 	for (auto &i : this->icons) {
-		switch (i.second.state) {
+		switch (i.state) {
 		case static_cast<int>(Icon::STATE::INACTIVE) :
 		case static_cast<int>(Icon::STATE::POINT) :
 			for (const auto &u : this->user_id_list) {
-				if (i.second.is_inside(ofPoint(W-this->hc->track_data[u].current_pointer.x, this->hc->track_data[u].current_pointer.y))) {
-					pair<string, int> id(i.first, u); // アイコンidとユーザidの情報
+				if (i.is_inside(ofPoint(W-this->hc->track_data[u].current_pointer.x, this->hc->track_data[u].current_pointer.y))) {
+					pair<int, int> id(i.get_content_id(), u); // コンテンツidとユーザidの情報
 					ofNotifyEvent(this->point_event, id);
 					goto CONTINUE_LOOP;
 				}
@@ -41,10 +42,10 @@ void MainScene::update() {
 			break;
 		}
 
-		i.second.change_state(Icon::STATE::INACTIVE);
+		i.change_state(Icon::STATE::INACTIVE);
 
 	CONTINUE_LOOP:
-		i.second.update();
+		i.update();
 	}
 }
 
@@ -86,7 +87,7 @@ void MainScene::draw() {
 
 	/* アイコンの描画 */
 	for (auto &i : this->icons) {
-		i.second.draw();
+		i.draw();
 	}
 
 	ofSetColor(ofColor::white);
@@ -104,11 +105,11 @@ void MainScene::draw() {
 	}
 }
 
-void MainScene::select_icon(int &pointer_id) {
-	ofNotifyEvent(this->make_sub_window_event, pointer_id); // サブウィンドウ生成イベント発火
+void MainScene::select_icon(pair<int, int>& id) {
+	ofNotifyEvent(this->make_sub_window_event, id); // サブウィンドウ生成イベント発火
 }
 
-void MainScene::point_icon(const string &icon_id, const int &user_id) {
-	this->icons.at(icon_id).change_state(Icon::STATE::POINT);
-	this->icons.at(icon_id).set_user_id(user_id);
+void MainScene::point_icon(const int &content_id, const int &user_id) {
+	this->icons.at(content_id).change_state(Icon::STATE::POINT);
+	this->icons.at(content_id).set_user_id(user_id);
 }

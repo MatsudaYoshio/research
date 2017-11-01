@@ -4,11 +4,12 @@
 
 using namespace cv;
 
-Icon::Icon(const int &x, const int &y, const int &width, const int &height, const string &img_path) {
-	this->setup(x, y, width, height, img_path);
-}
+//Icon::Icon(const int &x, const int &y, const int &width, const int &height, const string &img_path, const int &content_id) {
+//	this->setup(x, y, width, height, img_path, content_id);
+//}
 
-void Icon::setup(const int &x, const int &y, const int &width, const int &height, const string &img_path) {
+void Icon::setup(const int &x, const int &y, const int &width, const int &height, const string &img_path, const int &content_id) {
+	this->content_id = content_id;
 	this->rect.set(x, y, width, height);
 	this->default_w = width;
 	this->default_h = height;
@@ -26,8 +27,8 @@ void Icon::setup(const int &x, const int &y, const int &width, const int &height
 
 void Icon::update() {
 	if (this->pb.is_max_state()) {
-		int user_id = this->selected_user_id;
-		ofNotifyEvent(this->transition_event, user_id);
+		pair<int, int> id(this->content_id, this->selected_user_id); // コンテンツidと選択したユーザid
+		ofNotifyEvent(this->select_event, id);
 		this->state = static_cast<int>(STATE::INACTIVE);
 	}
 
@@ -64,4 +65,8 @@ void Icon::change_state(const STATE& state) {
 
 void Icon::set_user_id(const int &user_id) {
 	this->selected_user_id = user_id;
+}
+
+int Icon::get_content_id() const {
+	return this->content_id;
 }

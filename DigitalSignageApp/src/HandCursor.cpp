@@ -19,19 +19,19 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	this->cursor_color_list.emplace_back(ofColor::black);
 	this->cursor_color_list.emplace_back(ofColor::pink);
 	this->rn_color = uniform_int_distribution<int>(0, this->cursor_color_list.size() - 1);
-	
-	//this->track_data[-1].current_pointer.x = 400;
-	//this->track_data[-1].current_pointer.y = 400;
-	//this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
-	//this->track_data[-1].cursor_color_id = 0;
-	//this->track_data[-1].cursor_color = ofColor::blue;
-	
-	/*this->track_data[-2].current_pointer.x = 1000;
-	this->track_data[-2].current_pointer.y = 400;
+
+	this->track_data[-1].current_pointer.x = 1000;
+	this->track_data[-1].current_pointer.y = 900;
+	this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
+	this->track_data[-1].cursor_color_id = 0;
+	this->track_data[-1].cursor_color = ofColor::blue;
+
+	this->track_data[-2].current_pointer.x = 1100;
+	this->track_data[-2].current_pointer.y = 600;
 	this->track_data[-2].face = dlib::rectangle(450, 600, 50, 50);
 	this->track_data[-2].cursor_color_id = 1;
-	this->track_data[-2].cursor_color = ofColor::red;*/
-	
+	this->track_data[-2].cursor_color = ofColor::red;
+
 }
 
 void HandCursor::update() {
@@ -249,7 +249,7 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 		/* 現在の追跡位置と直前の追跡位置の差 */
 		dx = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x方向
 		dy = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y方向
-		
+
 		Point2f cp(std::max(std::min(this->track_data[user_id].past_pointer.x + dx_rate * dx, static_cast<double>(W)), 0.0), std::max(std::min((this->track_data[user_id].past_pointer.y + dy_rate * dy), static_cast<double>(H)), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
 
 		this->track_data[user_id].current_pointer = this->track_data[user_id].past_pointer = cp; // ポインタの位置を更新

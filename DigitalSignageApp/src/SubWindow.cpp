@@ -18,7 +18,7 @@ void SubWindow::setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_i
 	this->scene->setup();
 	
 	this->view_rect.set(0, 0, w, h);
-	this->frame.set(x-4, y-4, w+7, h+7);
+	this->frame.set(x-2, y-2, w+4, h+4);
 	
 	/* ユーザのカーソルをサブウィンドウの中心に移動させる */
 	ofPoint center = this->view_rect.getCenter();
@@ -38,7 +38,7 @@ void SubWindow::update() {
 
 	this->view_rect.setWidth(this->window.getWidth());
 	this->view_rect.setHeight(this->window.getHeight());
-	this->frame.set(this->window.getX() - 4, this->window.getY() - 4, this->window.getWidth() + 7, this->window.getHeight() + 7);
+	this->set_frame();
 
 	if (this->hc->track_data.find(this->user_id) == end(this->hc->track_data) || this->cursor_state == "none") {
 		if (this->life == this->max_life) {
@@ -95,11 +95,12 @@ void SubWindow::update() {
 }
 
 void SubWindow::draw() {
+
 	/* ウィンドウの枠を描く */
 	ofSetColor(this->hc->track_data[this->user_id].cursor_color);
 	ofNoFill();
-	ofSetLineWidth(5);
-	ofDrawRectRounded(this->frame, 10);
+	ofSetLineWidth(4);
+	ofDrawRectangle(this->frame);
 	ofFill();
 
 	this->window.begin();
@@ -131,6 +132,10 @@ ofRectangle SubWindow::get_rect() const {
 void SubWindow::set_rect(const ofRectangle &rect) {
 	this->window.setWindowPosition(rect.x, rect.y);
 	this->window.setWindowSize(rect.width, rect.height);
+}
+
+void SubWindow::set_frame() {
+	this->frame.set(this->window.getX() - 2, this->window.getY() - 2, this->window.getWidth() + 4, this->window.getHeight() + 4);
 }
 
 int SubWindow::get_user_id() const {

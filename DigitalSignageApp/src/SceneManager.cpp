@@ -2,16 +2,13 @@
 #include "KyotoTowerScene.h"
 #include "windows.h"
 #include "RectangleOptimization.h"
+#include "HigashihonganjiScene.h"
 #include "AppParameters.h"
 
 #include <opencv2/opencv.hpp>
 
 using namespace cv;
 using namespace param;
-
-double euclid_distance(const double x1, const double y1, const double x2, const double y2) {
-	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
-}
 
 void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects) {
 	this->transform_thread_flag = true;
@@ -23,22 +20,6 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 	double x_change_val, y_change_val, w_change_val, h_change_val;
 
 	for (const auto &id : this->active_scene_id_list_tmp) {
-		x_sign = (new_rects[id].x > old_rects[id].x) ? +1 : -1;
-		y_sign = (new_rects[id].y > old_rects[id].y) ? +1 : -1;
-		x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
-		y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
-
-		for (int i = 0; i < change_times; ++i) {
-			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), id) == end(this->active_scene_id_list)) {
-				goto FINISH;
-			}
-			this->mtx.lock();
-			this->sub_windows[id].set_rect(old_rects[id]);
-			this->mtx.unlock();
-			old_rects[id].setX(old_rects[id].x + x_change_val);
-			old_rects[id].setY(old_rects[id].y + y_change_val);
-		}
-
 		w_sign = (new_rects[id].width > old_rects[id].width) ? +1 : -1;
 		h_sign = (new_rects[id].height > old_rects[id].height) ? +1 : -1;
 		w_change_val = change_rate*abs(new_rects[id].width - old_rects[id].width)*w_sign;
@@ -50,10 +31,29 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 			}
 			this->mtx.lock();
 			this->sub_windows[id].set_rect(old_rects[id]);
+			this->sub_windows[id].set_frame();
 			this->mtx.unlock();
 			old_rects[id].setWidth(old_rects[id].width + w_change_val);
 			old_rects[id].setHeight(old_rects[id].height + h_change_val);
 		}
+
+		x_sign = (new_rects[id].x > old_rects[id].x) ? +1 : -1;
+		y_sign = (new_rects[id].y > old_rects[id].y) ? +1 : -1;
+		x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
+		y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
+
+		for (int i = 0; i < change_times; ++i) {
+			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), id) == end(this->active_scene_id_list)) {
+				goto FINISH;
+			}
+			this->mtx.lock();
+			this->sub_windows[id].set_rect(old_rects[id]);
+			this->sub_windows[id].set_frame();
+			this->mtx.unlock();
+			old_rects[id].setX(old_rects[id].x + x_change_val);
+			old_rects[id].setY(old_rects[id].y + y_change_val);
+		}
+
 	}
 	FINISH:
 	this->transform_thread_flag = false;
@@ -66,9 +66,13 @@ void SceneManager::setup(HandCursor* hc) {
 	ofAddListener(this->main_scene.make_sub_window_event, this, &SceneManager::make_sub_window);
 
 	this->scenes.insert(make_pair("kyoto tower", new KyotoTowerScene));
+	this->scenes.insert(make_pair("higashihonganji", new HigashihonganjiScene));
 
 	this->hc = hc;
 	this->scenes["kyoto tower"]->setup();
+	this->scenes["higashihonganji"]->setup();
+
+	this->sa.setup(hc, &this->active_scene_id_list, &this->main_scene.user_id_list, &this->sub_windows);
 }
 
 void SceneManager::update() {
@@ -82,89 +86,20 @@ void SceneManager::update() {
 	}
 
 	if (!this->transform_thread_flag && !this->sub_windows.empty() && !this->active_scene_id_list.empty()) {
-		this->best_cost = this->past_cost = DBL_MAX;
-
-		this->active_scene_id_list_tmp.clear();
 		this->rects_tmp.clear();
-		this->best_rects.clear();
-		this->old_rects.clear();
 
 		for (const auto &s : this->sub_windows) {
 			this->rects_tmp.insert(make_pair(s.first, s.second.get_rect()));
 		}
 
-		this->best_rects = this->old_rects = this->rects_tmp;
 		this->active_scene_id_list_tmp = this->active_scene_id_list;
 
-		for (int i = 0; i < 2000; ++i) {
-			int modify_window_num = this->active_scene_id_list_tmp[ofRandom(0, this->active_scene_id_list_tmp.size())];
+		this->old_rects = this->rects_tmp;
 
-			int p = ofRandom(0, 4);
-			if (p == 0) {
-				this->rects_tmp[modify_window_num].setX(this->rects_tmp[modify_window_num].x + ofRandom(-500, 500));
-			}
-			else if (p == 1) {
-				this->rects_tmp[modify_window_num].setY(this->rects_tmp[modify_window_num].y + ofRandom(-500, 500));
-			}
-			else if (p == 2) {
-				this->rects_tmp[modify_window_num].setWidth(ofRandom(30, W / 2));
-			}
-			else {
-				this->rects_tmp[modify_window_num].setHeight(ofRandom(30, H / 2));
-			}
-
-			bool flag = false;
-
-			for (const auto &r : this->rects_tmp) {
-				if (r.second.getLeft() < 0 || r.second.getRight() > W || r.second.getTop() < 0 || r.second.getBottom() > H || r.second.width > W / 2 || r.second.height > H / 2) {
-					this->rects_tmp[modify_window_num] = this->sub_windows[modify_window_num].get_rect();
-					flag = true;
-					break;
-				}
-			}
-
-			if (flag) {
-				continue;
-			}
-
-			this->current_cost = this->calculate_cost();
-
-			if (this->current_cost > this->past_cost) {
-				double diff = this->past_cost - this->current_cost;
-				double t = (double)i / 2000.0;
-				if (ofRandomuf() > exp(diff / t)) {
-					this->rects_tmp[modify_window_num] = this->sub_windows[modify_window_num].get_rect();
-				}
-				else {
-					this->past_cost = this->current_cost;
-				}
-			}
-			else {
-				this->past_cost = this->current_cost;
-
-				if (this->current_cost < this->best_cost) {
-					this->best_cost = this->current_cost;
-					this->best_rects = this->rects_tmp;
-				}
-			}
-
-			/*
-			if (this->current_cost > this->past_cost && ofRandom(0, i + 2) == 0) {
-				this->rects_tmp[modify_window_num] = this->sub_windows[modify_window_num].get_rect();
-			}
-			else {
-				this->past_cost = this->current_cost;
-
-				if (this->current_cost < this->best_cost) {
-					this->best_cost = this->current_cost;
-					this->best_rects = this->rects_tmp;
-				}
-			}
-			*/
-		}
+		this->sa(this->rects_tmp, this->best_rects);
 
 		void(SceneManager::*funcp)(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects) = &SceneManager::transform;
-		thread th(funcp, this, old_rects, this->best_rects);
+		thread th(funcp, this, this->old_rects, this->best_rects);
 		th.detach();
 	}
 
@@ -208,55 +143,7 @@ void SceneManager::draw() {
 
 }
 
-double SceneManager::calculate_cost() {
-	double cost = 0.0;
-	//ofRectangle main_rect(0, 0, this->window_width, this->window_height);
-	constexpr double a = 100;
-	constexpr double b = 1.6;
-	constexpr double c = 1000;
-	for (const auto &r : this->rects_tmp) {
-		double aspect_ratio = r.second.width / r.second.height;
-		if (1.0 / b < aspect_ratio && aspect_ratio < b) {
-			cost += a*exp(-pow(aspect_ratio-((b*b+1)/(2*b)),2));
-		}
-		else {
-			cost += c;
-		}
-
-		//cost += 10*euclid_distance(this->window_width / 2, this->window_height / 2, r.second.getCenter().x, r.second.getCenter().y);
-		cost -= 110*r.second.getArea();
-		//cost -= 10*r.second.getIntersection(main_rect).getArea();
-		for (const auto &c : this->main_scene.user_id_list) {
-			if (r.second.inside(this->hc->track_data[c].current_pointer.x, this->hc->track_data[c].current_pointer.y)) {
-				cost += 100000;
-			}
-			cost -= 5000 * euclid_distance(r.second.x, r.second.y, this->hc->track_data[c].current_pointer.x, this->hc->track_data[c].current_pointer.y);
-		}
-		
-		for (const auto &td : this->hc->track_data) {
-			if (this->sub_windows[r.first].get_user_id() == td.first) {
-				cost += 10*euclid_distance(r.second.x, r.second.y, W - td.second.face.left() + td.second.face.width() / 2, td.second.face.top() + td.second.face.height() / 2);
-				continue;
-			}
-			//cost -= 5000*euclid_distance(r.second.x, r.second.y, td.second.current_pointer.x, td.second.current_pointer.y);
-		}
-
-		/*
-		if (r.second.getLeft() < 0 || r.second.getRight() > this->window_width || r.second.getTop() < 0 || r.second.getBottom() > this->window_height) {
-			cost += 100000;
-		}
-		*/
-		
-		for (const auto &r2 : this->rects_tmp) {
-			cost += 100*r.second.getIntersection(r2.second).getArea();
-		}
-		
-	}
-
-	return cost;
-}
-
-void SceneManager::pointed(pair<string, int> &id) {
+void SceneManager::pointed(pair<int, int> &id) {
 	this->main_scene.point_icon(id.first, id.second);
 }
 
@@ -267,14 +154,22 @@ void SceneManager::inactivate_sub_window(int &scene_id) {
 	}
 }
 
-void SceneManager::make_sub_window(int &pointer_id) {
+void SceneManager::make_sub_window(pair<int, int>& id) {
 	if (this->sub_windows.empty()) {
 		SubWindow sub_window;
-		sub_window.setup(new KyotoTowerScene(), this->hc, pointer_id, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+		switch (id.first) {
+		case static_cast<int>(CONTENT_ID::KYOTO_TOWER):
+			sub_window.setup(new KyotoTowerScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+			break;
+		case static_cast<int>(CONTENT_ID::HIGASHIHONGANJI) :
+			sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+			break;
+		}
+		
 		ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);
 		ofAddListener(sub_window.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
 		this->sub_windows.insert(make_pair(this->scene_id, sub_window));
-		this->main_scene.user_id_list.erase(remove(begin(this->main_scene.user_id_list), end(this->main_scene.user_id_list), pointer_id), end(this->main_scene.user_id_list));
+		this->main_scene.user_id_list.erase(remove(begin(this->main_scene.user_id_list), end(this->main_scene.user_id_list), id.second), end(this->main_scene.user_id_list));
 
 		this->active_scene_id_list.emplace_back(this->scene_id++);
 	}
@@ -286,7 +181,7 @@ void SceneManager::make_sub_window(int &pointer_id) {
 		}
 
 		for (auto &td : this->hc->track_data) {
-			if (td.first == pointer_id) {
+			if (td.first == id.second) {
 				continue;
 			}
 			ro.add_block(ofPoint(td.second.current_pointer.x, td.second.current_pointer.y));
@@ -294,12 +189,19 @@ void SceneManager::make_sub_window(int &pointer_id) {
 
 		ro.calculate();
 
-		SubWindow sub_scene;
-		sub_scene.setup(new KyotoTowerScene(), this->hc, pointer_id, this->scene_id, ro.get_max_area_rect());
-		ofAddListener(sub_scene.delete_sub_window_event, this, &SceneManager::delete_sub_window);
-		ofAddListener(sub_scene.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
-		this->sub_windows.insert(make_pair(this->scene_id, sub_scene));
-		this->main_scene.user_id_list.erase(remove(begin(this->main_scene.user_id_list), end(this->main_scene.user_id_list), pointer_id), end(this->main_scene.user_id_list));
+		SubWindow sub_window;
+		switch (id.first) {
+		case static_cast<int>(CONTENT_ID::KYOTO_TOWER) :
+			sub_window.setup(new KyotoTowerScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
+			break;
+		case static_cast<int>(CONTENT_ID::HIGASHIHONGANJI) :
+			sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
+			break;
+		}
+		ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);
+		ofAddListener(sub_window.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
+		this->sub_windows.insert(make_pair(this->scene_id, sub_window));
+		this->main_scene.user_id_list.erase(remove(begin(this->main_scene.user_id_list), end(this->main_scene.user_id_list), id.second), end(this->main_scene.user_id_list));
 
 		this->active_scene_id_list.emplace_back(this->scene_id++);
 

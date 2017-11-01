@@ -1,5 +1,7 @@
 #include "RectangleOptimization.h"
 
+using namespace param;
+
 RectangleOptimization::RectangleOptimization(const int &field_width, const int &field_height, double exclude_edge_ratio) :field_width(field_width), field_height(field_height) {
 	this->histogram = vector<vector<int>>(field_height, vector<int>(field_width, 1));
 
@@ -73,4 +75,18 @@ vector<ofRectangle> RectangleOptimization::get_rects() const {
 
 ofRectangle RectangleOptimization::get_max_area_rect() const {
 	return *max_element(begin(this->rects), end(this->rects), [](const ofRectangle &r1, const ofRectangle &r2) {return r1.getArea() < r2.getArea(); });
+}
+
+ofRectangle RectangleOptimization::get_optimize_rect() const {
+	ofRectangle opt_rect(1,1,1,1);
+	for (const auto& r : this->rects) {
+		if (r.getWidth() > W / 2 || r.getHeight() > H / 2) {
+			continue;
+		}
+		if (r.getArea() > opt_rect.getArea()) {
+			opt_rect = r;
+		}
+	}
+
+	return opt_rect;
 }

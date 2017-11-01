@@ -11,20 +11,20 @@ class MainScene {
 private:
 	HandCursor* hc;
 	DrawBackground db;
-	unordered_map<string, Icon> icons;
+	vector<Icon> icons;
 	static constexpr int curve_vertices_num = 7;
 	vector<ofPoint> curve_vertices;
 public:
 	vector<int> user_id_list;
-	ofEvent<pair<string, int>> point_event;
-	ofEvent<int> make_sub_window_event;
+	ofEvent<pair<int, int>> point_event;
+	ofEvent<pair<int, int>> make_sub_window_event;
 
 	void setup(HandCursor *hc);
 	void update();
 	void draw();
 
-	void select_icon(int &pointer_id);
-	void point_icon(const string &icon_id, const int &user_id);
+	void select_icon(pair<int, int>& id);
+	void point_icon(const int &content_id, const int &user_id);
 };
 
 #endif

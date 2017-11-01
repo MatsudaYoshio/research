@@ -3,6 +3,7 @@
 #define ___Class_RectangleOptimization
 
 #include "ofMain.h"
+#include "AppParameters.h"
 
 class RectangleOptimization {
 private:
@@ -16,6 +17,7 @@ public:
 	void calculate();
 	vector<ofRectangle> get_rects() const;
 	ofRectangle get_max_area_rect() const;
+	ofRectangle get_optimize_rect() const;
 };
 
 #endif
