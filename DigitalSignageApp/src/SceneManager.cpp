@@ -3,6 +3,8 @@
 #include "windows.h"
 #include "RectangleOptimization.h"
 #include "HigashihonganjiScene.h"
+#include "SyoseienScene.h"
+#include "NishihonganjiScene.h"
 #include "AppParameters.h"
 
 #include <opencv2/opencv.hpp>
@@ -104,7 +106,7 @@ void SceneManager::update() {
 	}
 
 	/* 新しく検出したカーソルがあればメインシーンのユーザidリストに追加する */
-	for (auto &t : this->hc->track_data) {
+	for (const auto &t : this->hc->track_data) {
 		if (this->cursor_log.find(t.first) == end(this->cursor_log)) {
 			this->cursor_log.insert(make_pair(t.first, true));
 			this->main_scene.user_id_list.emplace_back(t.first);
@@ -164,6 +166,12 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 		case static_cast<int>(CONTENT_ID::HIGASHIHONGANJI) :
 			sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
 			break;
+		case static_cast<int>(CONTENT_ID::SYOSEIEN) :
+			sub_window.setup(new SyoseienScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+			break;
+		case static_cast<int>(CONTENT_ID::NISHIHONGANJI) :
+			sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+			break;
 		}
 		
 		ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);
@@ -176,11 +184,11 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 	else {
 		RectangleOptimization ro(W, H);
 
-		for (auto &s : this->sub_windows) {
+		for (const auto &s : this->sub_windows) {
 			ro.add_block(s.second.get_rect());
 		}
 
-		for (auto &td : this->hc->track_data) {
+		for (const auto &td : this->hc->track_data) {
 			if (td.first == id.second) {
 				continue;
 			}
@@ -196,6 +204,12 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 			break;
 		case static_cast<int>(CONTENT_ID::HIGASHIHONGANJI) :
 			sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
+			break;
+		case static_cast<int>(CONTENT_ID::SYOSEIEN) :
+			sub_window.setup(new SyoseienScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
+			break;
+		case static_cast<int>(CONTENT_ID::NISHIHONGANJI) :
+			sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
 			break;
 		}
 		ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);

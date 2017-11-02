@@ -108,7 +108,7 @@ void SimulatedAnnealing::calculate_cost() {
 		}
 
 		for (const auto &s2 : this->next_state) {
-			this->next_cost += 200 * s.second.getIntersection(s2.second).getArea();
+			this->next_cost += 500 * s.second.getIntersection(s2.second).getArea();
 		}
 
 	}

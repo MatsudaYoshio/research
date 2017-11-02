@@ -13,18 +13,23 @@ void SubWindow::setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_i
 
 	this->window.setup(x, y, w, h, true); // 最後の引数をtrueに変えれば枠なしのウィンドウ
 	this->window.show();
-	
+
 	this->scene = scene;
 	this->scene->setup();
-	
+
 	this->view_rect.set(0, 0, w, h);
-	this->frame.set(x-2, y-2, w+4, h+4);
-	
+	this->frame.set(x - 2, y - 2, w + 4, h + 4);
+
+	this->cursor_state = "point";
+
 	/* ユーザのカーソルをサブウィンドウの中心に移動させる */
 	ofPoint center = this->view_rect.getCenter();
-	this->hc->track_data[this->user_id].current_pointer = this->hc->track_data[this->user_id].past_pointer = Point(center.x, center.y);
-	
-	this->cursor_state = "point";
+	try {
+		this->hc->track_data.at(this->user_id).current_pointer = this->hc->track_data.at(this->user_id).past_pointer = Point(center.x, center.y);
+	}
+	catch (std::out_of_range&) {
+		this->cursor_state = "none";
+	}
 
 	this->life = this->max_life;
 }
@@ -48,7 +53,7 @@ void SubWindow::update() {
 			this->tmp_height = this->window.getHeight();
 			this->cursor_state = "none";
 		}
-		
+
 		/* ウィンドウのライフを徐々に減らしてサイズを小さくしていく */
 		this->life -= 5;
 		this->window.setWindowSize(this->tmp_width*this->life / this->max_life, this->tmp_height*this->life / this->max_life);
@@ -63,66 +68,77 @@ void SubWindow::update() {
 		}
 	}
 	else {
-		/* ウィンドウの表示領域の端っこに近づくとウィンドウ内でスライド */
-		int width_threshold = this->view_rect.getWidth()*0.1;
-		int height_threshold = this->view_rect.getHeight()*0.1;
-		if (this->view_rect.getRight() - W + this->hc->track_data[this->user_id].current_pointer.x < width_threshold) {
-			this->view_rect.setX(this->view_rect.getX() + 30);
+		try {
+			/* ウィンドウの表示領域の端っこに近づくとウィンドウ内でスライド */
+			int width_threshold = this->view_rect.getWidth()*0.1;
+			int height_threshold = this->view_rect.getHeight()*0.1;
+			if (this->view_rect.getRight() - W + this->hc->track_data.at(this->user_id).current_pointer.x < width_threshold) {
+				this->view_rect.setX(this->view_rect.getX() + 30);
+			}
+			else if (W - this->hc->track_data.at(this->user_id).current_pointer.x - this->view_rect.getLeft() < width_threshold) {
+				this->view_rect.setX(this->view_rect.getX() - 30);
+			}
+			else if (this->view_rect.getBottom() - this->hc->track_data.at(this->user_id).current_pointer.y < height_threshold) {
+				this->view_rect.setY(this->view_rect.getY() + 30);
+			}
+			else if (this->hc->track_data.at(this->user_id).current_pointer.y - this->view_rect.getTop() < height_threshold) {
+				this->view_rect.setY(this->view_rect.getY() - 30);
+			}
+
+			/* ウィンドウの表示領域を制限 */
+			this->view_rect.setX(min(max(static_cast<int>(this->view_rect.getX()), 0), static_cast<int>(W / 2 - this->view_rect.getWidth())));
+			this->view_rect.setY(min(max(static_cast<int>(this->view_rect.getY()), 0), static_cast<int>(H / 2 - this->view_rect.getHeight())));
+
+			/* カーソルがウィンドウ外に出ないように制限 */
+			if (W - this->hc->track_data.at(this->user_id).current_pointer.x < 0) {
+				this->hc->track_data.at(this->user_id).current_pointer.x = this->hc->track_data.at(this->user_id).past_pointer.x = 0;
+			}
+			else if (W - this->hc->track_data.at(this->user_id).current_pointer.x > W / 2) {
+				this->hc->track_data.at(this->user_id).current_pointer.x = this->hc->track_data.at(this->user_id).past_pointer.x = W / 2;
+			}
+			this->hc->track_data.at(this->user_id).current_pointer.y = this->hc->track_data.at(this->user_id).past_pointer.y = max(min(this->hc->track_data.at(this->user_id).current_pointer.y, H / 2), 0);
 		}
-		else if (W-this->hc->track_data[this->user_id].current_pointer.x - this->view_rect.getLeft() < width_threshold) {
-			this->view_rect.setX(this->view_rect.getX() - 30);
-		}
-		else if (this->view_rect.getBottom() - this->hc->track_data[this->user_id].current_pointer.y < height_threshold) {
-			this->view_rect.setY(this->view_rect.getY() + 30);
-		}
-		else if (this->hc->track_data[this->user_id].current_pointer.y - this->view_rect.getTop() < height_threshold) {
-			this->view_rect.setY(this->view_rect.getY() - 30);
+		catch (std::out_of_range&) {
+			this->cursor_state = "none";
 		}
 
-		/* ウィンドウの表示領域を制限 */
-		this->view_rect.setX(min(max(static_cast<int>(this->view_rect.getX()), 0), static_cast<int>(W / 2 - this->view_rect.getWidth())));
-		this->view_rect.setY(min(max(static_cast<int>(this->view_rect.getY()), 0), static_cast<int>(H / 2 - this->view_rect.getHeight())));
-
-		/* カーソルがウィンドウ外に出ないように制限 */
-		if (W - this->hc->track_data[this->user_id].current_pointer.x < 0) {
-			this->hc->track_data[this->user_id].current_pointer.x = this->hc->track_data[this->user_id].past_pointer.x = 0;
-		}
-		else if (W - this->hc->track_data[this->user_id].current_pointer.x > W/2) {
-			this->hc->track_data[this->user_id].current_pointer.x = this->hc->track_data[this->user_id].past_pointer.x = W / 2;
-		}
-		this->hc->track_data[this->user_id].current_pointer.y = this->hc->track_data[this->user_id].past_pointer.y = max(min(this->hc->track_data[this->user_id].current_pointer.y, H/2), 0);
 	}
 }
 
 void SubWindow::draw() {
 
-	/* ウィンドウの枠を描く */
-	ofSetColor(this->hc->track_data[this->user_id].cursor_color);
-	ofNoFill();
-	ofSetLineWidth(4);
-	ofDrawRectangle(this->frame);
-	ofFill();
+	try {
+		/* ウィンドウの枠を描く */
+		ofSetColor(this->hc->track_data.at(this->user_id).cursor_color);
+		ofNoFill();
+		ofSetLineWidth(4);
+		ofDrawRectangle(this->frame);
+		ofFill();
 
-	this->window.begin();
+		this->window.begin();
 
-	gluLookAt(this->view_rect.getX(), this->view_rect.getY(), 0, this->view_rect.getX(), this->view_rect.getY(), -1, 0, 1, 0); // 視点移動
+		gluLookAt(this->view_rect.getX(), this->view_rect.getY(), 0, this->view_rect.getX(), this->view_rect.getY(), -1, 0, 1, 0); // 視点移動
 
-	this->scene->draw(); // シーンの描画
+		this->scene->draw(); // シーンの描画
 
-	/* カーソルの描画 */
-	ofSetColor(ofColor::white);
-	if (this->cursor_state == "point") {
-		int alpha = 255;
-		double r = 1;
-		for (int i = 0; i < 50; ++i) {
-			r += 0.6;
-			alpha -= 12;
-			ofSetColor(this->hc->track_data[this->user_id].cursor_color, alpha);
-			ofCircle(W-this->hc->track_data[this->user_id].current_pointer.x, this->hc->track_data[this->user_id].current_pointer.y, r);
+		/* カーソルの描画 */
+		if (this->cursor_state == "point") {
+			ofSetColor(ofColor::white);
+			int alpha = 255;
+			double r = 1;
+			for (int i = 0; i < 50; ++i) {
+				r += 0.6;
+				alpha -= 12;
+				ofSetColor(this->hc->track_data.at(this->user_id).cursor_color, alpha);
+				ofCircle(W - this->hc->track_data.at(this->user_id).current_pointer.x, this->hc->track_data.at(this->user_id).current_pointer.y, r);
+			}
 		}
-	}
 
-	this->window.end();
+		this->window.end();
+	}
+	catch (std::out_of_range&) {
+		this->cursor_state = "none";
+	}
 }
 
 ofRectangle SubWindow::get_rect() const {

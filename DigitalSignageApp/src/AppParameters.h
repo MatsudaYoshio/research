@@ -15,7 +15,7 @@ namespace param {
 	static constexpr int FORM_H = H / GRID_H;
 
 	const enum class CONTENT_ID {
-		KYOTO_TOWER, HIGASHIHONGANJI
+		KYOTO_TOWER, HIGASHIHONGANJI, SYOSEIEN, NISHIHONGANJI
 	};
 }
 

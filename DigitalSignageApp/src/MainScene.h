@@ -6,6 +6,7 @@
 #include "HandCursor.h"
 #include "DrawBackground.h"
 #include "Icon.h"
+#include "../../../addons/ofxTrueTypeFontUC/src/ofxTrueTypeFontUC.h"
 
 class MainScene {
 private:
@@ -14,6 +15,7 @@ private:
 	vector<Icon> icons;
 	static constexpr int curve_vertices_num = 7;
 	vector<ofPoint> curve_vertices;
+	ofxTrueTypeFontUC font;
 public:
 	vector<int> user_id_list;
 	ofEvent<pair<int, int>> point_event;
