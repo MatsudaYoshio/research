@@ -15,10 +15,6 @@ void GridForm::set_bit(const int &pos_x, const int &pos_y, const int &bit) {
 	this->grid_bits[this->index_table[pos_x][pos_y]] = bit;
 }
 
-int GridForm::get_area() {
-	return this->grid_bits.count();
-}
-
 void GridForm::draw() const {
 	ofSetColor(ofColor::blue);
 	ofFill();

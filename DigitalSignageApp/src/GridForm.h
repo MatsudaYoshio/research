@@ -14,7 +14,6 @@ public:
 
 	GridForm();
 	void set_bit(const int &pos_x, const int &pos_y, const int &bit);
-	int get_area();
 	void draw() const;
 };
 
