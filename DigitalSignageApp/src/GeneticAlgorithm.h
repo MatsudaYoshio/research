@@ -3,7 +3,7 @@
 #define ___Class_GeneticAlgorithm
 
 #include <random>
-#include "GridForm.h"
+#include "AppParameters.h"
 
 class GeneticAlgorithm {
 private:
@@ -21,7 +21,11 @@ private:
 	static std::uniform_int_distribution<int> random_bit;
 	static std::uniform_real_distribution<double> random_0to1; // 0から1の間の実数
 
-	vector<GridForm> population; // 集団
+	array<array<int, param::FORM_H>, param::FORM_W> grid2bit_table;
+	array<pair<int, int>, param::BITS_SIZE> bit2grid_table;
+	array<array<ofRectangle, param::FORM_H>, param::FORM_W> grid_rects;
+
+	vector<param::genome_type> population; // 集団
 	vector<double> fitness; // 適応度
 
 	void initialize(); // 初期化
@@ -29,9 +33,12 @@ private:
 	void mutation(); // 突然変異
 	void calculate_fitness(); // 適応度の計算
 	void selection(); // 選択淘汰
+
+	void draw_rectangles(const param::genome_type& g) const;
+	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
 	GeneticAlgorithm();
-	void operator()(GridForm& best_individual);
+	void operator()(param::genome_type& best_individual);
 };
 
 #endif

@@ -5,16 +5,17 @@
 #include "ofMain.h"
 
 namespace param {
-	static constexpr int W = 1920;
-	static constexpr int H = 1080;
+	constexpr int W = 1920;
+	constexpr int H = 1080;
 	
-	static constexpr int GRID_W = 120;
-	static constexpr int GRID_H = 60;
+	constexpr int GRID_W = 120;
+	constexpr int GRID_H = 60;
 	
-	static constexpr int FORM_W = W / GRID_W;
-	static constexpr int FORM_H = H / GRID_H;
-	static constexpr int BITS_SIZE = FORM_W*FORM_H;
-	
+	constexpr int FORM_W = W / GRID_W;
+	constexpr int FORM_H = H / GRID_H;
+	constexpr int BITS_SIZE = FORM_W*FORM_H;
+	using genome_type = bitset<BITS_SIZE>;
+
 	const enum class CONTENT_ID {
 		KYOTO_TOWER, HIGASHIHONGANJI, SYOSEIEN, NISHIHONGANJI
 	};
