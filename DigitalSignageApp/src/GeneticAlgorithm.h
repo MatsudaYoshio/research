@@ -24,9 +24,10 @@ private:
 
 	HandCursor* hc;
 
-	array<array<int, param::FORM_H>, param::FORM_W> grid2bit_table;
-	array<pair<int, int>, param::BITS_SIZE> bit2grid_table;
-	array<array<ofRectangle, param::FORM_H>, param::FORM_W> grid_rects;
+	array<array<int, param::FORM_H>, param::FORM_W> grid2bit_table; // 座標からビットへの変換表
+	array<pair<int, int>, param::BITS_SIZE> bit2grid_table; // ビットから座標への変換表
+	array<array<ofRectangle, param::FORM_H>, param::FORM_W> grid_rects; // 格子矩形
+	vector<param::genome_type> initial_individuals; // 初期集団の個体候補
 
 	vector<param::genome_type> population; // 集団
 	vector<double> fitness; // 適応度
