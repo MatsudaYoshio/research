@@ -12,11 +12,9 @@ uniform_int_distribution<int> GeneticAlgorithm::random_crossover_point(1, BITS_S
 uniform_int_distribution<int> GeneticAlgorithm::random_bit(0, BITS_SIZE);
 uniform_real_distribution<double> GeneticAlgorithm::random_0to1(0.0, 1.0);
 
-GeneticAlgorithm::GeneticAlgorithm() {
-}
-
-void GeneticAlgorithm::setup(HandCursor* hc) {
+void GeneticAlgorithm::setup(HandCursor* hc, int* selected_user_num) {
 	this->hc = hc;
+	this->selected_user_num = selected_user_num;
 
 	/* 座標とビットの変換表を作成 */
 	for (int x = 0, x_pos = 0, i = 0, bit_pos; x < FORM_W; ++x, x_pos += GRID_W) {
@@ -45,7 +43,7 @@ void GeneticAlgorithm::setup(HandCursor* hc) {
 	split_index[4][3] = split_index[5][3] = split_index[6][3] = split_index[7][3] = split_index[8][2] = split_index[9][2] = split_index[10][2] = split_index[11][2] = FORM_H / 2;
 	split_index[8][3] = split_index[9][3] = split_index[10][3] = split_index[11][3] = split_index[12][2] = split_index[13][2] = split_index[14][2] = split_index[15][2] = FORM_H * 3 / 4;
 	split_index[12][3] = split_index[13][3] = split_index[14][3] = split_index[15][3] = FORM_H;
-	this->initial_individuals.resize[65535];
+	this->initial_individuals.resize(65535);
 	genome_type g;
 	for (int i = 1; i < 65536; ++i) {
 		g.reset();
@@ -63,39 +61,21 @@ void GeneticAlgorithm::setup(HandCursor* hc) {
 	}
 }
 
-void GeneticAlgorithm::operator()(genome_type& best_individual) {
+void GeneticAlgorithm::operator()(genome_type& best_individual, const array<unordered_set<int>, param::BITS_SIZE>& user_assignment) {
+	this->user_assignment = user_assignment;
 	this->initialize();
-	ofImage img;
-	for (int i = 0; i < 10; ++i) {
-		//cout << "before\n";
-		//cout << i << ": " << this->population[i].count() << endl;
-		//this->draw_rectangles(this->population[i]);
-		//img.grabScreen(0, 0, W, H);
-		//img.save("before" + to_string(i + 1) + ".png");
-
-	}
-
-	for (int i = 0; i < 500; ++i) {
+	for (int i = 0; i < 100; ++i) {
 		this->crossover();
 		this->mutation();
 		this->calculate_fitness();
 		this->selection();
 	}
-
-	for (int i = 0; i < 10; ++i) {
-		//cout << "after\n";
-		//cout << i << ": " << this->population[i].count() << endl;
-		//this->draw_rectangles(this->population[i]);
-		//img.grabScreen(0, 0, W, H);
-		//img.save("after" + to_string(i + 1) + ".png");
-	}
 	best_individual = this->population[0];
 }
 
-void GeneticAlgorithm::operator()(const genome_type& initial_individual, genome_type& best_individual) {
-	this->initialize();
-	this->population[this->population_size - 1] = initial_individual;
-	for (int i = 0; i < 500; ++i) {
+void GeneticAlgorithm::operator()(const genome_type& initial_individual, genome_type& best_individual, const array<unordered_set<int>, param::BITS_SIZE>& user_assignment) {
+	this->initialize(initial_individual);
+	for (int i = 0; i < 100; ++i) {
 		this->crossover();
 		this->mutation();
 		this->calculate_fitness();
@@ -106,7 +86,6 @@ void GeneticAlgorithm::operator()(const genome_type& initial_individual, genome_
 
 void GeneticAlgorithm::initialize() {
 	/* あらかじめ用意していた初期集団の個体,ランダムな矩形の組み合わせの個体,完全ランダムの個体を6:3:1で初期集団を形成 */
-
 
 	int break_index1 = this->population_size * 3 / 5, break_index2 = this->population_size * 9 / 10;
 
@@ -128,11 +107,11 @@ void GeneticAlgorithm::initialize() {
 		for (int j = 0; j < n; ++j) {
 			w = random_w(this->mt);
 			h = random_h(this->mt);
-			uniform_int_distribution<int> random_x(0, w - 1);
-			uniform_int_distribution<int> random_y(0, h - 1);
+			uniform_int_distribution<int> random_x(0, FORM_W - w);
+			uniform_int_distribution<int> random_y(0, FORM_H - h);
 			x = random_x(this->mt);
 			y = random_y(this->mt);
-			for (int k = x; x <= x + w; ++k) {
+			for (int k = x; k < x + w; ++k) {
 				for (int l = y; l < y + h; ++l) {
 					g.set(this->grid2bit_table[k][l]);
 				}
@@ -147,120 +126,12 @@ void GeneticAlgorithm::initialize() {
 			this->population[i][j] = this->random_0or1(this->mt);
 		}
 	}
+}
 
-	//for (int x = 0; x < FORM_W; ++x) {
-	//	for (int y = 0; y < FORM_H; ++y) {
-	//		if (x > 2 && x < 12 && y > 6 && y < 9) {
-	//			this->population[0].set(this->grid2bit_table[x][y]);
-	//		}
-	//		else {
-	//			this->population[0].reset(this->grid2bit_table[x][y]);
-	//		}
-	//	}
-	//}
-
-	//for (int x = 0; x < FORM_W; ++x) {
-	//	for (int y = 0; y < FORM_H; ++y) {
-	//		if (x > 2 && x < 4 && y > 2 && y < 8) {
-	//			this->population[1].set(this->grid2bit_table[x][y]);
-	//		}
-	//		else {
-	//			this->population[1].reset(this->grid2bit_table[x][y]);
-	//		}
-	//	}
-	//}
-
-	//for (int x = 0; x < FORM_W; ++x) {
-	//	for (int y = 0; y < FORM_H; ++y) {
-	//		if (x > 2 && x < 12 && y > 6 && y < 10) {
-	//			this->population[2].set(this->grid2bit_table[x][y]);
-	//		}
-	//		else {
-	//			this->population[2].reset(this->grid2bit_table[x][y]);
-	//		}
-	//	}
-	//}
-
-	//for (int x = 0; x < FORM_W; ++x) {
-	//	for (int y = 0; y < FORM_H; ++y) {
-	//		if (x > 10 && x < 14 && y > 2 && y < 7) {
-	//			this->population[3].set(this->grid2bit_table[x][y]);
-	//		}
-	//		else {
-	//			this->population[3].reset(this->grid2bit_table[x][y]);
-	//		}
-	//	}
-	//}
-
-	//for (int x = 0; x < FORM_W; ++x) {
-	//	for (int y = 0; y < FORM_H; ++y) {
-	//		if (x > 6 && x < 12 && y > 12 && y < 17) {
-	//			this->population[4].set(this->grid2bit_table[x][y]);
-	//		}
-	//		else {
-	//			this->population[4].reset(this->grid2bit_table[x][y]);
-	//		}
-	//	}
-	//}
-
-	//this->population[5].reset();
-	//for (int x = FORM_W / 2; x < FORM_W; ++x) {
-	//	for (int y = 0; y < FORM_H; ++y) {
-	//		this->population[5].set(this->grid2bit_table[x][y]);
-	//	}
-	//}
-
-	//this->population[6].reset();
-	//for (int x = FORM_W / 4; x < FORM_W * 3 / 4; ++x) {
-	//	for (int y = 0; y < FORM_H; ++y) {
-	//		this->population[6].set(this->grid2bit_table[x][y]);
-	//	}
-	//}
-
-	//this->population[7].reset();
-	//for (int x = 0; x < FORM_W; ++x) {
-	//	if ((x >= FORM_W / 4 && x < FORM_W / 2) || x >= FORM_W * 3 / 4) {
-	//		for (int y = 0; y < FORM_H; ++y) {
-	//			this->population[7].set(this->grid2bit_table[x][y]);
-	//		}
-	//	}
-	//}
-
-	//this->population[8].reset();
-	//for (int x = 0; x < FORM_W; ++x) {
-	//	if ((x >= FORM_W / 8 && x <= FORM_W / 4) || (x >= FORM_W * 5 / 8 && x <= FORM_W * 3 / 4)) {
-	//		for (int y = 0; y < FORM_H; ++y) {
-	//			this->population[8].set(this->grid2bit_table[x][y]);
-	//		}
-	//	}
-	//}
-
-	//this->population[9].reset();
-	//for (int x = 0; x < FORM_W; ++x) {
-	//	if ((x >= FORM_W / 8 && x <= FORM_W / 4) || (x >= FORM_W / 4 && x < FORM_W * 5 / 8) || x >= FORM_W * 7 / 8) {
-	//		for (int y = 0; y < FORM_H; ++y) {
-	//			this->population[9].set(this->grid2bit_table[x][y]);
-	//		}
-	//	}
-	//}
-
-	//this->population[10].reset();
-	//for (int x = 0; x < FORM_W; ++x) {
-	//	if ((x >= FORM_W / 8 && x < FORM_W / 4) || (x >= FORM_W * 3 / 8 && x <= FORM_W / 2) || (x >= FORM_W * 3 / 4 && x < FORM_W * 7 / 8)) {
-	//		for (int y = 0; y < FORM_H; ++y) {
-	//			this->population[10].set(this->grid2bit_table[x][y]);
-	//		}
-	//	}
-	//}
-
-	//this->population[11].reset();
-	//for (int x = 0; x < FORM_W; ++x) {
-	//	if ((x >= FORM_W / 8 && x < FORM_W / 4) || (x >= FORM_W * 3 / 8 && x < FORM_W / 2) || (x >= FORM_W * 5 / 8 && x < FORM_W * 3 / 4) || x >= FORM_W * 7 / 8) {
-	//		for (int y = 0; y < FORM_H; ++y) {
-	//			this->population[11].set(this->grid2bit_table[x][y]);
-	//		}
-	//	}
-	//}
+void GeneticAlgorithm::initialize(const param::genome_type& initial_individual) {
+	this->initialize();
+	swap(this->population[0], this->population[this->population_size - 1]);
+	this->population[0] = initial_individual; // 先頭に引数の個体を入れる
 }
 
 void GeneticAlgorithm::crossover() {
@@ -338,10 +209,37 @@ void GeneticAlgorithm::crossover() {
 }
 
 void GeneticAlgorithm::mutation() {
-	for (auto& i : this->population) {
+	uniform_int_distribution<int> random_mutation_method(1, 3);
+	for (int i = 0; i < this->population_size; ++i) {
 		/* 突然変異率に基づいて突然変異するかどうかを決める */
 		if (this->random_0to1(this->mt) < this->mutation_probability) {
-			i.flip(this->random_bit(this->mt)); // ランダムな位置のビットを反転
+			switch (random_mutation_method(this->mt)) {
+			case 1:
+				/* すべてのビットを反転 */
+				this->population[i].flip();
+				break;
+			case 2:
+			{
+				/* 逆位(特定の範囲のビットの順序を逆にする) */
+				int s = this->random_bit(this->mt), t = this->random_bit(this->mt);
+				if (s > t) {
+					swap(s, t);
+				}
+				reverse(&this->population[s], &this->population[t]);
+			}
+			break;
+			case 3:
+			{
+				/* スクランブル(特定の範囲のビットの順序をランダムに並べ替える) */
+				int s = this->random_bit(this->mt), t = this->random_bit(this->mt);
+				if (s > t) {
+					swap(s, t);
+				}
+				shuffle(&this->population[s], &this->population[t], this->mt);
+			}
+			break;
+			}
+
 		}
 	}
 }
@@ -424,7 +322,7 @@ void GeneticAlgorithm::calculate_fitness() {
 			}
 		}
 
-		if (connectivity_number == 1) {
+		if (connectivity_number == *this->selected_user_num) {
 			this->fitness[i] += 10000;
 		}
 
@@ -525,11 +423,9 @@ void GeneticAlgorithm::selection() {
 
 void GeneticAlgorithm::draw_rectangles(const genome_type& g) const {
 	ofFill();
-	ofSetColor(ofColor::white);
-	ofDrawRectangle(0, 0, W, H);
-	ofSetColor(ofColor::blue);
 	for (int i = 0; i < BITS_SIZE; ++i) {
 		if (g.test(i)) {
+			ofSetColor(this->hc->track_data[*begin(this->user_assignment[i])].cursor_color);
 			ofDrawRectangle(this->grid_rects[this->bit2grid_table[i].first][this->bit2grid_table[i].second]);
 		}
 	}

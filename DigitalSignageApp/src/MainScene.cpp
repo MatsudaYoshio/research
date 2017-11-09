@@ -3,8 +3,6 @@
 using namespace param;
 
 void MainScene::setup(HandCursor* hc) {
-	ofSetBackgroundAuto(true);
-
 	this->hc = hc;
 
 	this->font.loadFont("meiryob.ttc", 40);
@@ -32,6 +30,21 @@ void MainScene::setup(HandCursor* hc) {
 }
 
 void MainScene::update() {
+	/* 新しく検出したカーソルがあればメインシーンのユーザidリストに追加する */
+	for (const auto& td : this->hc->track_data) {
+		this->user_id_list.emplace(td.first);
+	}
+
+	/* 消滅したカーソルがあればメインシーンのユーザidリストから消す */
+	for (auto id = begin(this->user_id_list); id != end(this->user_id_list);) {
+		if (this->hc->track_data.find(*id) == end(this->hc->track_data)) {
+			this->user_id_list.erase(id++);
+		}
+		else {
+			++id;
+		}
+	}
+
 	for (auto &i : this->icons) {
 		switch (i.state) {
 		case static_cast<int>(Icon::STATE::INACTIVE) :

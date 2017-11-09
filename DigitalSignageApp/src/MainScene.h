@@ -17,7 +17,7 @@ private:
 	vector<ofPoint> curve_vertices;
 	ofxTrueTypeFontUC font;
 public:
-	vector<int> user_id_list;
+	set<int> user_id_list;
 	ofEvent<pair<int, int>> point_event;
 	ofEvent<pair<int, int>> make_sub_window_event;
 

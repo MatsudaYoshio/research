@@ -22,7 +22,9 @@ private:
 	static std::uniform_int_distribution<int> random_bit;
 	static std::uniform_real_distribution<double> random_0to1; // 0から1の間の実数
 
-	HandCursor* hc;
+	HandCursor* hc; // 手カーソル
+	int* selected_user_num; // 選択操作をしているユーザ数(サブウィンドウを出しているユーザ数)
+	array<unordered_set<int>, param::BITS_SIZE> user_assignment; // 格子矩形(ビット)に対するユーザの割り当て
 
 	array<array<int, param::FORM_H>, param::FORM_W> grid2bit_table; // 座標からビットへの変換表
 	array<pair<int, int>, param::BITS_SIZE> bit2grid_table; // ビットから座標への変換表
@@ -32,7 +34,10 @@ private:
 	vector<param::genome_type> population; // 集団
 	vector<double> fitness; // 適応度
 
-	void initialize(); // 初期化
+	/* 初期化 */
+	void initialize();
+	void initialize(const param::genome_type& initial_individual);
+	
 	void crossover(); // 交叉
 	void mutation(); // 突然変異
 	void calculate_fitness(); // 適応度の計算
@@ -40,11 +45,10 @@ private:
 
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
-	GeneticAlgorithm();
-	void setup(HandCursor *hc);
+	void setup(HandCursor* hc, int* selected_user_num);
 	void draw_rectangles(const param::genome_type& g) const;
-	void operator()(param::genome_type& best_individual);
-	void operator()(const param::genome_type& initial_individual, param::genome_type& best_individual);
+	void operator()(param::genome_type& best_individual, const array<unordered_set<int>, param::BITS_SIZE>& user_assignment);
+	void operator()(const param::genome_type& initial_individual, param::genome_type& best_individual, const array<unordered_set<int>, param::BITS_SIZE>& user_assignment);
 };
 
 #endif

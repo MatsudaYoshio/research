@@ -15,6 +15,7 @@ namespace param {
 	constexpr int FORM_H = H / GRID_H;
 	constexpr int BITS_SIZE = FORM_W*FORM_H;
 	using genome_type = bitset<BITS_SIZE>;
+	using window_type = genome_type;
 
 	const enum class CONTENT_ID {
 		KYOTO_TOWER, HIGASHIHONGANJI, SYOSEIEN, NISHIHONGANJI
