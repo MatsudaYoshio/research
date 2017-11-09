@@ -244,6 +244,51 @@ void GeneticAlgorithm::mutation() {
 	}
 }
 
+void GeneticAlgorithm::assign_user() {
+	genome_type genome_tmp = this->population[0];
+	unordered_set<int> active_bits_index;
+	for (int i = 0; i < BITS_SIZE; ++i) {
+		if (genome_tmp.test(i)) {
+			active_bits_index.emplace(i);
+		}
+	}
+
+	int opt_pos;
+	double opt_dist, d;
+	stack<int> s;
+	int x, y, nx, ny;
+	for (const auto& user_id : this->selected_users) {
+		opt_dist = DBL_MAX;
+		for (const auto& i : active_bits_index) {
+			d = euclid_distance(this->bit2grid_table[i].first, this->bit2grid_table[i].second, W-this->hc->track_data[user_id].current_cursor.x, this->hc->track_data[user_id].current_cursor.y);
+			if (d < opt_dist) {
+				opt_pos = i;
+				opt_dist = d;
+			}
+		}
+		s.push(opt_pos);
+		while (!s.empty()) {
+			x = this->bit2grid_table[s.top()].first;
+			y = this->bit2grid_table[s.top()].second;
+			genome_tmp.reset(s.top());
+			active_bits_index.erase(s.top());
+			this->user_bits_index[user_id].emplace_back(s.top());
+			s.pop();
+			for (int k = 0; k < 4; ++k) {
+				nx = x + this->dx[k];
+				ny = y + this->dy[k];
+				if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
+					continue;
+				}
+				if (genome_tmp.test(this->grid2bit_table[nx][ny])) {
+					s.push(this->grid2bit_table[nx][ny]);
+				}
+			}
+		}	
+	}
+	this->population[0] &= ~genome_tmp;
+}
+
 void GeneticAlgorithm::calculate_fitness() {
 	const int population_size_now = this->population.size(); // 交叉や突然変異によって増加した一時的な集団サイズ
 	this->fitness.resize(population_size_now);
@@ -405,7 +450,7 @@ void GeneticAlgorithm::selection() {
 	}
 	else {
 		if (fitness_min < 0) {
-			for (auto & f : this->fitness) {
+			for (auto& f : this->fitness) {
 				f += fitness_min + 1;
 			}
 		}

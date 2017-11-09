@@ -12,6 +12,9 @@ private:
 	static constexpr double crossover_probability = 0.8; // 交叉確率(交叉が発生する確率)
 	static constexpr int crossover_pair_number = 8; // 交叉を適応するペア数
 	static constexpr int mutation_probability = 0.01; // 突然変異率(突然変異が発生する確率)
+	/* 近傍探索用の方向ベクトル */
+	static constexpr int dx[] = { 1, 0, -1, 0 };
+	static constexpr int dy[] = { 0, -1, 0, 1 };
 
 	/* 乱数 */
 	static std::random_device rd;
@@ -40,8 +43,13 @@ private:
 	
 	void crossover(); // 交叉
 	void mutation(); // 突然変異
+	void assign_user(); // 領域に対してユーザを割り当てる
 	void calculate_fitness(); // 適応度の計算
 	void selection(); // 選択淘汰
+
+
+	unordered_map<int,vector<int>> user_bits_index;
+	vector<int> selected_users;
 
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
