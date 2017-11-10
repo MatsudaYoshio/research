@@ -12,9 +12,9 @@ uniform_int_distribution<int> GeneticAlgorithm::random_crossover_point(1, BITS_S
 uniform_int_distribution<int> GeneticAlgorithm::random_bit(0, BITS_SIZE);
 uniform_real_distribution<double> GeneticAlgorithm::random_0to1(0.0, 1.0);
 
-void GeneticAlgorithm::setup(HandCursor* hc, int* selected_user_num) {
+void GeneticAlgorithm::setup(HandCursor* hc, set<int>* selected_users) {
 	this->hc = hc;
-	this->selected_user_num = selected_user_num;
+	this->selected_users = selected_users;
 
 	/* 座標とビットの変換表を作成 */
 	for (int x = 0, x_pos = 0, i = 0, bit_pos; x < FORM_W; ++x, x_pos += GRID_W) {
@@ -61,27 +61,31 @@ void GeneticAlgorithm::setup(HandCursor* hc, int* selected_user_num) {
 	}
 }
 
-void GeneticAlgorithm::operator()(genome_type& best_individual, const array<unordered_set<int>, param::BITS_SIZE>& user_assignment) {
-	this->user_assignment = user_assignment;
+void GeneticAlgorithm::operator()(genome_type& best_individual, unordered_map<int, vector<int>>& user_bit_assignment) {
 	this->initialize();
 	for (int i = 0; i < 100; ++i) {
 		this->crossover();
 		this->mutation();
+		this->assign_user();
 		this->calculate_fitness();
 		this->selection();
 	}
-	best_individual = this->population[0];
+	best_individual = this->best_individual;
+	user_bit_assignment = this->best_user_bit_assignment;
 }
 
-void GeneticAlgorithm::operator()(const genome_type& initial_individual, genome_type& best_individual, const array<unordered_set<int>, param::BITS_SIZE>& user_assignment) {
+void GeneticAlgorithm::operator()(const genome_type& initial_individual, genome_type& best_individual, unordered_map<int, vector<int>>& user_bit_assignment) {
+
 	this->initialize(initial_individual);
 	for (int i = 0; i < 100; ++i) {
 		this->crossover();
 		this->mutation();
+		this->assign_user();
 		this->calculate_fitness();
 		this->selection();
 	}
-	best_individual = this->population[0];
+	best_individual = this->best_individual;
+	user_bit_assignment = this->best_user_bit_assignment;
 }
 
 void GeneticAlgorithm::initialize() {
@@ -245,48 +249,63 @@ void GeneticAlgorithm::mutation() {
 }
 
 void GeneticAlgorithm::assign_user() {
-	genome_type genome_tmp = this->population[0];
+	genome_type genome_tmp;
 	unordered_set<int> active_bits_index;
-	for (int i = 0; i < BITS_SIZE; ++i) {
-		if (genome_tmp.test(i)) {
-			active_bits_index.emplace(i);
-		}
-	}
-
-	int opt_pos;
-	double opt_dist, d;
+	vector<int> v;
 	stack<int> s;
-	int x, y, nx, ny;
-	for (const auto& user_id : this->selected_users) {
-		opt_dist = DBL_MAX;
-		for (const auto& i : active_bits_index) {
-			d = euclid_distance(this->bit2grid_table[i].first, this->bit2grid_table[i].second, W-this->hc->track_data[user_id].current_cursor.x, this->hc->track_data[user_id].current_cursor.y);
-			if (d < opt_dist) {
-				opt_pos = i;
-				opt_dist = d;
+	int opt_pos, x, y, nx, ny;
+	double opt_dist, d;
+	this->user_bit_assignments.resize(this->population.size());
+
+	for (int i = 0; i < this->population.size(); ++i) {
+		genome_tmp = this->population[i];
+		active_bits_index.clear();
+		for (int j = 0; j < BITS_SIZE; ++j) {
+			if (genome_tmp.test(j)) {
+				active_bits_index.emplace(j);
 			}
 		}
-		s.push(opt_pos);
-		while (!s.empty()) {
-			x = this->bit2grid_table[s.top()].first;
-			y = this->bit2grid_table[s.top()].second;
-			genome_tmp.reset(s.top());
-			active_bits_index.erase(s.top());
-			this->user_bits_index[user_id].emplace_back(s.top());
-			s.pop();
-			for (int k = 0; k < 4; ++k) {
-				nx = x + this->dx[k];
-				ny = y + this->dy[k];
-				if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
-					continue;
-				}
-				if (genome_tmp.test(this->grid2bit_table[nx][ny])) {
-					s.push(this->grid2bit_table[nx][ny]);
+		for (const auto& user_id : *this->selected_users) {
+			if (active_bits_index.empty()) {
+				break;
+			}
+			opt_dist = DBL_MAX;
+			try {
+				for (const auto& bi : active_bits_index) {
+					d = euclid_distance(this->bit2grid_table[bi].first, this->bit2grid_table[bi].second, W - this->hc->track_data.at(user_id).current_pointer.x, this->hc->track_data.at(user_id).current_pointer.y);
+					if (d < opt_dist) {
+						opt_pos = bi;
+						opt_dist = d;
+					}
 				}
 			}
-		}	
+			catch (std::out_of_range&) {
+				continue;
+			}
+			s.push(opt_pos);
+			v.clear();
+			while (!s.empty()) {
+				x = this->bit2grid_table[s.top()].first;
+				y = this->bit2grid_table[s.top()].second;
+				genome_tmp.reset(s.top());
+				active_bits_index.erase(s.top());
+				v.emplace_back(s.top());
+				s.pop();
+				for (int j = 0; j < 4; ++j) {
+					nx = x + this->dx[j];
+					ny = y + this->dy[j];
+					if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
+						continue;
+					}
+					if (genome_tmp.test(this->grid2bit_table[nx][ny])) {
+						s.push(this->grid2bit_table[nx][ny]);
+					}
+				}
+			}
+			this->user_bit_assignments[i].emplace(make_pair(user_id, v));
+		}
+		this->population[i] &= ~genome_tmp;
 	}
-	this->population[0] &= ~genome_tmp;
 }
 
 void GeneticAlgorithm::calculate_fitness() {
@@ -295,136 +314,159 @@ void GeneticAlgorithm::calculate_fitness() {
 	fill(begin(this->fitness), end(this->fitness), 0.0);
 
 	for (int i = 0; i < population_size_now; ++i) {
-		double area = this->population[i].count(); // 面積
-		if (area >= BITS_SIZE / 4) {
-			this->fitness[i] -= 100000 * (area - BITS_SIZE / 4);
-		}
-		else {
-			this->fitness[i] += 2000 * area;
-		}
+		int users_num = this->user_bit_assignments[i].size();
 
-
-		ofPoint center_point; // 重心
-		for (int j = 0; j < BITS_SIZE; ++j) {
-			if (this->population[i].test(j)) {
-				center_point += this->grid_rects[this->bit2grid_table[j].first][this->bit2grid_table[j].second].getCenter();
-			}
+		/* 面積 */
+		unordered_map<int, double> area(users_num); // 各ユーザの領域面積
+		double area_sum = 0; // 全ユーザの領域面積の合計
+		for (const auto& user : this->user_bit_assignments[i]) {
+			area[user.first] = user.second.size();
+			area_sum += area[user.first];
 		}
-		center_point /= area;
-
-		for (int j = 0; j < BITS_SIZE; ++j) {
-			if (this->population[i].test(j)) {
-				this->fitness[i] -= 5 * euclid_distance(this->grid_rects[this->bit2grid_table[j].first][this->bit2grid_table[j].second].getCenter().x, this->grid_rects[this->bit2grid_table[j].first][this->bit2grid_table[j].second].getCenter().y, center_point.x, center_point.y);
-			}
+		double variance = 0.0;
+		for (const auto& a : area) {
+			variance += a.second*a.second;
 		}
+		variance /= users_num;
+		variance -= (area_sum*area_sum) / (users_num*users_num);
 
-		/* 連結数 */
-		int connectivity_number = 0;
-		/*int dx[] = { 1,1,0,-1,-1,-1,0,1 };
-		int dy[] = { 0,-1,-1,-1,0,1,1,1 };*/
-		int dx[] = { 1, 0, -1, 0 };
-		int dy[] = { 0, -1, 0, 1 };
-		int x, y, nx, ny;
-		bool flag;
-		stack<int> s;
-		genome_type genome_tmp = this->population[i];
-		unordered_set<int> us;
-		for (int j = 0; j < BITS_SIZE; ++j) {
-			if (genome_tmp.test(j)) {
-				us.emplace(j);
-			}
-		}
-		if (!us.empty()) {
-			++connectivity_number;
-			s.push(*begin(us));
-			while (!s.empty()) {
-				x = this->bit2grid_table[s.top()].first;
-				y = this->bit2grid_table[s.top()].second;
-				genome_tmp.reset(s.top());
-				us.erase(s.top());
-				s.pop();
-				flag = false;
-				for (int k = 0; k < 4; ++k) {
-					nx = x + dx[k];
-					ny = y + dy[k];
-					if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
-						continue;
-					}
-					if (genome_tmp.test(this->grid2bit_table[nx][ny])) {
-						s.push(this->grid2bit_table[nx][ny]);
-						flag = true;
-					}
-				}
-				if (!flag && s.empty()) {
-					if (us.empty()) {
-						break;
-					}
-					else {
-						s.push(*begin(us));
-						++connectivity_number;
-					}
-				}
-			}
-		}
+		this->fitness[i] += exp(area_sum)/2;
+		this->fitness[i] -= exp(variance);
 
-		if (connectivity_number == *this->selected_user_num) {
-			this->fitness[i] += 10000;
-		}
-
-		/* 周囲長 */
-		int arc_length = 0;
-		for (int j = 0; j < BITS_SIZE; ++j) {
-			if (population[i].test(j)) {
-				for (int k = 0; k < 4; ++k) {
-					nx = this->bit2grid_table[j].first + dx[k];
-					ny = this->bit2grid_table[j].second + dy[k];
-					if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
-						continue;
-					}
-					if (!population[i].test(this->grid2bit_table[nx][ny])) {
-						++arc_length;
-					}
-				}
-			}
-		}
-		this->fitness[i] -= 100 * arc_length;
-
-		/* オイラー数 */
-		int e = 0, f = 0;
-		for (int j = 0; j < BITS_SIZE; ++j) {
-			if (population[i].test(j)) {
-				for (int k = 0; k < 2; ++k) {
-					nx = this->bit2grid_table[j].first + dx[k];
-					ny = this->bit2grid_table[j].second + dy[k];
-					if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
-						continue;
-					}
-					if (population[i].test(this->grid2bit_table[nx][ny])) {
-						++e;
-					}
-				}
-				if (this->bit2grid_table[j].first == FORM_W - 1 || this->bit2grid_table[j].second == FORM_H - 1) {
-					continue;
-				}
-				if (population[i].test(this->grid2bit_table[this->bit2grid_table[j].first + 1][this->bit2grid_table[j].second]) && population[i].test(this->grid2bit_table[this->bit2grid_table[j].first][this->bit2grid_table[j].second + 1]) && population[i].test(this->grid2bit_table[this->bit2grid_table[j].first + 1][this->bit2grid_table[j].second + 1])) {
-					++f;
-				}
-			}
-		}
-		int euler_number = area - e + f;
-
-		this->fitness[i] -= 1000 * (connectivity_number - euler_number);
-
-		/* カーソルからの距離 */
-		for (const auto& td : this->hc->track_data) {
-			for (int j = 0; j < BITS_SIZE; ++j) {
-				if (population[i].test(j)) {
-					this->fitness[i] += 100 * this->euclid_distance(this->grid_rects[this->bit2grid_table[j].first][this->bit2grid_table[j].second].getCenter().x, this->grid_rects[this->bit2grid_table[j].first][this->bit2grid_table[j].second].getCenter().y, W - td.second.current_pointer.x, td.second.current_pointer.y);
-				}
-			}
-		}
-
+		unordered_map<int, ofPoint> center_point(users_num);
 	}
+
+	//for (int i = 0; i < population_size_now; ++i) {
+	//	double area = this->population[i].count(); // 面積
+	//	if (area >= BITS_SIZE / 4) {
+	//		this->fitness[i] -= 100000 * (area - BITS_SIZE / 4);
+	//	}
+	//	else {
+	//		this->fitness[i] += 2000 * area;
+	//	}
+
+
+	//	ofPoint center_point; // 重心
+	//	for (int j = 0; j < BITS_SIZE; ++j) {
+	//		if (this->population[i].test(j)) {
+	//			center_point += this->grid_rects[this->bit2grid_table[j].first][this->bit2grid_table[j].second].getCenter();
+	//		}
+	//	}
+	//	center_point /= area;
+
+	//	for (int j = 0; j < BITS_SIZE; ++j) {
+	//		if (this->population[i].test(j)) {
+	//			this->fitness[i] -= 5 * euclid_distance(this->grid_rects[this->bit2grid_table[j].first][this->bit2grid_table[j].second].getCenter().x, this->grid_rects[this->bit2grid_table[j].first][this->bit2grid_table[j].second].getCenter().y, center_point.x, center_point.y);
+	//		}
+	//	}
+
+	//	/* 連結数 */
+	//	int connectivity_number = 0;
+	//	/*int dx[] = { 1,1,0,-1,-1,-1,0,1 };
+	//	int dy[] = { 0,-1,-1,-1,0,1,1,1 };*/
+	//	int dx[] = { 1, 0, -1, 0 };
+	//	int dy[] = { 0, -1, 0, 1 };
+	//	int x, y, nx, ny;
+	//	bool flag;
+	//	stack<int> s;
+	//	genome_type genome_tmp = this->population[i];
+	//	unordered_set<int> us;
+	//	for (int j = 0; j < BITS_SIZE; ++j) {
+	//		if (genome_tmp.test(j)) {
+	//			us.emplace(j);
+	//		}
+	//	}
+	//	if (!us.empty()) {
+	//		++connectivity_number;
+	//		s.push(*begin(us));
+	//		while (!s.empty()) {
+	//			x = this->bit2grid_table[s.top()].first;
+	//			y = this->bit2grid_table[s.top()].second;
+	//			genome_tmp.reset(s.top());
+	//			us.erase(s.top());
+	//			s.pop();
+	//			flag = false;
+	//			for (int k = 0; k < 4; ++k) {
+	//				nx = x + dx[k];
+	//				ny = y + dy[k];
+	//				if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
+	//					continue;
+	//				}
+	//				if (genome_tmp.test(this->grid2bit_table[nx][ny])) {
+	//					s.push(this->grid2bit_table[nx][ny]);
+	//					flag = true;
+	//				}
+	//			}
+	//			if (!flag && s.empty()) {
+	//				if (us.empty()) {
+	//					break;
+	//				}
+	//				else {
+	//					s.push(*begin(us));
+	//					++connectivity_number;
+	//				}
+	//			}
+	//		}
+	//	}
+
+	//	if (connectivity_number == *this->selected_user_num) {
+	//		this->fitness[i] += 10000;
+	//	}
+
+	//	/* 周囲長 */
+	//	int arc_length = 0;
+	//	for (int j = 0; j < BITS_SIZE; ++j) {
+	//		if (population[i].test(j)) {
+	//			for (int k = 0; k < 4; ++k) {
+	//				nx = this->bit2grid_table[j].first + dx[k];
+	//				ny = this->bit2grid_table[j].second + dy[k];
+	//				if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
+	//					continue;
+	//				}
+	//				if (!population[i].test(this->grid2bit_table[nx][ny])) {
+	//					++arc_length;
+	//				}
+	//			}
+	//		}
+	//	}
+	//	this->fitness[i] -= 100 * arc_length;
+
+	//	/* オイラー数 */
+	//	int e = 0, f = 0;
+	//	for (int j = 0; j < BITS_SIZE; ++j) {
+	//		if (population[i].test(j)) {
+	//			for (int k = 0; k < 2; ++k) {
+	//				nx = this->bit2grid_table[j].first + dx[k];
+	//				ny = this->bit2grid_table[j].second + dy[k];
+	//				if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
+	//					continue;
+	//				}
+	//				if (population[i].test(this->grid2bit_table[nx][ny])) {
+	//					++e;
+	//				}
+	//			}
+	//			if (this->bit2grid_table[j].first == FORM_W - 1 || this->bit2grid_table[j].second == FORM_H - 1) {
+	//				continue;
+	//			}
+	//			if (population[i].test(this->grid2bit_table[this->bit2grid_table[j].first + 1][this->bit2grid_table[j].second]) && population[i].test(this->grid2bit_table[this->bit2grid_table[j].first][this->bit2grid_table[j].second + 1]) && population[i].test(this->grid2bit_table[this->bit2grid_table[j].first + 1][this->bit2grid_table[j].second + 1])) {
+	//				++f;
+	//			}
+	//		}
+	//	}
+	//	int euler_number = area - e + f;
+
+	//	this->fitness[i] -= 1000 * (connectivity_number - euler_number);
+
+	//	/* カーソルからの距離 */
+	//	for (const auto& td : this->hc->track_data) {
+	//		for (int j = 0; j < BITS_SIZE; ++j) {
+	//			if (population[i].test(j)) {
+	//				this->fitness[i] += 100 * this->euclid_distance(this->grid_rects[this->bit2grid_table[j].first][this->bit2grid_table[j].second].getCenter().x, this->grid_rects[this->bit2grid_table[j].first][this->bit2grid_table[j].second].getCenter().y, W - td.second.current_pointer.x, td.second.current_pointer.y);
+	//			}
+	//		}
+	//	}
+
+	//}
 }
 
 void GeneticAlgorithm::selection() {
@@ -432,7 +474,8 @@ void GeneticAlgorithm::selection() {
 
 	/* エリート主義 */
 	const int elite_index = max_element(begin(this->fitness), end(this->fitness)) - begin(this->fitness);
-	new_population[0] = this->population[elite_index];
+	this->best_individual = new_population[0] = this->population[elite_index];
+	this->best_user_bit_assignment = this->user_bit_assignments[elite_index];
 
 	const double fitness_max = this->fitness[elite_index];
 	const double fitness_min = *min_element(begin(this->fitness), end(this->fitness));
@@ -466,12 +509,18 @@ void GeneticAlgorithm::selection() {
 
 }
 
-void GeneticAlgorithm::draw_rectangles(const genome_type& g) const {
+void GeneticAlgorithm::draw_rectangles(const unordered_map<int, vector<int>>& user_bit_assignment) const {
 	ofFill();
-	for (int i = 0; i < BITS_SIZE; ++i) {
-		if (g.test(i)) {
-			ofSetColor(this->hc->track_data[*begin(this->user_assignment[i])].cursor_color);
-			ofDrawRectangle(this->grid_rects[this->bit2grid_table[i].first][this->bit2grid_table[i].second]);
+	for (const auto& user : user_bit_assignment) {
+		try {
+			ofSetColor(this->hc->track_data.at(user.first).cursor_color);
+		}
+		catch (std::out_of_range&) {
+			this->selected_users->erase(user.first);
+			continue;
+		}
+		for (const auto& b : user.second) {
+			ofDrawRectangle(this->grid_rects[this->bit2grid_table[b].first][this->bit2grid_table[b].second]);
 		}
 	}
 	ofNoFill();

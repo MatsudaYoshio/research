@@ -12,7 +12,7 @@ private:
 	static constexpr double crossover_probability = 0.8; // 交叉確率(交叉が発生する確率)
 	static constexpr int crossover_pair_number = 8; // 交叉を適応するペア数
 	static constexpr int mutation_probability = 0.01; // 突然変異率(突然変異が発生する確率)
-	/* 近傍探索用の方向ベクトル */
+	/* 近傍探索用の方向ベクトル(4近傍) */
 	static constexpr int dx[] = { 1, 0, -1, 0 };
 	static constexpr int dy[] = { 0, -1, 0, 1 };
 
@@ -26,8 +26,7 @@ private:
 	static std::uniform_real_distribution<double> random_0to1; // 0から1の間の実数
 
 	HandCursor* hc; // 手カーソル
-	int* selected_user_num; // 選択操作をしているユーザ数(サブウィンドウを出しているユーザ数)
-	array<unordered_set<int>, param::BITS_SIZE> user_assignment; // 格子矩形(ビット)に対するユーザの割り当て
+	set<int>* selected_users;
 
 	array<array<int, param::FORM_H>, param::FORM_W> grid2bit_table; // 座標からビットへの変換表
 	array<pair<int, int>, param::BITS_SIZE> bit2grid_table; // ビットから座標への変換表
@@ -47,16 +46,17 @@ private:
 	void calculate_fitness(); // 適応度の計算
 	void selection(); // 選択淘汰
 
+	vector<unordered_map<int,vector<int>>> user_bit_assignments;
 
-	unordered_map<int,vector<int>> user_bits_index;
-	vector<int> selected_users;
+	param::genome_type best_individual;
+	unordered_map<int, vector<int>> best_user_bit_assignment;
 
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
-	void setup(HandCursor* hc, int* selected_user_num);
-	void draw_rectangles(const param::genome_type& g) const;
-	void operator()(param::genome_type& best_individual, const array<unordered_set<int>, param::BITS_SIZE>& user_assignment);
-	void operator()(const param::genome_type& initial_individual, param::genome_type& best_individual, const array<unordered_set<int>, param::BITS_SIZE>& user_assignment);
+	void setup(HandCursor* hc, set<int>* selected_users);
+	void draw_rectangles(const unordered_map<int, vector<int>>& user_bit_assignment) const;
+	void operator()(param::genome_type& best_individual, unordered_map<int, vector<int>>& user_bit_assignment);
+	void operator()(const param::genome_type& initial_individual, param::genome_type& best_individual, unordered_map<int, vector<int>>& user_bit_assignment);
 };
 
 #endif
