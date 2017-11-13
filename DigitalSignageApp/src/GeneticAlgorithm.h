@@ -13,8 +13,8 @@ private:
 	static constexpr int crossover_pair_number = 8; // 交叉を適応するペア数
 	static constexpr int mutation_probability = 0.01; // 突然変異率(突然変異が発生する確率)
 	/* 近傍探索用の方向ベクトル(4近傍) */
-	static constexpr int dx[] = { 1, 0, -1, 0 };
-	static constexpr int dy[] = { 0, -1, 0, 1 };
+	static constexpr int dx[] = { 1, 0, -1, 0, 1, -1, -1, 1 };
+	static constexpr int dy[] = { 0, -1, 0, 1, -1, -1, 1, 1 };
 
 	/* 乱数 */
 	static std::random_device rd;
@@ -32,6 +32,7 @@ private:
 	array<pair<int, int>, param::BITS_SIZE> bit2grid_table; // ビットから座標への変換表
 	array<array<ofRectangle, param::FORM_H>, param::FORM_W> grid_rects; // 格子矩形
 	vector<param::genome_type> initial_individuals; // 初期集団の個体候補
+	param::genome_type base_individual;
 
 	vector<param::genome_type> population; // 集団
 	vector<double> fitness; // 適応度

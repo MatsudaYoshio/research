@@ -59,10 +59,16 @@ void GeneticAlgorithm::setup(HandCursor* hc, set<int>* selected_users) {
 		}
 		this->initial_individuals[i - 1] = g;
 	}
+
+	for (int x = 0; x < FORM_W/2; ++x) {
+		for (int y = 0; y < FORM_H/2; ++y) {
+			this->base_individual.set(this->grid2bit_table[x][y]);
+		}
+	}
 }
 
 void GeneticAlgorithm::operator()(genome_type& best_individual, unordered_map<int, vector<int>>& user_bit_assignment) {
-	this->initialize();
+	this->initialize(this->base_individual);
 	for (int i = 0; i < 100; ++i) {
 		this->crossover();
 		this->mutation();
@@ -75,7 +81,6 @@ void GeneticAlgorithm::operator()(genome_type& best_individual, unordered_map<in
 }
 
 void GeneticAlgorithm::operator()(const genome_type& initial_individual, genome_type& best_individual, unordered_map<int, vector<int>>& user_bit_assignment) {
-
 	this->initialize(initial_individual);
 	for (int i = 0; i < 100; ++i) {
 		this->crossover();
@@ -291,7 +296,7 @@ void GeneticAlgorithm::assign_user() {
 				active_bits_index.erase(s.top());
 				v.emplace_back(s.top());
 				s.pop();
-				for (int j = 0; j < 4; ++j) {
+				for (int j = 0; j < 8; ++j) {
 					nx = x + this->dx[j];
 					ny = y + this->dy[j];
 					if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
@@ -314,7 +319,7 @@ void GeneticAlgorithm::calculate_fitness() {
 	fill(begin(this->fitness), end(this->fitness), 0.0);
 
 	for (int i = 0; i < population_size_now; ++i) {
-		int users_num = this->user_bit_assignments[i].size();
+		int users_num = this->user_bit_assignments[i].size(); // ユーザ数
 
 		/* 面積 */
 		unordered_map<int, double> area(users_num); // 各ユーザの領域面積
@@ -323,17 +328,78 @@ void GeneticAlgorithm::calculate_fitness() {
 			area[user.first] = user.second.size();
 			area_sum += area[user.first];
 		}
-		double variance = 0.0;
+
+		double area_mean = area_sum / users_num;
+		double area_variance = 0.0; // ユーザ同士の領域面積の分散
 		for (const auto& a : area) {
-			variance += a.second*a.second;
+			area_variance += a.second*a.second;
 		}
-		variance /= users_num;
-		variance -= (area_sum*area_sum) / (users_num*users_num);
+		area_variance /= users_num;
+		area_variance -= area_mean*area_mean;
 
-		this->fitness[i] += exp(area_sum)/2;
-		this->fitness[i] -= exp(variance);
+		if (area_mean <= FORM_W*FORM_H / 4) {
+			this->fitness[i] += 1000*exp(-pow(area_mean - FORM_W*FORM_H / 4, 2)/1000);
+		}
+		else {
+			this->fitness[i] -= 10000*exp(FORM_W*FORM_H / 4 - area_mean);
+		}
+		this->fitness[i] -= exp(area_variance)/100;
 
-		unordered_map<int, ofPoint> center_point(users_num);
+		/* 重心 */
+		unordered_map<int, ofPoint> center_points(users_num); // 各ユーザの重心
+		for (const auto& user : this->user_bit_assignments[i]) {
+			center_points.emplace(make_pair(user.first, ofPoint(0, 0)));
+			for (int j = 0; j < user.second.size(); ++j) {
+				center_points[user.first].x += this->grid_rects[this->bit2grid_table[user.second[j]].first][this->bit2grid_table[user.second[j]].second].getCenter().x;
+				center_points[user.first].y += this->grid_rects[this->bit2grid_table[user.second[j]].first][this->bit2grid_table[user.second[j]].second].getCenter().y;
+			}
+			center_points[user.first].x /= area[user.first];
+			center_points[user.first].y /= area[user.first];
+		}
+
+		/* 重心からの距離の合計を求める */
+		unordered_map<int, double> center_points_distance(users_num);
+		for (const auto& user : this->user_bit_assignments[i]) {
+			center_points_distance.emplace(make_pair(user.first, 0.0));
+			for (int j = 0; j < user.second.size(); ++j) {
+				center_points_distance[user.first] += this->euclid_distance(center_points[user.first].x, center_points[user.first].y, this->grid_rects[this->bit2grid_table[user.second[j]].first][this->bit2grid_table[user.second[j]].second].getCenter().x, this->grid_rects[this->bit2grid_table[user.second[j]].first][this->bit2grid_table[user.second[j]].second].getCenter().y);
+			}
+		}
+
+		/* 他のユーザのカーソルからの距離を求める */
+		unordered_map<int, double> cursor_distance(users_num);
+		for (const auto& main_user : this->user_bit_assignments[i]) {
+			cursor_distance.emplace(make_pair(main_user.first, 0.0));
+			for (const auto& other_user : this->hc->track_data) {
+				if (main_user.first == other_user.first) {
+					continue;
+				}
+				for (int j = 0; j < main_user.second.size(); ++j) {
+					cursor_distance[main_user.first] += this->euclid_distance(this->grid_rects[this->bit2grid_table[main_user.second[j]].first][this->bit2grid_table[main_user.second[j]].second].getCenter().x, this->grid_rects[this->bit2grid_table[main_user.second[j]].first][this->bit2grid_table[main_user.second[j]].second].getCenter().y, W-other_user.second.current_pointer.x, other_user.second.current_pointer.y);
+				}
+			}
+		}
+
+		for (const auto& user : this->user_bit_assignments[i]) {
+			this->fitness[i] -= center_points_distance[user.first]/100;
+			this->fitness[i] -= 1000/cursor_distance[user.first];
+		}
+
+		/* 重複 */
+		int intersects = 0;
+		set<int> s;
+		for (const auto& user : this->user_bit_assignments[i]) {
+			for (int j = 0; j < user.second.size(); ++j) {
+				int n = s.size();
+				s.emplace(this->user_bit_assignments[i][user.first][j]);
+				if (n != s.size()) {
+					++intersects;
+				}
+			}
+		}
+
+		this->fitness[i] += 1000 * intersects;
+
 	}
 
 	//for (int i = 0; i < population_size_now; ++i) {
