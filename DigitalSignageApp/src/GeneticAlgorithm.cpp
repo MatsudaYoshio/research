@@ -338,10 +338,10 @@ void GeneticAlgorithm::calculate_fitness() {
 		area_variance -= area_mean*area_mean;
 
 		if (area_mean <= FORM_W*FORM_H / 4) {
-			this->fitness[i] += 1000*exp(-pow(area_mean - FORM_W*FORM_H / 4, 2)/1000);
+			this->fitness[i] += 10000*exp(-pow(area_mean - FORM_W*FORM_H / 4, 2)/100);
 		}
 		else {
-			this->fitness[i] -= 10000*exp(FORM_W*FORM_H / 4 - area_mean);
+			this->fitness[i] -= 1000*exp(FORM_W*FORM_H / 4 - area_mean);
 		}
 		this->fitness[i] -= exp(area_variance)/100;
 
@@ -381,7 +381,7 @@ void GeneticAlgorithm::calculate_fitness() {
 		}
 
 		for (const auto& user : this->user_bit_assignments[i]) {
-			this->fitness[i] -= center_points_distance[user.first]/100;
+			//this->fitness[i] -= center_points_distance[user.first]/100;
 			this->fitness[i] -= 1000/cursor_distance[user.first];
 		}
 
@@ -398,7 +398,7 @@ void GeneticAlgorithm::calculate_fitness() {
 			}
 		}
 
-		this->fitness[i] += 1000 * intersects;
+		this->fitness[i] += 100000 * intersects;
 
 	}
 
