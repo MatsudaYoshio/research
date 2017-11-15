@@ -19,56 +19,50 @@ private:
 	/* 乱数 */
 	static std::random_device rd;
 	static std::mt19937 mt;
-	static std::uniform_int_distribution<int> random_0or1; // 0か1
+	static std::uniform_int_distribution<int> random_0or1; // 0か1を返す乱数
 	static std::uniform_int_distribution<int> random_indivisual; // 集団から個体を選ぶ乱数
 	//static std::uniform_int_distribution<int> random_crossover_point; // 交叉点を選ぶ乱数
 	static std::uniform_int_distribution<int> random_bit;
-	static std::uniform_real_distribution<double> random_0to1; // 0から1の間の実数
+	static std::uniform_real_distribution<double> random_0to1; // 0から1の間の実数を返す乱数
 
 	HandCursor* hc; // 手カーソル
-	set<int>* selected_users;
 
-	//array<array<int, param::FORM_H>, param::FORM_W> grid2bit_table; // 座標からビットへの変換表
-	//array<pair<int, int>, param::BITS_SIZE> bit2grid_table; // ビットから座標への変換表
 	array<array<ofRectangle, param::FORM_H>, param::FORM_W> grid_rects; // 格子矩形
 	vector<param::genome_type> initial_individuals; // 初期集団の個体候補
 	param::genome_type base_individual;
 
 	vector<param::genome_type> population; // 集団
 	vector<double> fitness; // 適応度
+	param::genome_type best_individual; // 最適個体
 
 	/* 初期化 */
-	void initialize();
+	void initialize(const set<int>& users_id);
 	void initialize(const param::genome_type& initial_individual);
 	
 	void crossover(); // 交叉
 	void mutation(); // 突然変異
-	void assign_user(); // 領域に対してユーザを割り当てる
 	void calculate_fitness(); // 適応度の計算
 	void selection(); // 選択淘汰
 
-	vector<unordered_map<int,vector<int>>> user_bit_assignments;
-
-	param::genome_type best_individual;
-	unordered_map<int, vector<int>> best_user_bit_assignment;
-
-	set<int> selected_users_tmp;
-	int users_num;
-	unordered_map<int, int> user_id_index; // ユーザidに対するインデックス
-	int block_bits_size; // ブロックのビット数
+	int block_bits_size; // 各ブロックのビット数
+	int genetic_length; // 遺伝子長(総ビット数)
 	array<array<int, param::FORM_H>, param::FORM_W> grid2block_table; // 座標からブロックへの変換表
 	array<pair<int, int>, param::BLOCK_SIZE> block2grid_table; // ブロックから座標への変換表 
-
 	vector<array<int, param::BLOCK_SIZE>> block_assignment; // 各ブロックに対するユーザの割り当て
+	set<int> users_id; // ユーザIDリスト
+	int users_num; // ユーザ数
+	unordered_map<int, int> user_id_index; // ユーザIDに対するインデックス
+
+
 	int elite_index;
 	array<int, param::BLOCK_SIZE> elite_block_assignment;
 
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
-	void setup(HandCursor* hc, set<int>* selected_users);
+	void setup(HandCursor* hc);
 	void draw_rectangles() const;
-	void operator()(param::genome_type& best_individual);
-	void operator()(const param::genome_type& initial_individual, param::genome_type& best_individual);
+	void operator()(param::genome_type& best_individual, const set<int>& users_id);
+	void operator()(const param::genome_type& initial_individual, param::genome_type& best_individual, const set<int>& users_id);
 };
 
 #endif
