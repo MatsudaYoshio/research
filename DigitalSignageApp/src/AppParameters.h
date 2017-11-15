@@ -14,7 +14,9 @@ namespace param {
 	constexpr int FORM_W = W / GRID_W;
 	constexpr int FORM_H = H / GRID_H;
 	constexpr int BITS_SIZE = FORM_W*FORM_H;
-	using genome_type = bitset<BITS_SIZE>;
+	constexpr int BLOCK_SIZE = FORM_W*FORM_H;
+	//using genome_type = bitset<BITS_SIZE>;
+	using genome_type = vector<bool>;
 	using window_type = genome_type;
 
 	const enum class CONTENT_ID {

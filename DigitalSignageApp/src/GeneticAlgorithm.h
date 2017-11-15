@@ -8,11 +8,11 @@
 
 class GeneticAlgorithm {
 private:
-	static constexpr int population_size = 10; // 集団サイズ(選択淘汰された後は必ずこの数)
+	static constexpr int population_size = 20; // 集団サイズ(選択淘汰された後は必ずこの数)
 	static constexpr double crossover_probability = 0.8; // 交叉確率(交叉が発生する確率)
-	static constexpr int crossover_pair_number = 4; // 交叉を適応するペア数
+	static constexpr int crossover_pair_number = 8; // 交叉を適応するペア数
 	static constexpr int mutation_probability = 0.01; // 突然変異率(突然変異が発生する確率)
-	/* 近傍探索用の方向ベクトル(4近傍) */
+	/* 近傍探索用の方向ベクトル(8近傍) */
 	static constexpr int dx[] = { 1, 0, -1, 0, 1, -1, -1, 1 };
 	static constexpr int dy[] = { 0, -1, 0, 1, -1, -1, 1, 1 };
 
@@ -21,15 +21,15 @@ private:
 	static std::mt19937 mt;
 	static std::uniform_int_distribution<int> random_0or1; // 0か1
 	static std::uniform_int_distribution<int> random_indivisual; // 集団から個体を選ぶ乱数
-	static std::uniform_int_distribution<int> random_crossover_point; // 交叉点を選ぶ乱数
+	//static std::uniform_int_distribution<int> random_crossover_point; // 交叉点を選ぶ乱数
 	static std::uniform_int_distribution<int> random_bit;
 	static std::uniform_real_distribution<double> random_0to1; // 0から1の間の実数
 
 	HandCursor* hc; // 手カーソル
 	set<int>* selected_users;
 
-	array<array<int, param::FORM_H>, param::FORM_W> grid2bit_table; // 座標からビットへの変換表
-	array<pair<int, int>, param::BITS_SIZE> bit2grid_table; // ビットから座標への変換表
+	//array<array<int, param::FORM_H>, param::FORM_W> grid2bit_table; // 座標からビットへの変換表
+	//array<pair<int, int>, param::BITS_SIZE> bit2grid_table; // ビットから座標への変換表
 	array<array<ofRectangle, param::FORM_H>, param::FORM_W> grid_rects; // 格子矩形
 	vector<param::genome_type> initial_individuals; // 初期集団の個体候補
 	param::genome_type base_individual;
@@ -52,12 +52,23 @@ private:
 	param::genome_type best_individual;
 	unordered_map<int, vector<int>> best_user_bit_assignment;
 
+	set<int> selected_users_tmp;
+	int users_num;
+	unordered_map<int, int> user_id_index; // ユーザidに対するインデックス
+	int block_bits_size; // ブロックのビット数
+	array<array<int, param::FORM_H>, param::FORM_W> grid2block_table; // 座標からブロックへの変換表
+	array<pair<int, int>, param::BLOCK_SIZE> block2grid_table; // ブロックから座標への変換表 
+
+	vector<array<int, param::BLOCK_SIZE>> block_assignment; // 各ブロックに対するユーザの割り当て
+	int elite_index;
+	array<int, param::BLOCK_SIZE> elite_block_assignment;
+
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
 	void setup(HandCursor* hc, set<int>* selected_users);
-	void draw_rectangles(const unordered_map<int, vector<int>>& user_bit_assignment) const;
-	void operator()(param::genome_type& best_individual, unordered_map<int, vector<int>>& user_bit_assignment);
-	void operator()(const param::genome_type& initial_individual, param::genome_type& best_individual, unordered_map<int, vector<int>>& user_bit_assignment);
+	void draw_rectangles() const;
+	void operator()(param::genome_type& best_individual);
+	void operator()(const param::genome_type& initial_individual, param::genome_type& best_individual);
 };
 
 #endif
