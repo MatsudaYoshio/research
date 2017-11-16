@@ -8,9 +8,9 @@
 
 class GeneticAlgorithm {
 private:
-	static constexpr int population_size = 20; // 集団サイズ(選択淘汰された後は必ずこの数)
+	static constexpr int population_size = 10; // 集団サイズ(選択淘汰された後は必ずこの数)
 	static constexpr double crossover_probability = 0.8; // 交叉確率(交叉が発生する確率)
-	static constexpr int crossover_pair_number = 8; // 交叉を適応するペア数
+	static constexpr int crossover_pair_number = 4; // 交叉を適応するペア数
 	static constexpr int mutation_probability = 0.01; // 突然変異率(突然変異が発生する確率)
 	/* 近傍探索用の方向ベクトル(8近傍) */
 	static constexpr int dx[] = { 1, 0, -1, 0, 1, -1, -1, 1 };
@@ -21,7 +21,8 @@ private:
 	static std::mt19937 mt;
 	static std::uniform_int_distribution<int> random_0or1; // 0か1を返す乱数
 	static std::uniform_int_distribution<int> random_indivisual; // 集団から個体を選ぶ乱数
-	//static std::uniform_int_distribution<int> random_crossover_point; // 交叉点を選ぶ乱数
+	static std::uniform_int_distribution<int> random_crossover_method; // 交叉手法を選ぶ乱数
+	static std::uniform_int_distribution<int> random_mutation_method; // 突然変異手法を選ぶ乱数
 	static std::uniform_int_distribution<int> random_bit;
 	static std::uniform_real_distribution<double> random_0to1; // 0から1の間の実数を返す乱数
 
@@ -52,6 +53,8 @@ private:
 	set<int> users_id; // ユーザIDリスト
 	int users_num; // ユーザ数
 	unordered_map<int, int> user_id_index; // ユーザIDに対するインデックス
+	int population_size_tmp; // 交叉や突然変異によって増加した一時的な集団サイズ
+	unordered_map<int, set<int>> user_block; // 各ユーザがもつブロック
 
 
 	int elite_index;
@@ -59,10 +62,11 @@ private:
 
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
+	static constexpr int NOT_USER = INT_MIN;
+
 	void setup(HandCursor* hc);
 	void draw_rectangles() const;
-	void operator()(param::genome_type& best_individual, const set<int>& users_id);
-	void operator()(const param::genome_type& initial_individual, param::genome_type& best_individual, const set<int>& users_id);
+	void operator()(const set<int>& users_id);
 };
 
 #endif

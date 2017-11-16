@@ -13,9 +13,7 @@ private:
 	HandCursor hc;
 	MainScene ms;
 	GeneticAlgorithm ga;
-	param::genome_type g;
-	int selected_user_num; // 選択操作をしているユーザ数(サブウィンドウを出しているユーザ数)
-	array<unordered_set<int>, param::BITS_SIZE> user_assignment; // 格子矩形(ビット)に対するユーザの割り当て
+	set<int> selected_users; // 選択操作をしているユーザ
 public:
 	void setup();
 	void update();

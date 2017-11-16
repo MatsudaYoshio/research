@@ -4,30 +4,40 @@ void DigitalSignageApp::setup() {
 	//ofHideCursor(); // カーソル非表示
 	ofEnableAlphaBlending(); // アルファチャンネルを使用可能にする
 
-	this->selected_user_num = 0;
-
 	/* メインシーンの準備 */
 	ofAddListener(this->ms.point_event, this, &DigitalSignageApp::pointed);
 	ofAddListener(this->ms.make_sub_window_event, this, &DigitalSignageApp::make_sub_window);
 	this->ms.setup(&this->hc);
 
-	this->ga.setup(&this->hc, &this->selected_user_num); // 遺伝的アルゴリズムの準備
+	this->ga.setup(&this->hc); // 遺伝的アルゴリズムの準備
 }
 
 void DigitalSignageApp::update() {
 	this->hc.update(); // 手カーソルの更新
+
 	this->ms.update(); // メインシーンの更新
-	if (this->selected_user_num > 0) {
-		this->ga(this->g, this->g, this->user_assignment);
-	}	
+
+	/* 消滅したカーソルがあれば選択しているユーザリストから消す */
+	for (auto id = begin(this->selected_users); id != end(this->selected_users);) {
+		if (this->hc.track_data.find(*id) == end(this->hc.track_data)) {
+			this->selected_users.erase(id++);
+		}
+		else {
+			++id;
+		}
+	}
+
+	if (this->selected_users.size() > 0) {
+		this->ga(this->selected_users);
+	}
 }
 
 void DigitalSignageApp::draw() {
-
+	
 	this->ms.draw(); // メインシーンの描画
 
-	if (this->selected_user_num > 0) {
-		this->ga.draw_rectangles(this->g);
+	if (this->selected_users.size() > 0) {
+		this->ga.draw_rectangles();
 	}
 	
 	///* 手カーソルの描画 */
@@ -52,7 +62,5 @@ void DigitalSignageApp::pointed(pair<int, int> &id) {
 }
 
 void DigitalSignageApp::make_sub_window(pair<int, int>& id) {
-	++this->selected_user_num;
-	this->user_assignment[0].emplace(id.second);
-	this->g.set(0);
+	this->selected_users.emplace(id.second);
 }
