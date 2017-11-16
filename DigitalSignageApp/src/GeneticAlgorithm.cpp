@@ -59,8 +59,36 @@ void GeneticAlgorithm::initialize(const set<int>& users_id) {
 
 	this->genetic_length = BLOCK_SIZE*this->block_bits_size; // 遺伝子長を決める
 
+	vector<vector<int>> user_bits = vector<vector<int>>(this->users_num, vector<int>(this->block_bits_size));
+	for (int j = 0; j < i; ++j) {
+		for (int k = 0; k < this->block_bits_size; ++k) {
+			user_bits[j][k] = j >> k;
+		}
+	}
+
+	uniform_int_distribution<int> random_user(0, i - 1);
+	uniform_int_distribution<int> random_w(2, FORM_W - 2);
+	uniform_int_distribution<int> random_h(2, FORM_H - 2);
+	int user, w, h, x, y;
+	for (i = 0; i < this->population_size / 2; ++i) {
+		this->population[i].resize(this->genetic_length);
+		fill(begin(this->population[i]), end(this->population[i]), false);
+		user = random_user(this->mt);
+		w = random_w(this->mt);
+		h = random_h(this->mt);
+		uniform_int_distribution<int> random_x(0, FORM_W - w);
+		uniform_int_distribution<int> random_y(0, FORM_H - h);
+		x = random_x(this->mt);
+		y = random_y(this->mt);
+		for (int j = x; j < x + w; ++j) {
+			for (int k = y; k < y + h; ++k) {
+				copy(begin(user_bits[user]), end(user_bits[user]), &this->population[i][this->grid2block_table[j][k] * this->block_bits_size]);
+			}
+		}
+	}
+
 	/* 全個体のビットをランダムに初期化する */
-	for (i = 0; i < this->population_size; ++i) {
+	for (i = this->population_size/2+1; i < this->population_size; ++i) {
 		this->population[i].resize(this->genetic_length);
 		for (int j = 0; j < this->genetic_length; ++j) {
 			this->population[i][j] = this->random_0or1(this->mt);
@@ -286,7 +314,6 @@ void GeneticAlgorithm::calculate_fitness() {
 		/* 連結数 */
 		int x, y, nx, ny;
 		bool flag;
-		//array<int, param::BLOCK_SIZE> block_assignment_tmp = this->block_assignment[i];
 		for (const auto& user : this->user_block) {
 			set<int> user_block_tmp = user.second;
 			if (!user_block_tmp.empty()) {
@@ -295,7 +322,6 @@ void GeneticAlgorithm::calculate_fitness() {
 				while (!s.empty()) {
 					x = this->block2grid_table[s.top()].first;
 					y = this->block2grid_table[s.top()].second;
-					//block_assignment_tmp[s.top()] = this->NOT_USER;
 					user_block_tmp.erase(s.top());
 					s.pop();
 					flag = false;

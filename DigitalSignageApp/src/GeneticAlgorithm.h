@@ -56,7 +56,6 @@ private:
 	int population_size_tmp; // 交叉や突然変異によって増加した一時的な集団サイズ
 	unordered_map<int, set<int>> user_block; // 各ユーザがもつブロック
 
-
 	int elite_index;
 	array<int, param::BLOCK_SIZE> elite_block_assignment;
 
