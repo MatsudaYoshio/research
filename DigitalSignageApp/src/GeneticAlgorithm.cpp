@@ -8,7 +8,7 @@ random_device GeneticAlgorithm::rd;
 mt19937 GeneticAlgorithm::mt(GeneticAlgorithm::rd());
 uniform_int_distribution<int> GeneticAlgorithm::random_0or1(0, 1);
 uniform_int_distribution<int> GeneticAlgorithm::random_indivisual(0, GeneticAlgorithm::population_size - 1);
-uniform_int_distribution<int> GeneticAlgorithm::random_crossover_method(1, 6);
+uniform_int_distribution<int> GeneticAlgorithm::random_crossover_method(1, 5);
 uniform_int_distribution<int> GeneticAlgorithm::random_mutation_method(1, 3);
 uniform_int_distribution<int> GeneticAlgorithm::random_bit(0, BLOCK_SIZE);
 uniform_real_distribution<double> GeneticAlgorithm::random_0to1(0.0, 1.0);
@@ -39,7 +39,6 @@ void GeneticAlgorithm::operator()(const set<int>& users_id) {
 		this->calculate_fitness();
 		this->selection();
 	}
-	best_individual = this->best_individual;
 }
 
 void GeneticAlgorithm::initialize(const set<int>& users_id) {
@@ -62,17 +61,17 @@ void GeneticAlgorithm::initialize(const set<int>& users_id) {
 	vector<vector<int>> user_bits = vector<vector<int>>(this->users_num, vector<int>(this->block_bits_size));
 	for (int j = 0; j < i; ++j) {
 		for (int k = 0; k < this->block_bits_size; ++k) {
-			user_bits[j][k] = j >> k;
+			user_bits[j][k] = (j >> k) & 1;
 		}
 	}
 
 	uniform_int_distribution<int> random_user(0, i - 1);
-	uniform_int_distribution<int> random_w(2, FORM_W - 2);
-	uniform_int_distribution<int> random_h(2, FORM_H - 2);
+	uniform_int_distribution<int> random_w(2, FORM_W / 2);
+	uniform_int_distribution<int> random_h(2, FORM_H / 2);
 	int user, w, h, x, y;
-	for (i = 0; i < this->population_size / 2; ++i) {
+	for (i = 0; i < this->population_size; ++i) {
 		this->population[i].resize(this->genetic_length);
-		fill(begin(this->population[i]), end(this->population[i]), false);
+		fill(begin(this->population[i]), end(this->population[i]), true);
 		user = random_user(this->mt);
 		w = random_w(this->mt);
 		h = random_h(this->mt);
@@ -82,18 +81,21 @@ void GeneticAlgorithm::initialize(const set<int>& users_id) {
 		y = random_y(this->mt);
 		for (int j = x; j < x + w; ++j) {
 			for (int k = y; k < y + h; ++k) {
-				copy(begin(user_bits[user]), end(user_bits[user]), &this->population[i][this->grid2block_table[j][k] * this->block_bits_size]);
+				for (int l = 0; l < this->block_bits_size; ++l) {
+					this->population[i][this->grid2block_table[j][k] * this->block_bits_size + l] = user_bits[user][l];
+				}
 			}
 		}
 	}
 
 	/* 全個体のビットをランダムに初期化する */
-	for (i = this->population_size/2+1; i < this->population_size; ++i) {
+	for (i = this->population_size*0.8; i < this->population_size; ++i) {
 		this->population[i].resize(this->genetic_length);
 		for (int j = 0; j < this->genetic_length; ++j) {
 			this->population[i][j] = this->random_0or1(this->mt);
 		}
 	}
+
 }
 
 void GeneticAlgorithm::initialize(const param::genome_type& initial_individual) {
@@ -116,10 +118,10 @@ void GeneticAlgorithm::crossover() {
 			case 1:
 			{
 				/* 一点交叉 */
-				uniform_int_distribution<int> random_crossover_point(1, this->genetic_length - 1);
-				const int crossover_point = random_crossover_point(this->mt);
+				uniform_int_distribution<int> random_crossover_block(1, BLOCK_SIZE - 2);
+				const int crossover_block = random_crossover_block(this->mt);
 				pair<genome_type, genome_type> children(this->population[parents_index.first], this->population[parents_index.second]);
-				for (int j = 0; j < crossover_point; ++j) {
+				for (int j = 0; j < crossover_block*this->block_bits_size; ++j) {
 					children.first[j] = this->population[parents_index.second][j];
 					children.second[j] = this->population[parents_index.first][j];
 				}
@@ -130,13 +132,13 @@ void GeneticAlgorithm::crossover() {
 			case 2:
 			{
 				/* 二点交叉 */
-				uniform_int_distribution<int> random_crossover_point(1, this->genetic_length - 1);
-				pair<int, int> crossover_points(random_crossover_point(this->mt), random_crossover_point(this->mt));
-				while (crossover_points.first == crossover_points.second) {
-					crossover_points.second = random_crossover_point(this->mt);
+				uniform_int_distribution<int> random_crossover_block(1, BLOCK_SIZE - 2);
+				pair<int, int> crossover_blocks(random_crossover_block(this->mt), random_crossover_block(this->mt));
+				while (crossover_blocks.first == crossover_blocks.second) {
+					crossover_blocks.second = random_crossover_block(this->mt);
 				}
 				pair<genome_type, genome_type> children(this->population[parents_index.first], this->population[parents_index.second]);
-				for (int j = crossover_points.first; j < crossover_points.second; ++j) {
+				for (int j = crossover_blocks.first*this->block_bits_size; j < crossover_blocks.second*this->block_bits_size; ++j) {
 					children.first[j] = this->population[parents_index.second][j];
 					children.second[j] = this->population[parents_index.first][j];
 				}
@@ -147,15 +149,17 @@ void GeneticAlgorithm::crossover() {
 			case 3:
 			{
 				/* 一様交叉 */
-				genome_type mask(this->genetic_length);
-				for (int j = 0; j < this->genetic_length; ++j) {
+				genome_type mask(BLOCK_SIZE);
+				for (int j = 0; j < BLOCK_SIZE; ++j) {
 					mask[j] = this->random_0or1(this->mt);
 				}
 				pair<genome_type, genome_type> children(this->population[parents_index.first], this->population[parents_index.second]);
-				for (int j = 0; j < this->genetic_length; ++j) {
+				for (int j = 0; j < BLOCK_SIZE; ++j) {
 					if (mask[j]) {
-						children.first[j] = this->population[parents_index.second][j];
-						children.second[j] = this->population[parents_index.first][j];
+						for (int k = 0; k < this->block_bits_size; ++k) {
+							children.first[j*this->block_bits_size + k] = this->population[parents_index.second][j*this->block_bits_size + k];
+							children.second[j*this->block_bits_size + k] = this->population[parents_index.first][j*this->block_bits_size + k];
+						}
 					}
 				}
 				this->population.emplace_back(children.first);
@@ -164,34 +168,64 @@ void GeneticAlgorithm::crossover() {
 			break;
 			case 4:
 			{
-				/* 算術交叉(AND) */
-				genome_type child(this->genetic_length);
-				for (int j = 0; j < this->genetic_length; ++j) {
-					child[j] = (this->population[parents_index.first][j] && this->population[parents_index.second][j]);
+				/* 直線交叉(水平) */
+				uniform_int_distribution<int> random_line(1, FORM_H - 1);
+				int line = random_line(this->mt);
+				pair<genome_type, genome_type> children(this->population[parents_index.first], this->population[parents_index.second]);
+				for (int j = 0; j < line*FORM_W*this->block_bits_size; ++j) {
+					children.first[j] = this->population[parents_index.second][j];
+					children.second[j] = this->population[parents_index.first][j];
 				}
-				this->population.emplace_back(child);
+				this->population.emplace_back(children.first);
+				this->population.emplace_back(children.second);
 			}
 			break;
 			case 5:
 			{
-				/* 算術交叉(OR) */
-				genome_type child(this->genetic_length);
-				for (int j = 0; j < this->genetic_length; ++j) {
-					child[j] = (this->population[parents_index.first][j] || this->population[parents_index.second][j]);
+				/* 直線交叉(垂直) */
+				uniform_int_distribution<int> random_line(1, FORM_W - 1);
+				int line = random_line(this->mt);
+				pair<genome_type, genome_type> children(this->population[parents_index.first], this->population[parents_index.second]);
+				for (int y = 0; y < FORM_H; ++y) {
+					for (int j = this->grid2block_table[0][y] * this->block_bits_size; j < (this->grid2block_table[0][y] + line) * this->block_bits_size; ++j) {
+						children.first[j] = this->population[parents_index.second][j];
+						children.second[j] = this->population[parents_index.first][j];
+					}
 				}
-				this->population.emplace_back(child);
+				this->population.emplace_back(children.first);
+				this->population.emplace_back(children.second);
 			}
-			break;
-			case 6:
-			{
-				/* 算術交叉(XOR) */
-				genome_type child(this->genetic_length);
-				for (int j = 0; j < this->genetic_length; ++j) {
-					child[j] = (this->population[parents_index.first][j] != this->population[parents_index.second][j]);
-				}
-				this->population.emplace_back(child);
-			}
-			break;
+
+			//case 4:
+			//{
+			//	/* 算術交叉(AND) */
+			//	genome_type child(this->genetic_length);
+			//	for (int j = 0; j < this->genetic_length; ++j) {
+			//		child[j] = (this->population[parents_index.first][j] && this->population[parents_index.second][j]);
+			//	}
+			//	this->population.emplace_back(child);
+			//}
+			//break;
+			//case 5:
+			//{
+			//	/* 算術交叉(OR) */
+			//	genome_type child(this->genetic_length);
+			//	for (int j = 0; j < this->genetic_length; ++j) {
+			//		child[j] = (this->population[parents_index.first][j] || this->population[parents_index.second][j]);
+			//	}
+			//	this->population.emplace_back(child);
+			//}
+			//break;
+			//case 6:
+			//{
+			//	/* 算術交叉(XOR) */
+			//	genome_type child(this->genetic_length);
+			//	for (int j = 0; j < this->genetic_length; ++j) {
+			//		child[j] = (this->population[parents_index.first][j] != this->population[parents_index.second][j]);
+			//	}
+			//	this->population.emplace_back(child);
+			//}
+			//break;
 			}
 		}
 	}
@@ -240,12 +274,14 @@ void GeneticAlgorithm::calculate_fitness() {
 	this->fitness.resize(this->population_size_tmp);
 	fill(begin(this->fitness), end(this->fitness), 0.0);
 
-	this->block_assignment.resize(this->population_size_tmp);
+	this->block_assignments.resize(this->population_size_tmp);
+
+	this->user_block.clear();
 
 	for (int i = 0; i < this->population_size_tmp; ++i) {
 		/* 各ブロックに割り当てられたユーザidを求める */
 		for (int j = 0; j < BLOCK_SIZE; ++j) {
-			this->block_assignment[i][j] = this->NOT_USER;
+			this->block_assignments[i][j] = this->NOT_USER;
 			for (const auto& user_id : this->users_id) {
 				bool flag = true;
 				for (int k = 0; k < this->block_bits_size; ++k) {
@@ -255,7 +291,7 @@ void GeneticAlgorithm::calculate_fitness() {
 					}
 				}
 				if (flag) {
-					this->block_assignment[i][j] = user_id;
+					this->block_assignments[i][j] = user_id;
 					this->user_block[user_id].emplace(j); // 各ユーザがもつブロックを求める
 					break;
 				}
@@ -264,7 +300,7 @@ void GeneticAlgorithm::calculate_fitness() {
 
 		/** 面積 **/
 
-		double area_sum = count_if(begin(this->block_assignment[i]), end(this->block_assignment[i]), [this](int x) { return x != this->NOT_USER; }); // 全ユーザの領域面積の合計
+		double area_sum = count_if(begin(this->block_assignments[i]), end(this->block_assignments[i]), [this](int x) { return x != this->NOT_USER; }); // 全ユーザの領域面積の合計
 
 		/* 各ユーザの領域面積 */
 		unordered_map<int, double> area(this->users_num);
@@ -279,13 +315,13 @@ void GeneticAlgorithm::calculate_fitness() {
 		area_variance -= area_mean*area_mean;
 
 		if (area_mean <= BLOCK_SIZE / 4) {
-			this->fitness[i] += 1000 * exp(-pow(area_mean - BLOCK_SIZE / 4, 2));
+			this->fitness[i] += exp(-pow(area_mean - BLOCK_SIZE / 4, 2));
 		}
 		else {
 			this->fitness[i] += 1000 * (BLOCK_SIZE / 4 - area_mean);
 		}
 
-		this->fitness[i] -= area_variance / 100;
+		this->fitness[i] -= area_variance / 10;
 
 		//this->fitness[i] += area_sum;
 
@@ -337,14 +373,52 @@ void GeneticAlgorithm::calculate_fitness() {
 						}
 					}
 					if (!flag && !user_block_tmp.empty()) {
-						this->fitness[i] -= 10000;
+						this->fitness[i] -= 100;
 						break;
 					}
 				}
 			}
 			else {
-				this->fitness[i] -= 10000;
+				this->fitness[i] -= 100;
 			}
+		}
+
+		/* 他のユーザのカーソルからの距離を求める */
+		unordered_map<int, double> cursor_distance(this->users_num);
+		for (const auto& main_user : this->user_block) {
+			cursor_distance.emplace(make_pair(main_user.first, 0.0));
+			for (const auto& other_user : this->users_id) {
+				if (main_user.first == other_user) {
+					continue;
+				}
+				try {
+					for (const auto& block : main_user.second) {
+						cursor_distance[main_user.first] += this->euclid_distance(this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().x, this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().y, W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y);
+					}
+				}
+				catch (std::out_of_range&) {}
+
+			}
+		}
+
+		for (const auto& user : this->user_block) {
+			this->fitness[i] += 100 * cursor_distance[user.first];
+		}
+
+		/* 顔との距離を求める */
+		unordered_map<int, double> face_distance(this->users_num);
+		for (const auto& user : this->user_block) {
+			face_distance.emplace(make_pair(user.first, 0.0));
+			try {
+				for (const auto& block : user.second) {
+					face_distance[user.first] += this->euclid_distance(this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().x, this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().y, W - hc->track_data.at(user.first).face.left() - hc->track_data.at(user.first).face.width() / 2, hc->track_data.at(user.first).face.top() + hc->track_data.at(user.first).face.height() / 2);
+				}
+			}
+			catch (std::out_of_range&) {}
+		}
+
+		for (const auto& user : this->user_block) {
+			this->fitness[i] -= 10000 * face_distance[user.first];
 		}
 
 		//for (int i = 0; i < population_size_now; ++i) {
@@ -571,8 +645,8 @@ void GeneticAlgorithm::selection() {
 
 	/* エリート主義(最適個体を確保) */
 	this->elite_index = max_element(begin(this->fitness), end(this->fitness)) - begin(this->fitness);
-	this->best_individual = new_population[0] = this->population[this->elite_index];
-	this->elite_block_assignment = this->block_assignment[this->elite_index];
+	this->elite_individual = new_population[0] = this->population[this->elite_index];
+	this->elite_block_assignment = this->block_assignments[this->elite_index];
 
 	const double fitness_max = this->fitness[this->elite_index]; // 適応度の最大値
 	const double fitness_min = *min_element(begin(this->fitness), end(this->fitness)); // 適応度の最小値
@@ -630,12 +704,12 @@ void GeneticAlgorithm::selection() {
 	this->population = new_population;
 }
 
-void GeneticAlgorithm::draw_rectangles() const {
+void GeneticAlgorithm::draw(const array<int, param::BLOCK_SIZE>& block_assignment) const {
 	ofFill();
 	for (int i = 0; i < BLOCK_SIZE; ++i) {
-		if (this->elite_block_assignment[i] != -1) {
+		if (block_assignment[i] != this->NOT_USER) {
 			try {
-				ofSetColor(this->hc->track_data.at(this->elite_block_assignment[i]).cursor_color);
+				ofSetColor(this->hc->track_data.at(block_assignment[i]).cursor_color);
 			}
 			catch (std::out_of_range&) {
 				continue;
@@ -644,6 +718,10 @@ void GeneticAlgorithm::draw_rectangles() const {
 		}
 	}
 	ofNoFill();
+}
+
+void GeneticAlgorithm::draw() const {
+	this->draw(this->elite_block_assignment);
 }
 
 double GeneticAlgorithm::euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const {

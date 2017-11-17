@@ -37,7 +37,7 @@ void DigitalSignageApp::draw() {
 	this->ms.draw(); // メインシーンの描画
 
 	if (this->selected_users.size() > 0) {
-		this->ga.draw_rectangles();
+		this->ga.draw();
 	}
 	
 	///* 手カーソルの描画 */
