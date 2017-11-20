@@ -11,7 +11,7 @@ private:
 	static constexpr int population_size = 20; // 集団サイズ(選択淘汰された後は必ずこの数)
 	static constexpr double crossover_probability = 0.8; // 交叉確率(交叉が発生する確率)
 	static constexpr int crossover_pair_number = 8; // 交叉を適応するペア数
-	static constexpr int mutation_probability = 0.01; // 突然変異率(突然変異が発生する確率)
+	static constexpr int mutation_probability = 0.2; // 突然変異率(突然変異が発生する確率)
 	/* 近傍探索用の方向ベクトル(8近傍) */
 	static constexpr int dx[] = { 1, 0, -1, 0, 1, -1, -1, 1 };
 	static constexpr int dy[] = { 0, -1, 0, 1, -1, -1, 1, 1 };

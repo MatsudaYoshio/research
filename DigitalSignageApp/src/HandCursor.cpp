@@ -26,11 +26,11 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	this->track_data[-3].cursor_color_id = 0;
 	this->track_data[-3].cursor_color = ofColor::blue;
 
-	//this->track_data[-2].current_pointer.x = 1100;
-	//this->track_data[-2].current_pointer.y = 600;
-	//this->track_data[-2].face = dlib::rectangle(450, 600, 50, 50);
-	//this->track_data[-2].cursor_color_id = 1;
-	//this->track_data[-2].cursor_color = ofColor::red;
+	this->track_data[-2].current_pointer.x = 1100;
+	this->track_data[-2].current_pointer.y = 600;
+	this->track_data[-2].face = dlib::rectangle(450, 600, 50, 50);
+	this->track_data[-2].cursor_color_id = 1;
+	this->track_data[-2].cursor_color = ofColor::red;
 
 }
 
