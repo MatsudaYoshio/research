@@ -9,10 +9,10 @@
 class GeneticAlgorithm {
 private:
 	static constexpr int population_size = 20; // 集団サイズ(選択淘汰された後は必ずこの数)
-	static constexpr double crossover_probability = 0.8; // 交叉確率(交叉が発生する確率)
+	static constexpr double crossover_probability = 0; // 交叉確率(交叉が発生する確率)
 	static constexpr int crossover_pair_number = 8; // 交叉を適応するペア数
-	static constexpr int mutation_probability = 0.2; // 突然変異率(突然変異が発生する確率)
-	/* 近傍探索用の方向ベクトル(8近傍) */
+	static constexpr double mutation_probability = 0.8; // 突然変異率(突然変異が発生する確率)
+	/* 近傍探索用の方向ベクトル(インデックスを0～3まで使えば4近傍、全部使えば8近傍) */
 	static constexpr int dx[] = { 1, 0, -1, 0, 1, -1, -1, 1 };
 	static constexpr int dy[] = { 0, -1, 0, 1, -1, -1, 1, 1 };
 
@@ -23,7 +23,7 @@ private:
 	static std::uniform_int_distribution<int> random_indivisual; // 集団から個体を選ぶ乱数
 	static std::uniform_int_distribution<int> random_crossover_method; // 交叉手法を選ぶ乱数
 	static std::uniform_int_distribution<int> random_mutation_method; // 突然変異手法を選ぶ乱数
-	static std::uniform_int_distribution<int> random_bit;
+	static std::uniform_int_distribution<int> random_block;
 	static std::uniform_real_distribution<double> random_0to1; // 0から1の間の実数を返す乱数
 
 	HandCursor* hc; // 手カーソル
@@ -67,6 +67,8 @@ public:
 	void draw() const;
 	void draw(const array<int, param::BLOCK_SIZE>& block_assignment) const;
 	void operator()(const set<int>& users_id);
+
+	
 };
 
 #endif
