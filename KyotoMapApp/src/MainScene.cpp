@@ -38,8 +38,9 @@ void MainScene::update() {
 		case static_cast<int>(Icon::STATE::POINT) :
 			for (auto u = begin(this->user_id_list); u != end(this->user_id_list); ++u) {
 				try {
+					/* アイコンの矩形内にユーザのポインタがあったらpoint_eventを発火 */
 					if (i.is_inside(ofPoint(W - this->hc->track_data.at(*u).current_pointer.x, this->hc->track_data.at(*u).current_pointer.y))) {
-						pair<int, int> id(i.get_content_id(), *u); // コンテンツidとユーザidの情報
+						pair<int, int> id(i.get_content_id(), *u); // firstがコンテンツid、secondがユーザidの情報
 						ofNotifyEvent(this->point_event, id);
 						goto CONTINUE_LOOP;
 					}
@@ -60,8 +61,9 @@ void MainScene::update() {
 }
 
 void MainScene::draw() {
-	this->db.draw();
+	this->db.draw(); // 背景(グラデーション)を描く
 
+	/* 左上に縁がある文字を描く */
 	ofSetColor(ofColor::black);
 	for (int x = -6; x < 6; ++x) {
 		for (int y = -6; y < 6; ++y) {
@@ -124,9 +126,7 @@ void MainScene::draw() {
 			}
 		}
 	}
-	catch (std::out_of_range&) {
-
-	}
+	catch (std::out_of_range&) {}
 }
 
 void MainScene::select_icon(pair<int, int>& id) {

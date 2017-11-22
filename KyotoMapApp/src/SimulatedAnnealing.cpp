@@ -16,9 +16,10 @@ void SimulatedAnnealing::operator() (const unordered_map<int, ofRectangle>& star
 	this->current_cost = this->next_cost = this->best_cost = DBL_MAX;
 
 	for (int i = 0; i < this->MAX_ITERATION; ++i) {
-		if (!this->set_next_state()) {
+		if (!this->set_next_state()) {　// パラメータの修正によって制約外の解になったらパラメータの修正を行わない
 			continue;
 		}
+
 		this->calculate_cost();
 
 		if (this->next_cost > this->current_cost) {
@@ -62,7 +63,9 @@ bool SimulatedAnnealing::set_next_state() {
 		break;
 	}
 
+	
 	for (const auto &s : this->next_state) {
+		/* パラメータの修正によって制約外の解になったら*/
 		if (s.second.getLeft() < 0.01*W || s.second.getRight() > 0.99*W || s.second.getTop() < 0.01*H || s.second.getBottom() > 0.99*H || s.second.width > W / 2 || s.second.height > H / 2) {
 			return false;
 		}
@@ -83,6 +86,7 @@ void SimulatedAnnealing::calculate_cost() {
 	for (const auto &s : this->next_state) {
 		area_sum += s.second.getArea();
 
+		/* 矩形の縦横比 */
 		double aspect_ratio = s.second.width / s.second.height;
 		if (1.0 / b < aspect_ratio && aspect_ratio < b) {
 			this->next_cost += a*exp(-pow(aspect_ratio - ((b*b + 1) / (2 * b)), 2));
@@ -91,8 +95,9 @@ void SimulatedAnnealing::calculate_cost() {
 			this->next_cost += c;
 		}
 
-		this->next_cost -= 4000 * s.second.getArea();
+		this->next_cost -= 4000 * s.second.getArea(); // 面積
 
+		/* 矩形と他のカーソルとの距離 */
 		for (const auto &id : *this->main_window_user_list) {
 			if (s.second.inside(this->hc->track_data[id].current_pointer.x, this->hc->track_data[id].current_pointer.y)) {
 				this->next_cost += 100000;
@@ -100,6 +105,7 @@ void SimulatedAnnealing::calculate_cost() {
 			this->next_cost -= 5000 * this->euclid_distance(s.second.x, s.second.y, this->hc->track_data[id].current_pointer.x, this->hc->track_data[id].current_pointer.y);
 		}
 
+		/* 矩形と顔との距離 */
 		for (const auto &td : this->hc->track_data) {
 			if (this->sub_windows->at(s.first).get_user_id() == td.first) {
 				this->next_cost += 10 * this->euclid_distance(s.second.x, s.second.y, W - td.second.face.left() - td.second.face.width() / 2, td.second.face.top() + td.second.face.height() / 2);
@@ -108,7 +114,7 @@ void SimulatedAnnealing::calculate_cost() {
 		}
 
 		for (const auto &s2 : this->next_state) {
-			this->next_cost += 500 * s.second.getIntersection(s2.second).getArea();
+			this->next_cost += 500 * s.second.getIntersection(s2.second).getArea(); // 重複面積
 		}
 
 	}
@@ -116,7 +122,7 @@ void SimulatedAnnealing::calculate_cost() {
 	double area_mean = area_sum / this->next_state.size();
 
 	for (const auto &s : this->next_state) {
-		this->next_cost += 0.1*pow(area_mean - s.second.getArea(), 2);
+		this->next_cost += 0.1*pow(area_mean - s.second.getArea(), 2); // 面積の分散
 	}
 }
 

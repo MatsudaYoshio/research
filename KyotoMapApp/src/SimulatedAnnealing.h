@@ -10,6 +10,7 @@
 class SimulatedAnnealing {
 private:
 	HandCursor* hc;
+
 	vector<int>* active_window_list;
 	vector<int>* main_window_user_list;
 	unordered_map<int, SubWindow>* sub_windows;
