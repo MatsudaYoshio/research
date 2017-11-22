@@ -26,8 +26,7 @@ void DigitalSignageApp::update() {
 			++id;
 		}
 	}
-
-	if (this->selected_users.size() > 0) {
+		if (this->selected_users.size() > 0) {
 		this->ga(this->selected_users);
 	}
 }
