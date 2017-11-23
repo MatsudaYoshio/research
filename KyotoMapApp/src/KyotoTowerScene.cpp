@@ -20,7 +20,18 @@ void KyotoTowerScene::draw() {
 	this->img.draw(0, 0, W / 2, H / 4);
 
 	ofSetColor(ofColor::black); // •¶ŽšF‚ðŽw’è
-	this->title_font.drawString(L"‹ž“s‚Ìƒ‰ƒ“ƒhƒ}[ƒNu‹ž“sƒ^ƒ[v", 50, H / 4 + 50);
+	this->title_font.drawString(L"‹ž“sƒ^ƒ[", 30, H / 4 + 50);
 
-	this->sentence_font.drawString(L"‹ž“s‚ÌŒºŠÖŒû‚É˜È‚ÝAZlAŠÏŒõ‹q‚ð‰·‚©‚­Œ}‚¦‚é‹ž“sƒ^ƒ[B", 50, H / 4 + 100);
+	//this->sentence_font.drawString(L"‰c‹ÆŽžŠÔF9:00~12:00\n\nZŠF‹ž“sŽs‰º‹ž‹æ‰GŠÛ’ÊŽµð‰º‚é“Œ‰–¬˜H’¬721-1\n\nTELF075-361-3215", 50, H / 4 + 100);
+	this->sentence_font.drawString(L"¡‰c‹ÆŽžŠÔF", 40, H / 4 + 100);
+	ofSetColor(ofColor::red);
+	this->sentence_font.drawString(L"9:00~21:00", 200, H / 4 + 100);
+	ofSetColor(ofColor::black);
+	this->sentence_font.drawString(L"\n\n¡ZŠF", 40, H / 4 + 100);
+	ofSetColor(ofColor::red);
+	this->sentence_font.drawString(L"\n\n‹ž“sŽs‰º‹ž‹æ‰GŠÛ’ÊŽµð‰º‚é“Œ‰–¬˜H’¬721-1", 150, H / 4 + 100);
+	ofSetColor(ofColor::black);
+	this->sentence_font.drawString(L"\n\n\n\n¡TELF", 40, H / 4 + 100);
+	ofSetColor(ofColor::red);
+	this->sentence_font.drawString(L"\n\n\n\n075-361-3215", 150, H / 4 + 100);
 }

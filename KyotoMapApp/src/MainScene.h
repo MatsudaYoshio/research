@@ -19,7 +19,10 @@ private:
 	static constexpr int curve_vertices_num = 7;
 	vector<ofPoint> curve_vertices;
 	
-	ofxTrueTypeFontUC font;
+	ofxTrueTypeFontUC title_font;
+	ofxTrueTypeFontUC kamogawa_font;
+
+	ofTexture hotel_texture;
 public:
 	vector<int> user_id_list;
 

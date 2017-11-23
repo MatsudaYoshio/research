@@ -17,7 +17,7 @@ private:
 	MainScene main_scene;
 
 	unordered_map<int, SubWindow> sub_windows;
-	map<long long int, bool> cursor_log;
+	set<long long int> cursor_log;
 	long long int scene_id = 0;
 	queue<int> erase_scene_id;
 	unordered_map<int, ofRectangle> rects_tmp, best_rects, old_rects;

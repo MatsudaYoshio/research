@@ -5,6 +5,7 @@
 #include "HigashihonganjiScene.h"
 #include "SyoseienScene.h"
 #include "NishihonganjiScene.h"
+#include "RyukokuMuseumScene.h"
 #include "AppParameters.h"
 
 #include <opencv2/opencv.hpp>
@@ -102,7 +103,7 @@ void SceneManager::update() {
 	/* 新しく検出したカーソルがあればメインシーンのユーザidリストに追加する */
 	for (const auto &t : this->hc->track_data) {
 		if (this->cursor_log.find(t.first) == end(this->cursor_log)) {
-			this->cursor_log.insert(make_pair(t.first, true));
+			this->cursor_log.emplace(t.first);
 			this->main_scene.user_id_list.emplace_back(t.first);
 		}
 	}
@@ -165,6 +166,9 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 		case static_cast<int>(CONTENT_ID::NISHIHONGANJI) :
 			sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
 			break;
+		case static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM) :
+			sub_window.setup(new RyukokuMuseumScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+			break;
 		}
 		
 		ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);
@@ -203,6 +207,9 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 			break;
 		case static_cast<int>(CONTENT_ID::NISHIHONGANJI) :
 			sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
+			break;
+		case static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM) :
+			sub_window.setup(new RyukokuMuseumScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
 			break;
 		}
 		ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);

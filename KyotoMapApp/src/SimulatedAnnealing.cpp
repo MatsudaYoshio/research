@@ -16,7 +16,7 @@ void SimulatedAnnealing::operator() (const unordered_map<int, ofRectangle>& star
 	this->current_cost = this->next_cost = this->best_cost = DBL_MAX;
 
 	for (int i = 0; i < this->MAX_ITERATION; ++i) {
-		if (!this->set_next_state()) {　// パラメータの修正によって制約外の解になったらパラメータの修正を行わない
+		if (!this->set_next_state()) { // パラメータの修正によって制約外の解になったらパラメータの修正を行わない
 			continue;
 		}
 

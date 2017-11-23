@@ -22,5 +22,15 @@ void SyoseienScene::draw() {
 	ofSetColor(ofColor::black); // •¶ŽšF‚ðŽw’è
 	this->title_font.drawString(L"Â¬‰€(žkŠk“@)", 50, H / 4 + 50);
 
-	this->sentence_font.drawString(L"u‚¨“Œ‚³‚ñv‚Æ‹ž“sŽs–¯‚Ée‚µ‚Ü‚ê‚Ä‚¢‚é“Œ–{ŠèŽ›‚Ì’ë‰€B", 50, H / 4 + 100);
+	this->sentence_font.drawString(L"¡”qŠÏEŠJŠÙŽžŠÔF", 40, H / 4 + 100);
+	ofSetColor(ofColor::red);
+	this->sentence_font.drawString(L"9:00~17:00", 280, H / 4 + 100);
+	ofSetColor(ofColor::black);
+	this->sentence_font.drawString(L"\n\n¡ZŠF", 40, H / 4 + 100);
+	ofSetColor(ofColor::red);
+	this->sentence_font.drawString(L"\n\n‹ž“sŽs‰º‹ž‹æ‰ºŽì”‰®’¬’ÊŠÔ”V’¬“Œ“ü“Œ‹Ê…’¬", 150, H / 4 + 100);
+	ofSetColor(ofColor::black);
+	this->sentence_font.drawString(L"\n\n\n\n¡TELF", 40, H / 4 + 100);
+	ofSetColor(ofColor::red);
+	this->sentence_font.drawString(L"\n\n\n\n075-371-9210", 150, H / 4 + 100);
 }

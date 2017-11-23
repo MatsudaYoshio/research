@@ -7,7 +7,10 @@ void MainScene::setup(HandCursor* hc) {
 
 	this->hc = hc;
 
-	this->font.loadFont("meiryob.ttc", 40);
+	this->title_font.loadFont("meiryob.ttc", 40);
+	this->kamogawa_font.loadFont("meiryob.ttc", 50);
+
+	ofLoadImage(this->hotel_texture, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/building_hotel_small.png");
 
 	this->curve_vertices.resize(this->curve_vertices_num);
 	this->curve_vertices[0].set(W, -0.185*H);
@@ -18,11 +21,12 @@ void MainScene::setup(HandCursor* hc) {
 	this->curve_vertices[5].set(0.964*W, 0.926*H);
 	this->curve_vertices[6].set(1.042*W, H);
 
-	this->icons.resize(4);
+	this->icons.resize(5);
 	this->icons[static_cast<int>(CONTENT_ID::KYOTO_TOWER)].setup(800, 780, 200, 200, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/kyoto_tower.png", static_cast<int>(CONTENT_ID::KYOTO_TOWER));
 	this->icons[static_cast<int>(CONTENT_ID::HIGASHIHONGANJI)].setup(750, 450, 250, 250, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple.png", static_cast<int>(CONTENT_ID::HIGASHIHONGANJI));
 	this->icons[static_cast<int>(CONTENT_ID::SYOSEIEN)].setup(1300, 500, 200, 200, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/syoseien_t.png", static_cast<int>(CONTENT_ID::SYOSEIEN));
 	this->icons[static_cast<int>(CONTENT_ID::NISHIHONGANJI)].setup(200, 500, 200, 200, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple2.png", static_cast<int>(CONTENT_ID::NISHIHONGANJI));
+	this->icons[static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM)].setup(450, 450, 150, 150, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/tatemono_hakubutsukan.png", static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM));
 
 	for (auto &i : this->icons) {
 		ofAddListener(i.select_event, this, &MainScene::select_icon);
@@ -67,11 +71,11 @@ void MainScene::draw() {
 	ofSetColor(ofColor::black);
 	for (int x = -6; x < 6; ++x) {
 		for (int y = -6; y < 6; ++y) {
-			this->font.drawString(L"京都マップ", 70+x, 70+y);
+			this->title_font.drawString(L"京都マップ", 70+x, 70+y);
 		}
 	}
 	ofSetColor(ofColor::white);
-	this->font.drawString(L"京都マップ", 70, 70);
+	this->title_font.drawString(L"京都マップ", 70, 70);
 
 	/* 川の描画 */
 	ofFill();
@@ -96,6 +100,10 @@ void MainScene::draw() {
 
 	ofEndShape();
 
+	ofSetColor(ofColor::black);
+	this->kamogawa_font.drawString(L"鴨", 1820, 400);
+	this->kamogawa_font.drawString(L"川", 1820, 600);
+
 	/* 道の描画 */
 	ofSetColor(ofColor::gold);
 	ofRectRounded(0.026*W, 0.185*H, 1.042*W, 0.026*W, 20);
@@ -110,8 +118,12 @@ void MainScene::draw() {
 	for (auto &i : this->icons) {
 		i.draw();
 	}
-
+	
+	/* ホテルテクスチャの描画 */
 	ofSetColor(ofColor::white);
+	this->hotel_texture.draw(660, 890, 80, 80);
+	this->hotel_texture.draw(300, 300, 80, 80);
+	this->hotel_texture.draw(890, 300, 80, 80);
 
 	/* 手カーソルの描画 */
 	try {

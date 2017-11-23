@@ -20,7 +20,18 @@ void HigashihonganjiScene::draw() {
 	this->img.draw(0, 0, W / 2, H / 4);
 
 	ofSetColor(ofColor::black); // •¶ŽšF‚ðŽw’è
-	this->title_font.drawString(L"“Œ–{ŠèŽ›i^@–{•_j", 50, H / 4 + 50);
+	this->title_font.drawString(L"“Œ–{ŠèŽ›i^@–{•_j", 30, H / 4 + 50);
 
-	this->sentence_font.drawString(L"“Œ–{ŠèŽ›‚ÍAò“y^@u^@‘å’J”hv‚Ì–{ŽR‚Åu^@–{•_v‚Æ‚¢‚¢A\nŒä‰e“°‚É‚Í@‘cEeêa¹l‚ÌŒä^‰e‚ðAˆ¢–í‘É“°‚É‚Í‚²–{‘¸‚Ìˆ¢–í‘É”@—ˆ\n‚ðˆÀ’u‚µ‚Ä‚¢‚Ü‚·B\n@‘ceêa¹l‚Ì–S‚«ŒãA¹l‚ð•ç‚¤‘½‚­‚ÌlX‚É‚æ‚Á‚Ä¹l‚Ì•­•æ‚Ì’n‚É\nŒä^‰e‚ðˆÀ’u‚·‚é•_“°‚ªŒš‚Ä‚ç‚ê‚Ü‚µ‚½B", 50, H / 4 + 100);
+	//this->sentence_font.drawString(L"¡ŠJ–åE•Â–åŽžŠÔF5:50~17:30(3ŒŽ~10ŒŽ)A6:20~16:30(11ŒŽ~2ŒŽ)\n\n¡ZŠF‹ž“sŽs‰º‹ž‹æ‰GŠÛ’ÊŽµðã‚é\n\n¡TELF075-371-9181", 50, H / 4 + 100);
+	this->sentence_font.drawString(L"¡ŠJ–åE•Â–åŽžŠÔF", 40, H / 4 + 100);
+	ofSetColor(ofColor::red);
+	this->sentence_font.drawString(L"5:50~17:30(3ŒŽ~10ŒŽ)A6:20~16:30(11ŒŽ~2ŒŽ)", 280, H / 4 + 100);
+	ofSetColor(ofColor::black);
+	this->sentence_font.drawString(L"\n\n¡ZŠF", 40, H / 4 + 100);
+	ofSetColor(ofColor::red);
+	this->sentence_font.drawString(L"\n\n‹ž“sŽs‰º‹ž‹æ‰GŠÛ’ÊŽµðã‚éí—t’¬754", 150, H / 4 + 100);
+	ofSetColor(ofColor::black);
+	this->sentence_font.drawString(L"\n\n\n\n¡TELF", 40, H / 4 + 100);
+	ofSetColor(ofColor::red);
+	this->sentence_font.drawString(L"\n\n\n\n075-371-9181", 150, H / 4 + 100);
 }
