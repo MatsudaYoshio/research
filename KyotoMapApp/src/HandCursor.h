@@ -28,6 +28,7 @@
 #include "UEyeVideoCapture.h"
 #include "FrameRateCounter.h"
 #include "ofColor.h"
+#include "AppParameters.h"
 
 class HandCursor {
 
@@ -38,7 +39,7 @@ private:
 	using track_data_type = struct {
 		dlib::rectangle hand, face;
 		cv::Point past_pointer, current_pointer;
-		int cursor_color_id;
+		int cursor_color_id = -1;
 		ofColor cursor_color;
 		dlib::drectangle current_pos;
 		std::vector<std::pair<int, dlib::rectangle>> track_hand_dets;
@@ -47,9 +48,11 @@ private:
 	static constexpr int resize_size = 80;
 	static constexpr double decision_ratio = 0.5;
 	static constexpr double overlap_ratio = 0.1;
-	const cv::Scalar RED = cv::Scalar(0, 0, 255);
-	const cv::Scalar BLUE = cv::Scalar(255, 0, 0);
-	const cv::Scalar ORANGE = cv::Scalar(76, 183, 255);
+	static const string model_path;
+	static const ofColor cursor_color_list[];
+	static const cv::Scalar CV_RED;
+	static const cv::Scalar CV_BLUE;
+	static const cv::Scalar CV_ORANGE;
 
 	std::vector<dlib::rectangle> face_dets, hand_dets;
 	dlib::frontal_face_detector face_detector; // ê≥ñ äÁåüèoäÌ
@@ -67,7 +70,6 @@ private:
 	NonMaximumSuppression nms;
 	UEyeVideoCapture cap;
 	FrameRateCounter frc;
-	std::vector<ofColor> cursor_color_list;
 	std::random_device rd;
 	std::mt19937 mt;
 	std::uniform_int_distribution<int> rn_color;

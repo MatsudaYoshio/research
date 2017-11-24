@@ -1,24 +1,28 @@
 #include "HandCursor.h"
-#include "AppParameters.h"
 
 using namespace std;
 using namespace dlib;
 using namespace cv;
 using namespace param;
 
+const string HandCursor::model_path = "C:/Users/matsuda/workspace/machine_learning_data/hand/20170813/linear_svm_function.dat"; // 学習モデルのパス
+
+/* カーソルの色 */
+const ofColor HandCursor::cursor_color_list[] = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::pink };
+
+/* Scalar型の色 */
+const Scalar HandCursor::CV_RED = Scalar(0, 0, 255);
+const Scalar HandCursor::CV_BLUE = Scalar(255, 0, 0);
+const Scalar HandCursor::CV_ORANGE = Scalar(76, 183, 255);
+
 HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0), mt(rd()) {
 	this->face_detector = get_frontal_face_detector();
 
-	deserialize("C:/Users/matsuda/workspace/machine_learning_data/hand/20170813/linear_svm_function.dat") >> df; // ファイルから学習済みのモデルを読み込む
+	deserialize(this->model_path) >> df; // ファイルから学習済みのモデルを読み込む
 
 	this->frame = Mat(Size(W, H), CV_8UC3);
 
-	this->cursor_color_list.emplace_back(ofColor::blue);
-	this->cursor_color_list.emplace_back(ofColor::red);
-	this->cursor_color_list.emplace_back(ofColor::green);
-	this->cursor_color_list.emplace_back(ofColor::black);
-	this->cursor_color_list.emplace_back(ofColor::pink);
-	this->rn_color = uniform_int_distribution<int>(0, this->cursor_color_list.size() - 1);
+	this->rn_color = uniform_int_distribution<int>(0, 7);
 
 	//this->track_data[-1].current_pointer.x = 1000;
 	//this->track_data[-1].current_pointer.y = 900;
@@ -62,15 +66,15 @@ void HandCursor::show_detect_window() {
 	this->view_frame = this->frame;
 
 	parallel_for(0, this->hand_dets.size(), [&](long i) {
-		cv::rectangle(view_frame, Point(this->hand_dets[i].left(), this->hand_dets[i].top()), Point(this->hand_dets[i].right(), this->hand_dets[i].bottom()), this->RED, 5);
+		cv::rectangle(view_frame, Point(this->hand_dets[i].left(), this->hand_dets[i].top()), Point(this->hand_dets[i].right(), this->hand_dets[i].bottom()), this->CV_RED, 5);
 	});
 
 	parallel_for(0, this->face_dets.size(), [&](long i) {
-		cv::rectangle(view_frame, Point(this->face_dets[i].left(), this->face_dets[i].top()), Point(this->face_dets[i].right(), this->face_dets[i].bottom()), this->BLUE, 5);
+		cv::rectangle(view_frame, Point(this->face_dets[i].left(), this->face_dets[i].top()), Point(this->face_dets[i].right(), this->face_dets[i].bottom()), this->CV_BLUE, 5);
 	});
 
 	for (const auto &t : this->track_data) {
-		cv::rectangle(view_frame, Point(t.second.current_pos.left(), t.second.current_pos.top()), Point(t.second.current_pos.right(), t.second.current_pos.bottom()), this->ORANGE, 5);
+		cv::rectangle(view_frame, Point(t.second.current_pos.left(), t.second.current_pos.top()), Point(t.second.current_pos.right(), t.second.current_pos.bottom()), this->CV_ORANGE, 5);
 	}
 
 	imshow("detect window", view_frame);
@@ -84,7 +88,7 @@ void HandCursor::face_detect() {
 
 	if (!this->face_dets.empty()) { // 検出した顔があれば
 
-									/* 既に追跡している顔の近くの顔は除く */
+		/* 既に追跡している顔の近くの顔は除く */
 		for (const auto &td : this->track_data) {
 			for (auto fd = begin(this->face_dets); fd != end(this->face_dets);) {
 				if (this->euclid_distance((td.second.face.left() + td.second.face.right()) / 2, (td.second.face.top() + td.second.face.bottom()) / 2, (fd->left() + fd->right()) / 2, (fd->top() + fd->bottom()) / 2) < 500) {
