@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <map>
 #include <random>
+#include <mutex>
 
 /* dlib */
 #include <dlib/image_io.h>
@@ -46,34 +47,42 @@ private:
 	};
 
 	static constexpr int resize_size = 80;
-	static constexpr double decision_ratio = 0.5;
+	static constexpr double decision_ratio = 0.6;
 	static constexpr double overlap_ratio = 0.1;
+	static constexpr int image_buffer_max_size = 10;
 	static const string model_path;
 	static const ofColor cursor_color_list[];
 	static const cv::Scalar CV_RED;
 	static const cv::Scalar CV_BLUE;
 	static const cv::Scalar CV_ORANGE;
 
+	/* 乱数 */
+	static std::random_device rd;
+	static std::mt19937 mt;
+	static std::uniform_int_distribution<int> random_color;
+
 	std::vector<dlib::rectangle> face_dets, hand_dets;
 	dlib::frontal_face_detector face_detector; // 正面顔検出器
 	dlib::decision_function<kernel_type> df; // 決定境界の関数
-	dlib::array2d<unsigned char> image_gs;
 	dlib::array2d<dlib::bgr_pixel> image_org;
+
 	bool face_thread_flag;
 	bool hand_thread_flag;
+	bool stop_flag;
 
 	/* frame_countとtrack_idはインクリメントによってオーバフローする可能性がある */
 	long long int frame_count;
 	long long int track_id; // track_dataを識別するidで、後のuser_id
-	
+
 	cv::Mat frame, view_frame;
 	NonMaximumSuppression nms;
 	UEyeVideoCapture cap;
 	FrameRateCounter frc;
-	std::random_device rd;
-	std::mt19937 mt;
-	std::uniform_int_distribution<int> rn_color;
-	bool stop_flag;
+
+	std::mutex mtx;
+
+	std::array<dlib::array2d<unsigned char>, image_buffer_max_size> image_buffer;
+	int buffer_push_offset, buffer_pop_offset;
 public:
 	std::map<long long int, track_data_type> track_data;
 

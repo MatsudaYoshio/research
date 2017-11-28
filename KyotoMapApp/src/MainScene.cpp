@@ -42,9 +42,8 @@ void MainScene::update() {
 		case static_cast<int>(Icon::STATE::POINT) :
 			for (auto u = begin(this->user_id_list); u != end(this->user_id_list); ++u) {
 				try {
-					/* アイコンの矩形内にユーザのポインタがあったらpoint_eventを発火 */
 					if (i.is_inside(ofPoint(W - this->hc->track_data.at(*u).current_pointer.x, this->hc->track_data.at(*u).current_pointer.y))) {
-						pair<int, int> id(i.get_content_id(), *u); // firstがコンテンツid、secondがユーザidの情報
+						pair<int, int> id(i.get_content_id(), *u); // コンテンツidとユーザidの情報
 						ofNotifyEvent(this->point_event, id);
 						goto CONTINUE_LOOP;
 					}
