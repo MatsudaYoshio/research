@@ -10,7 +10,6 @@ void SimulatedAnnealing::setup(HandCursor* hc, vector<int>* active_window_list, 
 }
 
 void SimulatedAnnealing::operator() (const unordered_map<int, ofRectangle>& start_state, unordered_map<int, ofRectangle>& best_state) {
-	this->active_window_list = active_window_list;
 	this->current_state = start_state;
 
 	this->current_cost = this->next_cost = this->best_cost = DBL_MAX;

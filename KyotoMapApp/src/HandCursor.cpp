@@ -26,17 +26,17 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 
 	this->frame = Mat(Size(W, H), CV_8UC3);
 
-	//this->track_data[-1].current_pointer.x = 1000;
-	//this->track_data[-1].current_pointer.y = 900;
-	//this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
-	//this->track_data[-1].cursor_color_id = 0;
-	//this->track_data[-1].cursor_color = ofColor::deepPink;
+	this->track_data[-1].current_pointer.x = 1000;
+	this->track_data[-1].current_pointer.y = 900;
+	this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
+	this->track_data[-1].cursor_color_id = 0;
+	this->track_data[-1].cursor_color = ofColor::deepPink;
 
-	//this->track_data[-2].current_pointer.x = 1100;
-	//this->track_data[-2].current_pointer.y = 600;
-	//this->track_data[-2].face = dlib::rectangle(450, 600, 50, 50);
-	//this->track_data[-2].cursor_color_id = 1;
-	//this->track_data[-2].cursor_color = ofColor::mediumPurple;
+	this->track_data[-2].current_pointer.x = 1100;
+	this->track_data[-2].current_pointer.y = 600;
+	this->track_data[-2].face = dlib::rectangle(450, 600, 50, 50);
+	this->track_data[-2].cursor_color_id = 1;
+	this->track_data[-2].cursor_color = ofColor::mediumPurple;
 
 }
 
@@ -95,7 +95,7 @@ void HandCursor::face_detect() {
 
 	if (!this->face_dets.empty()) { // ŒŸo‚µ‚½Šç‚ª‚ ‚ê‚Î
 
-									/* Šù‚É’ÇÕ‚µ‚Ä‚¢‚éŠç‚Ì‹ß‚­‚ÌŠç‚Íœ‚­ */
+		/* Šù‚É’ÇÕ‚µ‚Ä‚¢‚éŠç‚Ì‹ß‚­‚ÌŠç‚Íœ‚­ */
 		for (const auto &td : this->track_data) {
 			for (auto fd = begin(this->face_dets); fd != end(this->face_dets);) {
 				if (this->euclid_distance((td.second.face.left() + td.second.face.right()) / 2, (td.second.face.top() + td.second.face.bottom()) / 2, (fd->left() + fd->right()) / 2, (fd->top() + fd->bottom()) / 2) < 400) {
@@ -156,7 +156,7 @@ void HandCursor::hand_detect() {
 
 		if (!hand_dets_tmp.empty()) { // ŒŸo‚³‚ê‚½Žè‚ª‚ ‚ê‚Î
 
-									  /* Šù‚É’ÇÕ‚µ‚Ä‚¢‚éŽè‚Ì‹ß‚­‚ÌŽè‚ðœ‚­ */
+			/* Šù‚É’ÇÕ‚µ‚Ä‚¢‚éŽè‚Ì‹ß‚­‚ÌŽè‚ðœ‚­ */
 			for (const auto &td : this->track_data) {
 				for (auto hd = begin(hand_dets_tmp); hd != end(hand_dets_tmp);) {
 					if (this->euclid_distance((td.second.hand.left() + td.second.hand.right()) / 2, (td.second.hand.top() + td.second.hand.bottom()) / 2, (hd->left() + hd->right()) / 2, (hd->top() + hd->bottom()) / 2) < 400) {
@@ -172,7 +172,7 @@ void HandCursor::hand_detect() {
 			this->nms(hand_dets_tmp, this->hand_dets);
 
 			this->track_data[this->track_id].hand = this->track_data[this->track_id].current_pos = this->hand_dets[0];
-			this->track_data[this->track_id].face = fd;
+			this->track_data[this->track_id].face = move(fd);
 
 			correlation_tracker ct;
 			ct.start_track(this->image_org, this->hand_dets[0]);

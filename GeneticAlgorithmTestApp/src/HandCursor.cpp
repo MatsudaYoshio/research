@@ -26,11 +26,11 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 
 	this->frame = Mat(Size(W, H), CV_8UC3);
 
-	//this->track_data[-1].current_pointer.x = 1000;
-	//this->track_data[-1].current_pointer.y = 900;
-	//this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
-	//this->track_data[-1].cursor_color_id = 0;
-	//this->track_data[-1].cursor_color = ofColor::deepPink;
+	this->track_data[-1].current_pointer.x = 1000;
+	this->track_data[-1].current_pointer.y = 900;
+	this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
+	this->track_data[-1].cursor_color_id = 0;
+	this->track_data[-1].cursor_color = ofColor::deepPink;
 
 	//this->track_data[-2].current_pointer.x = 1100;
 	//this->track_data[-2].current_pointer.y = 600;
@@ -172,7 +172,7 @@ void HandCursor::hand_detect() {
 			this->nms(hand_dets_tmp, this->hand_dets);
 
 			this->track_data[this->track_id].hand = this->track_data[this->track_id].current_pos = this->hand_dets[0];
-			this->track_data[this->track_id].face = fd;
+			this->track_data[this->track_id].face = move(fd);
 
 			correlation_tracker ct;
 			ct.start_track(this->image_org, this->hand_dets[0]);

@@ -228,6 +228,9 @@ void SceneManager::delete_sub_window(int &scene_id) {
 }
 
 SceneManager::~SceneManager() {
+	ofRemoveListener(this->main_scene.point_event, this, &SceneManager::pointed);
+	ofRemoveListener(this->main_scene.make_sub_window_event, this, &SceneManager::make_sub_window);
+
 	for (auto &s : this->sub_windows) {
 		s.second.exit();
 	}

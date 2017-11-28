@@ -148,3 +148,9 @@ void MainScene::point_icon(const int &content_id, const int &user_id) {
 	this->icons.at(content_id).change_state(Icon::STATE::POINT);
 	this->icons.at(content_id).set_user_id(user_id);
 }
+
+MainScene::~MainScene() {
+	for (auto &i : this->icons) {
+		ofRemoveListener(i.select_event, this, &MainScene::select_icon);
+	}
+}

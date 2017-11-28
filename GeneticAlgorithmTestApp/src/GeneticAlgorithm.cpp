@@ -34,7 +34,7 @@ void GeneticAlgorithm::setup(HandCursor* hc) {
 
 	this->users_num = 0;
 
-	//ofs.open("ga_data.txt");
+	ofs.open("ga_data.txt");
 }
 
 void GeneticAlgorithm::operator()(const set<int>& users_id) {
@@ -43,13 +43,14 @@ void GeneticAlgorithm::operator()(const set<int>& users_id) {
 		return;
 	}
 	this->initialize(users_id);
-	for (int i = 0; i < 100; ++i) {
+	for (int i = 0; i < 500; ++i) {
 		//this->crossover();
 		this->mutation();
 		this->calculate_fitness();
 		this->selection();
 	}
-	//ofs.close();
+	ofs.close();
+	ofExit();
 }
 
 void GeneticAlgorithm::initialize(const set<int>& users_id) {
@@ -312,9 +313,9 @@ void GeneticAlgorithm::mutation() {
 		/* 突然変異率に基づいて突然変異するかどうかを決める */
 		if (this->random_0to1(this->mt) < this->mutation_probability) {
 			int b = random_bit(this->mt);
-			if (active_block.find(b / this->block_bits_size) != end(active_block)) {
+			//if (active_block.find(b / this->block_bits_size) != end(active_block)) {
 				this->population[i][b].flip();
-			}
+			//}
 
 			///* 突然変異手法をランダムに選ぶ */
 			//switch (random_mutation_method(this->mt)) {
@@ -410,27 +411,27 @@ void GeneticAlgorithm::calculate_fitness() {
 		/* 領域の重心から顔との距離を求める */
 		for (const auto& user : this->user_block) {
 			try {
-				this->fitness[i] -= this->euclid_distance(center_points[user.first].x, center_points[user.first].y, W - this->hc->track_data.at(user.first).face.left() - this->hc->track_data.at(user.first).face.width() / 2, this->hc->track_data.at(user.first).face.top() + this->hc->track_data.at(user.first).face.height() / 2);
+				this->fitness[i] -= 1000*this->euclid_distance(center_points[user.first].x, center_points[user.first].y, W - this->hc->track_data.at(user.first).face.left() - this->hc->track_data.at(user.first).face.width() / 2, this->hc->track_data.at(user.first).face.top() + this->hc->track_data.at(user.first).face.height() / 2);
 			}
 			catch (std::out_of_range&) {
 				continue;
 			}
 		}
 
-		///* 他のユーザのカーソルからの距離を求める */
-		//for (const auto& main_user : this->user_block) {
-		//	for (const auto& other_user : this->users_id) {
-		//		if (main_user.first == other_user) {
-		//			continue;
-		//		}
-		//		try {
-		//			for (const auto& block : main_user.second) {
-		//				this->fitness[i] += exp(this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y));
-		//			}
-		//		}
-		//		catch (std::out_of_range&) {}
-		//	}
-		//}
+		/* 他のユーザのカーソルからの距離を求める */
+		for (const auto& main_user : this->user_block) {
+			for (const auto& other_user : this->users_id) {
+				if (main_user.first == other_user) {
+					continue;
+				}
+				try {
+					for (const auto& block : main_user.second) {
+						this->fitness[i] += exp(this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y));
+					}
+				}
+				catch (std::out_of_range&) {}
+			}
+		}
 				/*for (const auto& user : this->user_block) {
 					try {
 						for (const auto& block : user.second) {
@@ -847,6 +848,8 @@ void GeneticAlgorithm::calculate_fitness() {
 	//}
 
 		void GeneticAlgorithm::selection() {
+			double fitness_sum = accumulate(begin(this->fitness), end(this->fitness), 0.0);
+			ofs << fitness_sum / this->fitness.size() << endl;
 
 			vector<genome_type> new_population(this->population_size);
 
@@ -893,7 +896,7 @@ void GeneticAlgorithm::calculate_fitness() {
 				}
 			}
 
-			double fitness_sum = accumulate(begin(this->fitness), end(this->fitness), 0.0);
+			fitness_sum = accumulate(begin(this->fitness), end(this->fitness), 0.0);
 			uniform_real_distribution<double> random_fitness(0.0, fitness_sum);
 			vector<int> v(this->population_size_tmp);
 			iota(begin(v), end(v), 0);
@@ -910,8 +913,6 @@ void GeneticAlgorithm::calculate_fitness() {
 					}
 				}
 			}
-
-			//ofs << fitness_sum / this->fitness.size() << endl;
 
 			//for (int i = 0; i < this->fitness.size(); ++i) {
 			//	cout << this->fitness[i] << " ";

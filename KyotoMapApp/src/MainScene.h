@@ -35,6 +35,8 @@ public:
 
 	void select_icon(pair<int, int>& id);
 	void point_icon(const int &content_id, const int &user_id);
+
+	~MainScene();
 };
 
 #endif
