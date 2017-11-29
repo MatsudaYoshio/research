@@ -30,6 +30,7 @@
 #include "FrameRateCounter.h"
 #include "ofColor.h"
 #include "AppParameters.h"
+#include "RingBuffer.cpp"
 
 class HandCursor {
 
@@ -64,7 +65,6 @@ private:
 	std::vector<dlib::rectangle> face_dets, hand_dets;
 	dlib::frontal_face_detector face_detector; // ³–ÊŠçŒŸoŠí
 	dlib::decision_function<kernel_type> df; // Œˆ’è‹«ŠE‚ÌŠÖ”
-	dlib::array2d<dlib::bgr_pixel> image_org;
 	
 	bool face_thread_flag;
 	bool hand_thread_flag;
@@ -81,8 +81,8 @@ private:
 	
 	std::mutex mtx;
 
-	std::array<dlib::array2d<unsigned char>, image_buffer_max_size> image_buffer;
-	int buffer_push_offset, buffer_pop_offset;
+	RingBuffer<dlib::array2d<dlib::bgr_pixel>> org_image_buffer;
+	RingBuffer<dlib::array2d<unsigned char>> gs_image_buffer;
 public:
 	std::map<long long int, track_data_type> track_data;
 

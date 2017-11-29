@@ -38,7 +38,7 @@ private:
 	double elite_fitness;
 
 	/* 初期化 */
-	void initialize(const set<int>& users_id);
+	void initialize(const set<int>& selected_users_id, const set<int>& all_users_id);
 	void initialize(const param::genome_type& initial_individual);
 	
 	void crossover(); // 交叉
@@ -51,16 +51,15 @@ private:
 	array<array<int, param::FORM_H>, param::FORM_W> grid2block_table; // 座標からブロックへの変換表
 	array<pair<int, int>, param::BLOCK_SIZE> block2grid_table; // ブロックから座標への変換表 
 	vector<array<int, param::BLOCK_SIZE>> block_assignments; // 各ブロックに対するユーザの割り当て
-	set<int> users_id; // ユーザIDリスト
-	int users_num; // ユーザ数
+	set<int> selected_users_id, all_users_id; // ユーザIDリスト
+	int selected_users_num; // ユーザ数
 	unordered_map<int, int> user_id_index; // ユーザIDに対するインデックス
 	int population_size_tmp; // 交叉や突然変異によって増加した一時的な集団サイズ
 	unordered_map<int, set<int>> user_block; // 各ユーザがもつブロック
 
-	int elite_index;
 	array<int, param::BLOCK_SIZE> elite_block_assignment;
 
-	ofstream ofs;
+	ofstream ofs, ofs2;
 
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
@@ -69,7 +68,7 @@ public:
 	void setup(HandCursor* hc);
 	void draw() const;
 	void draw(const array<int, param::BLOCK_SIZE>& block_assignment) const;
-	void operator()(const set<int>& users_id);
+	void operator()(const set<int>& selected_users_id, const set<int>& all_users_id);
 };
 
 #endif

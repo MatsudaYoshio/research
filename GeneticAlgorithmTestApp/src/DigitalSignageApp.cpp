@@ -26,7 +26,7 @@ void DigitalSignageApp::update() {
 			++id;
 		}
 	}
-	this->ga(this->selected_users);
+	this->ga(this->selected_users, this->ms.user_id_list);
 }
 
 void DigitalSignageApp::draw() {

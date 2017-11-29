@@ -19,7 +19,7 @@ const Scalar HandCursor::CV_RED = Scalar(0, 0, 255);
 const Scalar HandCursor::CV_BLUE = Scalar(255, 0, 0);
 const Scalar HandCursor::CV_ORANGE = Scalar(76, 183, 255);
 
-HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0), buffer_push_offset(0) {
+HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0) {
 	this->face_detector = get_frontal_face_detector();
 
 	deserialize(this->model_path) >> df; // ファイルから学習済みのモデルを読み込む
@@ -28,7 +28,7 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 
 	this->track_data[-1].current_pointer.x = 1000;
 	this->track_data[-1].current_pointer.y = 900;
-	this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
+	this->track_data[-1].face = dlib::rectangle(400, 400, 300, 300);
 	this->track_data[-1].cursor_color_id = 0;
 	this->track_data[-1].cursor_color = ofColor::deepPink;
 
@@ -49,13 +49,12 @@ void HandCursor::update() {
 
 	this->frame = this->cap.get_image(); // カメラから画像を取得
 
-	assign_image(this->image_org, cv_image<bgr_pixel>(this->frame));
-	
-	if (this->buffer_push_offset == this->image_buffer_max_size) {
-		this->buffer_push_offset = 0;
-	}
-	assign_image(this->image_buffer[this->buffer_push_offset], this->image_org);
-	this->buffer_pop_offset = this->buffer_push_offset++;
+	assign_image(this->org_image_buffer.get_push_position(), cv_image<bgr_pixel>(this->frame));
+	this->org_image_buffer.forward_offset();
+
+	assign_image(this->gs_image_buffer.get_push_position(), this->org_image_buffer.get_read_position());
+	this->gs_image_buffer.forward_offset();
+
 
 	this->new_thread_face_detect();
 	if (!this->face_dets.empty()) {
@@ -91,7 +90,7 @@ void HandCursor::show_detect_window() {
 void HandCursor::face_detect() {
 	this->face_thread_flag = true;
 
-	this->face_dets = this->face_detector(this->image_buffer[this->buffer_pop_offset]);
+	this->face_dets = this->face_detector(this->gs_image_buffer.get_read_position());
 
 	if (!this->face_dets.empty()) { // 検出した顔があれば
 
@@ -147,7 +146,7 @@ void HandCursor::hand_detect() {
 
 		for (const auto& sw : sliding_windows) {
 			for (const auto& w : sw) {
-				extract_image_chip(this->image_buffer[this->buffer_pop_offset], w, roi);
+				extract_image_chip(this->gs_image_buffer.get_read_position(), w, roi);
 				if (this->is_hand(roi)) {
 					hand_dets_tmp.emplace_back(w);
 				}
@@ -175,7 +174,7 @@ void HandCursor::hand_detect() {
 			this->track_data[this->track_id].face = move(fd);
 
 			correlation_tracker ct;
-			ct.start_track(this->image_org, this->hand_dets[0]);
+			ct.start_track(this->org_image_buffer.get_read_position(), this->hand_dets[0]);
 
 			this->track_data[this->track_id].current_pointer = this->track_data[this->track_id].past_pointer = Point((this->hand_dets[0].left() + this->hand_dets[0].right()) / 2, (this->hand_dets[0].top() + this->hand_dets[0].bottom()) / 2);
 
@@ -205,7 +204,7 @@ void HandCursor::hand_detect() {
 void HandCursor::hand_detect(const std::vector<dlib::rectangle> &sliding_windows, const int &user_id) {
 	array2d<unsigned char> roi;
 	for (const auto &w : sliding_windows) {
-		extract_image_chip(this->image_buffer[this->buffer_pop_offset], w, roi);
+		extract_image_chip(this->gs_image_buffer.get_read_position(), w, roi);
 		if (this->is_hand(roi)) {
 			this->track_data[user_id].track_hand_dets.emplace_back(make_pair(this->frame_count, w));
 		}
@@ -246,9 +245,9 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 
 		past_pos = ct.get_position(); // 直近フレームの手の位置を得る
 
-		ct.update(this->image_org); // 追跡位置の更新
+		ct.update(this->org_image_buffer.get_read_position()); // 追跡位置の更新
 
-									/* 現在の追跡位置(矩形)を得る */
+		/* 現在の追跡位置(矩形)を得る */
 		current_pos = ct.get_position();
 		this->track_data[user_id].hand = this->track_data[user_id].current_pos = current_pos;
 
