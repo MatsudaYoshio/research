@@ -5,7 +5,7 @@ using namespace dlib;
 using namespace cv;
 using namespace param;
 
-const string HandCursor::model_path = "C:/Users/matsuda/workspace/machine_learning_data/hand/20170813/linear_svm_function.dat"; // 学習モデルのパス
+const char* HandCursor::model_path = "C:/Users/matsuda/workspace/machine_learning_data/hand/20170813/linear_svm_function.dat"; // 学習モデルのパス
 
 random_device HandCursor::rd;
 std::mt19937 HandCursor::mt(HandCursor::rd());
@@ -44,8 +44,8 @@ void HandCursor::update() {
 	++this->frame_count;
 
 	/* fpsを表示 */
-	//frc.NewFrame();
-	//printf("fps : %lf\n", frc.GetFrameRate());
+	/*frc.NewFrame();
+	printf("fps : %lf\n", frc.GetFrameRate());*/
 
 	this->frame = this->cap.get_image(); // カメラから画像を取得
 
@@ -137,12 +137,12 @@ void HandCursor::hand_detect() {
 	for (const auto &fd : face_dets_tmp) {
 		//* 顔の周辺のスライディングウィンドウを作成(ウィンドウサイズが顔より大きくて異なる3種類) */
 		std::vector<std::vector<dlib::rectangle>> sliding_windows(3);
-		SlidingWindows sw(fd.width(), fd.width() / 5, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, W), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, H));
-		SlidingWindows sw2(fd.width() + 50, fd.width() / 5 + 10, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, W), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, H));
-		SlidingWindows sw3(fd.width() + 100, fd.width() / 5 + 20, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, W), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, H));
-		sliding_windows[0] = sw.get_windows();
-		sliding_windows[1] = sw2.get_windows();
-		sliding_windows[2] = sw3.get_windows();
+		SlidingWindows sw(fd.width(), fd.width() / 5, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, H));
+		SlidingWindows sw2(fd.width() + 50, fd.width() / 5 + 10, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, H));
+		SlidingWindows sw3(fd.width() + 100, fd.width() / 5 + 20, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, H));
+		sliding_windows[0] = move(sw.get_windows());
+		sliding_windows[1] = move(sw2.get_windows());
+		sliding_windows[2] = move(sw3.get_windows());
 
 		for (const auto& sw : sliding_windows) {
 			for (const auto& w : sw) {
@@ -179,18 +179,16 @@ void HandCursor::hand_detect() {
 			this->track_data[this->track_id].current_pointer = this->track_data[this->track_id].past_pointer = Point((this->hand_dets[0].left() + this->hand_dets[0].right()) / 2, (this->hand_dets[0].top() + this->hand_dets[0].bottom()) / 2);
 
 			/* カーソルの色をかぶらないように選ぶ */
-			do {
-			SAME:
-				int color_id = this->random_color(this->mt);
-				for (const auto &t : this->track_data) {
-					if (t.second.cursor_color_id == color_id) {
-						goto SAME;
-					}
+			int color_id;
+		SAME_COLOR:
+			color_id = this->random_color(this->mt);
+			for (const auto &t : this->track_data) {
+				if (t.second.cursor_color_id == color_id) {
+					goto SAME_COLOR;
 				}
-				this->track_data[this->track_id].cursor_color_id = color_id;
-				this->track_data[this->track_id].cursor_color = this->cursor_color_list[color_id];
-				break;
-			} while (1);
+			}
+			this->track_data[this->track_id].cursor_color = this->cursor_color_list[color_id];
+			this->track_data[this->track_id].cursor_color_id = move(color_id);
 
 			this->new_thread_tracking(ct, this->track_id++);
 		}

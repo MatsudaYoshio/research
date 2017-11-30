@@ -30,24 +30,11 @@ void DigitalSignageApp::update() {
 }
 
 void DigitalSignageApp::draw() {
-
 	this->ms.draw(); // メインシーンの描画
 
 	if (this->selected_users.size() > 0) {
 		this->ga.draw();
 	}
-
-	///* 手カーソルの描画 */
-	//for (const auto& td : this->hc.track_data) {
-	//	int alpha = 255;
-	//	double r = 1;
-	//	for (int i = 0; i < 100; ++i) {
-	//		r += 3;
-	//		alpha -= 12;
-	//		ofSetColor(td.second.cursor_color, alpha);
-	//		ofCircle(param::W - td.second.current_pointer.x, td.second.current_pointer.y, r);
-	//	}
-	//}
 }
 
 void DigitalSignageApp::exit() {

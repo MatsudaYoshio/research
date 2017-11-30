@@ -5,7 +5,7 @@ using namespace dlib;
 using namespace cv;
 using namespace param;
 
-const string HandCursor::model_path = "C:/Users/matsuda/workspace/machine_learning_data/hand/20170813/linear_svm_function.dat"; // 学習モデルのパス
+const char* HandCursor::model_path = "C:/Users/matsuda/workspace/machine_learning_data/hand/20170813/linear_svm_function.dat"; // 学習モデルのパス
 
 random_device HandCursor::rd;
 std::mt19937 HandCursor::mt(HandCursor::rd());
@@ -19,7 +19,7 @@ const Scalar HandCursor::CV_RED = Scalar(0, 0, 255);
 const Scalar HandCursor::CV_BLUE = Scalar(255, 0, 0);
 const Scalar HandCursor::CV_ORANGE = Scalar(76, 183, 255);
 
-HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0), buffer_push_offset(0) {
+HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0) {
 	this->face_detector = get_frontal_face_detector();
 
 	deserialize(this->model_path) >> df; // ファイルから学習済みのモデルを読み込む
@@ -28,7 +28,7 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 
 	this->track_data[-1].current_pointer.x = 1000;
 	this->track_data[-1].current_pointer.y = 900;
-	this->track_data[-1].face = dlib::rectangle(0, 0, 50, 50);
+	this->track_data[-1].face = dlib::rectangle(400, 400, 300, 300);
 	this->track_data[-1].cursor_color_id = 0;
 	this->track_data[-1].cursor_color = ofColor::deepPink;
 
@@ -49,13 +49,12 @@ void HandCursor::update() {
 
 	this->frame = this->cap.get_image(); // カメラから画像を取得
 
-	assign_image(this->image_org, cv_image<bgr_pixel>(this->frame));
+	assign_image(this->org_image_buffer.get_push_position(), cv_image<bgr_pixel>(this->frame));
+	this->org_image_buffer.forward_offset();
 
-	if (this->buffer_push_offset == this->image_buffer_max_size) {
-		this->buffer_push_offset = 0;
-	}
-	assign_image(this->image_buffer[this->buffer_push_offset], this->image_org);
-	this->buffer_pop_offset = this->buffer_push_offset++;
+	assign_image(this->gs_image_buffer.get_push_position(), this->org_image_buffer.get_read_position());
+	this->gs_image_buffer.forward_offset();
+
 
 	this->new_thread_face_detect();
 	if (!this->face_dets.empty()) {
@@ -91,11 +90,11 @@ void HandCursor::show_detect_window() {
 void HandCursor::face_detect() {
 	this->face_thread_flag = true;
 
-	this->face_dets = this->face_detector(this->image_buffer[this->buffer_pop_offset]);
+	this->face_dets = this->face_detector(this->gs_image_buffer.get_read_position());
 
 	if (!this->face_dets.empty()) { // 検出した顔があれば
 
-		/* 既に追跡している顔の近くの顔は除く */
+									/* 既に追跡している顔の近くの顔は除く */
 		for (const auto &td : this->track_data) {
 			for (auto fd = begin(this->face_dets); fd != end(this->face_dets);) {
 				if (this->euclid_distance((td.second.face.left() + td.second.face.right()) / 2, (td.second.face.top() + td.second.face.bottom()) / 2, (fd->left() + fd->right()) / 2, (fd->top() + fd->bottom()) / 2) < 400) {
@@ -138,16 +137,16 @@ void HandCursor::hand_detect() {
 	for (const auto &fd : face_dets_tmp) {
 		//* 顔の周辺のスライディングウィンドウを作成(ウィンドウサイズが顔より大きくて異なる3種類) */
 		std::vector<std::vector<dlib::rectangle>> sliding_windows(3);
-		SlidingWindows sw(fd.width(), fd.width() / 5, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, W), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, H));
-		SlidingWindows sw2(fd.width() + 50, fd.width() / 5 + 10, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, W), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, H));
-		SlidingWindows sw3(fd.width() + 100, fd.width() / 5 + 20, std::max((int)fd.left() - 300, 0), std::min((int)fd.right() + 300, W), std::max((int)fd.top() - 300, 0), std::min((int)fd.bottom() + 200, H));
-		sliding_windows[0] = sw.get_windows();
-		sliding_windows[1] = sw2.get_windows();
-		sliding_windows[2] = sw3.get_windows();
+		SlidingWindows sw(fd.width(), fd.width() / 5, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, H));
+		SlidingWindows sw2(fd.width() + 50, fd.width() / 5 + 10, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, H));
+		SlidingWindows sw3(fd.width() + 100, fd.width() / 5 + 20, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, H));
+		sliding_windows[0] = move(sw.get_windows());
+		sliding_windows[1] = move(sw2.get_windows());
+		sliding_windows[2] = move(sw3.get_windows());
 
 		for (const auto& sw : sliding_windows) {
 			for (const auto& w : sw) {
-				extract_image_chip(this->image_buffer[this->buffer_pop_offset], w, roi);
+				extract_image_chip(this->gs_image_buffer.get_read_position(), w, roi);
 				if (this->is_hand(roi)) {
 					hand_dets_tmp.emplace_back(w);
 				}
@@ -156,7 +155,7 @@ void HandCursor::hand_detect() {
 
 		if (!hand_dets_tmp.empty()) { // 検出された手があれば
 
-			/* 既に追跡している手の近くの手を除く */
+									  /* 既に追跡している手の近くの手を除く */
 			for (const auto &td : this->track_data) {
 				for (auto hd = begin(hand_dets_tmp); hd != end(hand_dets_tmp);) {
 					if (this->euclid_distance((td.second.hand.left() + td.second.hand.right()) / 2, (td.second.hand.top() + td.second.hand.bottom()) / 2, (hd->left() + hd->right()) / 2, (hd->top() + hd->bottom()) / 2) < 400) {
@@ -175,23 +174,21 @@ void HandCursor::hand_detect() {
 			this->track_data[this->track_id].face = move(fd);
 
 			correlation_tracker ct;
-			ct.start_track(this->image_org, this->hand_dets[0]);
+			ct.start_track(this->org_image_buffer.get_read_position(), this->hand_dets[0]);
 
 			this->track_data[this->track_id].current_pointer = this->track_data[this->track_id].past_pointer = Point((this->hand_dets[0].left() + this->hand_dets[0].right()) / 2, (this->hand_dets[0].top() + this->hand_dets[0].bottom()) / 2);
 
 			/* カーソルの色をかぶらないように選ぶ */
-			do {
-			SAME:
-				int color_id = this->random_color(this->mt);
-				for (const auto &t : this->track_data) {
-					if (t.second.cursor_color_id == color_id) {
-						goto SAME;
-					}
+			int color_id;
+		SAME_COLOR:
+			color_id = this->random_color(this->mt);
+			for (const auto &t : this->track_data) {
+				if (t.second.cursor_color_id == color_id) {
+					goto SAME_COLOR;
 				}
-				this->track_data[this->track_id].cursor_color_id = color_id;
-				this->track_data[this->track_id].cursor_color = this->cursor_color_list[color_id];
-				break;
-			} while (1);
+			}
+			this->track_data[this->track_id].cursor_color = this->cursor_color_list[color_id];
+			this->track_data[this->track_id].cursor_color_id = move(color_id);
 
 			this->new_thread_tracking(ct, this->track_id++);
 		}
@@ -205,7 +202,7 @@ void HandCursor::hand_detect() {
 void HandCursor::hand_detect(const std::vector<dlib::rectangle> &sliding_windows, const int &user_id) {
 	array2d<unsigned char> roi;
 	for (const auto &w : sliding_windows) {
-		extract_image_chip(this->image_buffer[this->buffer_pop_offset], w, roi);
+		extract_image_chip(this->gs_image_buffer.get_read_position(), w, roi);
 		if (this->is_hand(roi)) {
 			this->track_data[user_id].track_hand_dets.emplace_back(make_pair(this->frame_count, w));
 		}
@@ -246,9 +243,9 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 
 		past_pos = ct.get_position(); // 直近フレームの手の位置を得る
 
-		ct.update(this->image_org); // 追跡位置の更新
+		ct.update(this->org_image_buffer.get_read_position()); // 追跡位置の更新
 
-									/* 現在の追跡位置(矩形)を得る */
+															   /* 現在の追跡位置(矩形)を得る */
 		current_pos = ct.get_position();
 		this->track_data[user_id].hand = this->track_data[user_id].current_pos = current_pos;
 

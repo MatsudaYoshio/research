@@ -9,7 +9,6 @@
 #include <cstdio>
 #include <map>
 #include <random>
-#include <mutex>
 
 /* dlib */
 #include <dlib/image_io.h>
@@ -51,7 +50,7 @@ private:
 	static constexpr double decision_ratio = 0.6;
 	static constexpr double overlap_ratio = 0.1;
 	static constexpr int image_buffer_max_size = 10;
-	static const string model_path;
+	static const char* model_path;
 	static const ofColor cursor_color_list[];
 	static const cv::Scalar CV_RED;
 	static const cv::Scalar CV_BLUE;
@@ -78,11 +77,10 @@ private:
 	NonMaximumSuppression nms;
 	UEyeVideoCapture cap;
 	FrameRateCounter frc;
-	
-	std::mutex mtx;
 
-	RingBuffer<dlib::array2d<dlib::bgr_pixel>> org_image_buffer;
-	RingBuffer<dlib::array2d<unsigned char>> gs_image_buffer;
+	/* 画像データのバッファ */
+	RingBuffer<dlib::array2d<dlib::bgr_pixel>> org_image_buffer; // dlibのbgr型画像のバッファ
+	RingBuffer<dlib::array2d<unsigned char>> gs_image_buffer; // dlibのグレースケール画像のバッファ
 public:
 	std::map<long long int, track_data_type> track_data;
 

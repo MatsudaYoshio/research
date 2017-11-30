@@ -9,7 +9,6 @@
 #include <cstdio>
 #include <map>
 #include <random>
-#include <mutex>
 
 /* dlib */
 #include <dlib/image_io.h>
@@ -30,6 +29,7 @@
 #include "FrameRateCounter.h"
 #include "ofColor.h"
 #include "AppParameters.h"
+#include "RingBuffer.cpp"
 
 class HandCursor {
 
@@ -50,7 +50,7 @@ private:
 	static constexpr double decision_ratio = 0.6;
 	static constexpr double overlap_ratio = 0.1;
 	static constexpr int image_buffer_max_size = 10;
-	static const string model_path;
+	static const char* model_path;
 	static const ofColor cursor_color_list[];
 	static const cv::Scalar CV_RED;
 	static const cv::Scalar CV_BLUE;
@@ -64,7 +64,6 @@ private:
 	std::vector<dlib::rectangle> face_dets, hand_dets;
 	dlib::frontal_face_detector face_detector; // 正面顔検出器
 	dlib::decision_function<kernel_type> df; // 決定境界の関数
-	dlib::array2d<dlib::bgr_pixel> image_org;
 
 	bool face_thread_flag;
 	bool hand_thread_flag;
@@ -79,10 +78,9 @@ private:
 	UEyeVideoCapture cap;
 	FrameRateCounter frc;
 
-	std::mutex mtx;
-
-	std::array<dlib::array2d<unsigned char>, image_buffer_max_size> image_buffer;
-	int buffer_push_offset, buffer_pop_offset;
+	/* 画像データのバッファ */
+	RingBuffer<dlib::array2d<dlib::bgr_pixel>> org_image_buffer; // dlibのbgr型画像のバッファ
+	RingBuffer<dlib::array2d<unsigned char>> gs_image_buffer; // dlibのグレースケール画像のバッファ
 public:
 	std::map<long long int, track_data_type> track_data;
 
