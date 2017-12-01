@@ -55,7 +55,6 @@ void HandCursor::update() {
 	assign_image(this->gs_image_buffer.get_push_position(), this->org_image_buffer.get_read_position());
 	this->gs_image_buffer.forward_offset();
 
-
 	this->new_thread_face_detect();
 	if (!this->face_dets.empty()) {
 		this->new_thread_hand_detect();
@@ -79,7 +78,7 @@ void HandCursor::show_detect_window() {
 		cv::rectangle(view_frame, Point(this->face_dets[i].left(), this->face_dets[i].top()), Point(this->face_dets[i].right(), this->face_dets[i].bottom()), this->CV_BLUE, 5);
 	});
 
-	for (const auto &t : this->track_data) {
+	for (const auto& t : this->track_data) {
 		cv::rectangle(view_frame, Point(t.second.current_pos.left(), t.second.current_pos.top()), Point(t.second.current_pos.right(), t.second.current_pos.bottom()), this->CV_ORANGE, 5);
 	}
 
@@ -95,7 +94,7 @@ void HandCursor::face_detect() {
 	if (!this->face_dets.empty()) { // 検出した顔があれば
 
 		/* 既に追跡している顔の近くの顔は除く */
-		for (const auto &td : this->track_data) {
+		for (const auto& td : this->track_data) {
 			for (auto fd = begin(this->face_dets); fd != end(this->face_dets);) {
 				if (this->euclid_distance((td.second.face.left() + td.second.face.right()) / 2, (td.second.face.top() + td.second.face.bottom()) / 2, (fd->left() + fd->right()) / 2, (fd->top() + fd->bottom()) / 2) < 400) {
 					fd = this->face_dets.erase(fd);
@@ -123,7 +122,7 @@ void HandCursor::hand_detect() {
 	array2d<unsigned char> roi;
 
 	/* 既に追跡している顔の近くの顔は除く */
-	for (const auto &td : this->track_data) {
+	for (const auto& td : this->track_data) {
 		for (auto fd = begin(face_dets_tmp); fd != end(face_dets_tmp);) {
 			if (this->euclid_distance((td.second.face.left() + td.second.face.right()) / 2, (td.second.face.top() + td.second.face.bottom()) / 2, (fd->left() + fd->right()) / 2, (fd->top() + fd->bottom()) / 2) < 400) {
 				fd = face_dets_tmp.erase(fd);
@@ -134,7 +133,7 @@ void HandCursor::hand_detect() {
 		}
 	}
 
-	for (const auto &fd : face_dets_tmp) {
+	for (const auto& fd : face_dets_tmp) {
 		//* 顔の周辺のスライディングウィンドウを作成(ウィンドウサイズが顔より大きくて異なる3種類) */
 		std::vector<std::vector<dlib::rectangle>> sliding_windows(3);
 		SlidingWindows sw(fd.width(), fd.width() / 5, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, H));
@@ -156,7 +155,7 @@ void HandCursor::hand_detect() {
 		if (!hand_dets_tmp.empty()) { // 検出された手があれば
 
 			/* 既に追跡している手の近くの手を除く */
-			for (const auto &td : this->track_data) {
+			for (const auto& td : this->track_data) {
 				for (auto hd = begin(hand_dets_tmp); hd != end(hand_dets_tmp);) {
 					if (this->euclid_distance((td.second.hand.left() + td.second.hand.right()) / 2, (td.second.hand.top() + td.second.hand.bottom()) / 2, (hd->left() + hd->right()) / 2, (hd->top() + hd->bottom()) / 2) < 400) {
 						hd = hand_dets_tmp.erase(hd);
@@ -199,9 +198,9 @@ void HandCursor::hand_detect() {
 }
 
 /* 追跡時用の手検出 */
-void HandCursor::hand_detect(const std::vector<dlib::rectangle> &sliding_windows, const int &user_id) {
+void HandCursor::hand_detect(const std::vector<dlib::rectangle>& sliding_windows, const int& user_id) {
 	array2d<unsigned char> roi;
-	for (const auto &w : sliding_windows) {
+	for (const auto& w : sliding_windows) {
 		extract_image_chip(this->gs_image_buffer.get_read_position(), w, roi);
 		if (this->is_hand(roi)) {
 			this->track_data[user_id].track_hand_dets.emplace_back(make_pair(this->frame_count, w));
@@ -209,7 +208,7 @@ void HandCursor::hand_detect(const std::vector<dlib::rectangle> &sliding_windows
 	}
 }
 
-bool HandCursor::is_hand(array2d<unsigned char> &img) {
+bool HandCursor::is_hand(array2d<unsigned char>& img) {
 	array2d<unsigned char> img_resize(this->resize_size, this->resize_size);
 	resize_image(img, img_resize);
 
@@ -217,12 +216,12 @@ bool HandCursor::is_hand(array2d<unsigned char> &img) {
 	extract_fhog_features(img_resize, fhog);
 
 	X_type feature_vec;
-	fhog_to_feature_vector(feature_vec, fhog);
+	this->fhog_to_feature_vector(feature_vec, fhog);
 
 	return (df(feature_vec) > this->decision_ratio);
 }
 
-void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
+void HandCursor::tracking(correlation_tracker& ct, const int user_id) {
 	int m;
 	int dx, dy;
 	drectangle past_pos, current_pos;
@@ -269,7 +268,7 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 	}
 }
 
-void HandCursor::new_thread_tracking(correlation_tracker &ct, const int track_id) {
+void HandCursor::new_thread_tracking(correlation_tracker& ct, const int track_id) {
 	void(HandCursor::*funcp)(correlation_tracker&, const int) = &HandCursor::tracking;
 	thread th(funcp, this, ct, track_id);
 	th.detach();
@@ -291,7 +290,7 @@ void HandCursor::new_thread_face_detect() {
 	}
 }
 
-void HandCursor::fhog_to_feature_vector(X_type &feature_vector, const fhog_type &fhog) {
+void HandCursor::fhog_to_feature_vector(X_type& feature_vector, const fhog_type& fhog) {
 	for (int r = 0, j = 0; r < fhog.nr(); ++r) {
 		for (int c = 0; c < fhog.nc(); ++c) {
 			for (int i = 0; i < 31; ++i) {
@@ -301,6 +300,6 @@ void HandCursor::fhog_to_feature_vector(X_type &feature_vector, const fhog_type 
 	}
 }
 
-double HandCursor::euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const {
+double HandCursor::euclid_distance(const double& x1, const double& y1, const double& x2, const double& y2) const {
 	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }

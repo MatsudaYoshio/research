@@ -35,6 +35,8 @@ void GeneticAlgorithm::setup(HandCursor* hc) {
 	this->selected_users_num = 0;
 
 	ofs.open("ga_data.txt");
+	ofs3.open("ga_data2.txt");
+	ofs4.open("ga_data3.txt");
 	ofs2.open("ga_data_all.txt");
 }
 
@@ -44,15 +46,17 @@ void GeneticAlgorithm::operator()(const set<int>& selected_users_id, const set<i
 		return;
 	}
 	this->initialize(selected_users_id, all_users_id);
-	for (int i = 0; i < 100; ++i) {
+	for (int i = 0; i < 500; ++i) {
 		//this->crossover();
 		this->mutation();
 		this->calculate_fitness();
 		this->selection();
 	}
 	ofs2 << this->elite_fitness << endl;
-	//ofs.close();
-	//ofExit();
+	ofs.close();
+	ofs3.close();
+	ofs4.close();
+	ofExit();
 }
 
 void GeneticAlgorithm::initialize(const set<int>& selected_users_id, const set<int>& all_users_id) {
@@ -152,7 +156,7 @@ void GeneticAlgorithm::initialize(const set<int>& selected_users_id, const set<i
 	}*/
 
 	if (flag && !this->elite_individual.empty()) {
-		//this->population[0] = this->elite_individual;
+		this->population[0] = this->elite_individual;
 	}
 
 }
@@ -293,11 +297,17 @@ void GeneticAlgorithm::crossover() {
 void GeneticAlgorithm::mutation() {
 	//uniform_int_distribution<int> random_mutation_method(1, 3);
 	set<int> active_block;
+	set<int> active_bit;
+	vector<int> v;
+	if (this->user_block.empty()) {
+		return;
+	}
 	for (const auto& user : this->user_block) {
 		for (const auto& block : user.second) {
 			active_block.emplace(block);
 		}
 	}
+
 	set<int> active_block_tmp = active_block;
 	int nx, ny;
 	for (const auto& b : active_block_tmp) {
@@ -307,15 +317,26 @@ void GeneticAlgorithm::mutation() {
 			if (nx < 0 || nx >= FORM_W || ny < 0 || ny >= FORM_H) {
 				continue;
 			}
+			for (int j = 0; j < this->block_bits_size; ++j) {
+				active_bit.emplace(this->grid2block_table[nx][ny] + j);
+			}
 			active_block.emplace(this->grid2block_table[nx][ny]);
 		}
 	}
 
+	int x = 0;
+	v.resize(active_bit.size());
+	for (const auto& b : active_bit) {
+		v[x++] = b;
+	}
+
 	uniform_int_distribution<int> random_bit(0, this->genetic_length - 1);
+	uniform_int_distribution<int> random_active_bit(0, v.size() - 1);
 	for (int i = 0; i < this->population_size; ++i) {
 		/* 突然変異率に基づいて突然変異するかどうかを決める */
 		if (this->random_0to1(this->mt) < this->mutation_probability) {
 			int b = random_bit(this->mt);
+			//int b = random_active_bit(this->mt);
 			//if (active_block.find(b / this->block_bits_size) != end(active_block)) {
 			this->population[i][b].flip();
 			//}
@@ -392,6 +413,8 @@ void GeneticAlgorithm::calculate_fitness() {
 
 		this->fitness[i] += min_area*GRID_H*GRID_W;
 
+		ofs << min_area*GRID_H*GRID_W << endl;
+
 		//if (min_area <= BLOCK_SIZE / 4) {
 		//	this->fitness[i] += 1000000 * exp(-pow(min_area - BLOCK_SIZE / 4, 2));
 		//}
@@ -409,14 +432,14 @@ void GeneticAlgorithm::calculate_fitness() {
 			}
 			center_points[user.first].x /= user.second.size();
 			center_points[user.first].y /= user.second.size();
-
-			//cout << center_points[user.first].x << " " << center_points[user.first].y << " " << W - this->hc->track_data.at(user.first).face.left() - this->hc->track_data.at(user.first).face.width() / 2 << " " << this->hc->track_data.at(user.first).face.top() + this->hc->track_data.at(user.first).face.height() / 2 << endl;
 		}
 
 		/* 領域の重心から顔との距離を求める */
 		for (const auto& user : this->user_block) {
 			try {
-				this->fitness[i] -= 1000 * this->euclid_distance(center_points[user.first].x, center_points[user.first].y, W - this->hc->track_data.at(user.first).face.left() - this->hc->track_data.at(user.first).face.width() / 2, this->hc->track_data.at(user.first).face.top() + this->hc->track_data.at(user.first).face.height() / 2);
+				this->fitness[i] -= 1000*this->euclid_distance(center_points[user.first].x, center_points[user.first].y, W - this->hc->track_data.at(user.first).face.left() - this->hc->track_data.at(user.first).face.width() / 2, this->hc->track_data.at(user.first).face.top() + this->hc->track_data.at(user.first).face.height() / 2);
+
+				ofs3 << -1000 * this->euclid_distance(center_points[user.first].x, center_points[user.first].y, W - this->hc->track_data.at(user.first).face.left() - this->hc->track_data.at(user.first).face.width() / 2, this->hc->track_data.at(user.first).face.top() + this->hc->track_data.at(user.first).face.height() / 2) << endl;
 			}
 			catch (std::out_of_range&) {
 				continue;
@@ -424,19 +447,20 @@ void GeneticAlgorithm::calculate_fitness() {
 		}
 
 		/* 他のユーザのカーソルからの距離を求める */
-		/*for (const auto& main_user : this->user_block) {
+		for (const auto& main_user : this->user_block) {
 			for (const auto& other_user : this->all_users_id) {
 				if (main_user.first == other_user) {
 					continue;
 				}
 				try {
 					for (const auto& block : main_user.second) {
-						this->fitness[i] -= 100000 / this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y);
+						this->fitness[i] += 1000*this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y);
+						ofs4 << 1000 * this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y) << endl;
 					}
 				}
 				catch (std::out_of_range&) {}
 			}
-		}*/
+		}
 		/*for (const auto& user : this->user_block) {
 			try {
 				for (const auto& block : user.second) {
@@ -854,7 +878,7 @@ void GeneticAlgorithm::calculate_fitness() {
 
 void GeneticAlgorithm::selection() {
 	double fitness_sum = accumulate(begin(this->fitness), end(this->fitness), 0.0);
-	ofs << fitness_sum / this->fitness.size() << endl;
+	//ofs << fitness_sum / this->fitness.size() << endl;
 
 	vector<genome_type> new_population(this->population_size);
 

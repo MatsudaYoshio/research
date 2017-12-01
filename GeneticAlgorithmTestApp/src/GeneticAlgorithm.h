@@ -59,7 +59,7 @@ private:
 
 	array<int, param::BLOCK_SIZE> elite_block_assignment;
 
-	ofstream ofs, ofs2;
+	ofstream ofs, ofs2, ofs3, ofs4, ofs5;
 
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
