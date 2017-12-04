@@ -46,17 +46,17 @@ void GeneticAlgorithm::operator()(const set<int>& selected_users_id, const set<i
 		return;
 	}
 	this->initialize(selected_users_id, all_users_id);
-	for (int i = 0; i < 500; ++i) {
+	for (int i = 0; i < 100; ++i) {
 		//this->crossover();
 		this->mutation();
 		this->calculate_fitness();
 		this->selection();
 	}
-	ofs2 << this->elite_fitness << endl;
+	//ofs2 << this->elite_fitness << endl;
 	ofs.close();
 	ofs3.close();
 	ofs4.close();
-	ofExit();
+	//ofExit();
 }
 
 void GeneticAlgorithm::initialize(const set<int>& selected_users_id, const set<int>& all_users_id) {
@@ -101,7 +101,7 @@ void GeneticAlgorithm::initialize(const set<int>& selected_users_id, const set<i
 			min_dist = DBL_MAX;
 			try {
 				for (int b = 0; b < BLOCK_SIZE; ++b) {
-					dist_tmp = this->euclid_distance(W - this->hc->track_data.at(user).face.left() - this->hc->track_data.at(user).face.width() / 2, this->hc->track_data.at(user).face.top() + this->hc->track_data.at(user).face.height() / 2, this->grid_rects[this->block2grid_table[b].first][this->block2grid_table[b].second].getCenter().x, this->grid_rects[this->block2grid_table[b].first][this->block2grid_table[b].second].getCenter().y);
+					dist_tmp = this->euclid_distance(CAMERA_W - this->hc->track_data.at(user).face.left() - this->hc->track_data.at(user).face.width() / 2, this->hc->track_data.at(user).face.top() + this->hc->track_data.at(user).face.height() / 2, this->grid_rects[this->block2grid_table[b].first][this->block2grid_table[b].second].getCenter().x, this->grid_rects[this->block2grid_table[b].first][this->block2grid_table[b].second].getCenter().y);
 					if (dist_tmp < min_dist) {
 						min_dist = dist_tmp;
 						start_block = b;
@@ -413,7 +413,7 @@ void GeneticAlgorithm::calculate_fitness() {
 
 		this->fitness[i] += min_area*GRID_H*GRID_W;
 
-		ofs << min_area*GRID_H*GRID_W << endl;
+		//ofs << min_area*GRID_H*GRID_W << endl;
 
 		//if (min_area <= BLOCK_SIZE / 4) {
 		//	this->fitness[i] += 1000000 * exp(-pow(min_area - BLOCK_SIZE / 4, 2));
@@ -437,9 +437,9 @@ void GeneticAlgorithm::calculate_fitness() {
 		/* —Ìˆæ‚ÌdS‚©‚çŠç‚Æ‚Ì‹——£‚ð‹‚ß‚é */
 		for (const auto& user : this->user_block) {
 			try {
-				this->fitness[i] -= 1000*this->euclid_distance(center_points[user.first].x, center_points[user.first].y, W - this->hc->track_data.at(user.first).face.left() - this->hc->track_data.at(user.first).face.width() / 2, this->hc->track_data.at(user.first).face.top() + this->hc->track_data.at(user.first).face.height() / 2);
+				this->fitness[i] -= 1000*this->euclid_distance(center_points[user.first].x, center_points[user.first].y, CAMERA_W - this->hc->track_data.at(user.first).face.left() - this->hc->track_data.at(user.first).face.width() / 2, this->hc->track_data.at(user.first).face.top() + this->hc->track_data.at(user.first).face.height() / 2);
 
-				ofs3 << -1000 * this->euclid_distance(center_points[user.first].x, center_points[user.first].y, W - this->hc->track_data.at(user.first).face.left() - this->hc->track_data.at(user.first).face.width() / 2, this->hc->track_data.at(user.first).face.top() + this->hc->track_data.at(user.first).face.height() / 2) << endl;
+				//ofs3 << -1000 * this->euclid_distance(center_points[user.first].x, center_points[user.first].y, W - this->hc->track_data.at(user.first).face.left() - this->hc->track_data.at(user.first).face.width() / 2, this->hc->track_data.at(user.first).face.top() + this->hc->track_data.at(user.first).face.height() / 2) << endl;
 			}
 			catch (std::out_of_range&) {
 				continue;
@@ -454,8 +454,8 @@ void GeneticAlgorithm::calculate_fitness() {
 				}
 				try {
 					for (const auto& block : main_user.second) {
-						this->fitness[i] += 1000*this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y);
-						ofs4 << 1000 * this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y) << endl;
+						this->fitness[i] += 1000*this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, CAMERA_W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y);
+						//ofs4 << 1000 * this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y) << endl;
 					}
 				}
 				catch (std::out_of_range&) {}

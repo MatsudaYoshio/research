@@ -9,8 +9,8 @@
 
 class UEyeVideoCapture {
 private:
-	static constexpr INT img_width = param::W;
-	static constexpr INT img_height = param::H;
+	static constexpr INT img_width = param::CAMERA_W;
+	static constexpr INT img_height = param::CAMERA_H;
 	static constexpr INT img_bpp = 24;
 	static constexpr INT pixel_clock = 140;
 	static constexpr double fps = 50;

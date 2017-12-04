@@ -25,7 +25,6 @@ public:
 		INACTIVE, POINT
 	};
 
-	//Icon(const int &x, const int &y, const int &width, const int &height, const string &img_path, const int &content_id);
 	void setup(const int &x, const int &y, const int &width, const int &height, const string &img_path, const int &content_id);
 	void update();
 	void draw();

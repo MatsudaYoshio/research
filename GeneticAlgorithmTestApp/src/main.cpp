@@ -11,8 +11,8 @@ int main(){
 
 	ofGLFWWindowSettings settings;
 	settings.setGLVersion(2, 1);
-	settings.width = W;
-	settings.height = H;
+	settings.width = DISPLAY_W;
+	settings.height = DISPLAY_H;
 	settings.resizable = false;
 	ofCreateWindow(settings);
 	

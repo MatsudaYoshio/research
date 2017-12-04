@@ -24,7 +24,7 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 
 	deserialize(this->model_path) >> df; // ファイルから学習済みのモデルを読み込む
 
-	this->frame = Mat(Size(W, H), CV_8UC3);
+	this->frame = Mat(Size(CAMERA_W, CAMERA_H), CV_8UC3);
 
 	this->track_data[-1].current_pointer.x = 1000;
 	this->track_data[-1].current_pointer.y = 900;
@@ -136,9 +136,9 @@ void HandCursor::hand_detect() {
 	for (const auto& fd : face_dets_tmp) {
 		//* 顔の周辺のスライディングウィンドウを作成(ウィンドウサイズが顔より大きくて異なる3種類) */
 		std::vector<std::vector<dlib::rectangle>> sliding_windows(3);
-		SlidingWindows sw(fd.width(), fd.width() / 5, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, H));
-		SlidingWindows sw2(fd.width() + 50, fd.width() / 5 + 10, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, H));
-		SlidingWindows sw3(fd.width() + 100, fd.width() / 5 + 20, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, H));
+		SlidingWindows sw(fd.width(), fd.width() / 5, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, CAMERA_W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, CAMERA_H));
+		SlidingWindows sw2(fd.width() + 50, fd.width() / 5 + 10, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, CAMERA_W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, CAMERA_H));
+		SlidingWindows sw3(fd.width() + 100, fd.width() / 5 + 20, std::max(static_cast<int>(fd.left()) - 300, 0), std::min(static_cast<int>(fd.right()) + 300, CAMERA_W), std::max(static_cast<int>(fd.top()) - 300, 0), std::min(static_cast<int>(fd.bottom()) + 200, CAMERA_H));
 		sliding_windows[0] = move(sw.get_windows());
 		sliding_windows[1] = move(sw2.get_windows());
 		sliding_windows[2] = move(sw3.get_windows());
@@ -225,8 +225,8 @@ void HandCursor::tracking(correlation_tracker& ct, const int user_id) {
 	int m;
 	int dx, dy;
 	drectangle past_pos, current_pos;
-	const double dx_rate = W / this->track_data[user_id].face.width();
-	const double dy_rate = H / this->track_data[user_id].face.height();
+	const double dx_rate = CAMERA_W / this->track_data[user_id].face.width();
+	const double dy_rate = CAMERA_H / this->track_data[user_id].face.height();
 
 	while (1) {
 		/* 直近のフレームで検出した手以外を消す */
@@ -250,14 +250,14 @@ void HandCursor::tracking(correlation_tracker& ct, const int user_id) {
 
 		/* 現在の追跡位置の周辺のスライディングウィンドウを作成して手を検出 */
 		/* 周辺とは追跡している手の矩形1個分周辺の範囲 */
-		SlidingWindows local_sw(current_pos.width(), current_pos.width() / 5, std::max(static_cast<int>(current_pos.left() - this->track_data[user_id].hand.width()), 0), std::min(static_cast<int>(current_pos.right() + this->track_data[user_id].hand.width()), W), std::max(static_cast<int>(current_pos.top() - this->track_data[user_id].hand.height()), 0), std::min(static_cast<int>(current_pos.bottom() + this->track_data[user_id].hand.height()), H));
+		SlidingWindows local_sw(current_pos.width(), current_pos.width() / 5, std::max(static_cast<int>(current_pos.left() - this->track_data[user_id].hand.width()), 0), std::min(static_cast<int>(current_pos.right() + this->track_data[user_id].hand.width()), CAMERA_W), std::max(static_cast<int>(current_pos.top() - this->track_data[user_id].hand.height()), 0), std::min(static_cast<int>(current_pos.bottom() + this->track_data[user_id].hand.height()), CAMERA_H));
 		this->hand_detect(local_sw.get_windows(), user_id);
 
 		/* 現在の追跡位置と直前の追跡位置の差 */
 		dx = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x方向
 		dy = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y方向
 
-		Point2f cp(std::max(std::min(this->track_data[user_id].past_pointer.x + dx_rate * dx, static_cast<double>(W)), 0.0), std::max(std::min((this->track_data[user_id].past_pointer.y + dy_rate * dy), static_cast<double>(H)), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
+		Point2f cp(std::max(std::min(this->track_data[user_id].past_pointer.x + dx_rate * dx, static_cast<double>(CAMERA_W)), 0.0), std::max(std::min((this->track_data[user_id].past_pointer.y + dy_rate * dy), static_cast<double>(CAMERA_H)), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
 
 		this->track_data[user_id].current_pointer = this->track_data[user_id].past_pointer = cp; // ポインタの位置を更新
 
