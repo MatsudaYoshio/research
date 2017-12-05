@@ -23,6 +23,8 @@ private:
 	ofxTrueTypeFontUC kamogawa_font;
 
 	ofTexture hotel_texture;
+
+	void draw_cursor();
 public:
 	vector<int> user_id_list;
 

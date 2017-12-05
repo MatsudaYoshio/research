@@ -39,7 +39,9 @@ private:
 	using fhog_type = dlib::array2d<dlib::matrix<double, 31, 1 >>; // fhog“Á’¥—Ê‚ÌŒ^
 	using track_data_type = struct {
 		dlib::rectangle hand, face;
-		cv::Point past_pointer, current_pointer;
+		cv::Point transformed_face_point;
+		cv::Point past_cursor_point, current_cursor_point;
+		cv::Point transformed_past_cursor_point, transformed_current_cursor_point;
 		int cursor_color_id = -1;
 		ofColor cursor_color;
 		dlib::drectangle current_pos;
@@ -100,6 +102,7 @@ private:
 	void new_thread_face_detect();
 	void fhog_to_feature_vector(X_type &feature_vector, const fhog_type &fhog);
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const;
+	void transform_point(const cv::Point& src_point, cv::Point& dst_point);
 };
 
 #endif

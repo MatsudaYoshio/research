@@ -49,23 +49,23 @@ bool SimulatedAnnealing::set_next_state() {
 	this->modify_param = ofRandom(0, 4); // 修正するパラメータをランダムに決める
 	switch (this->modify_param) {
 	case 0:
-		this->next_state[modify_window_num].setX(ofRandom(0, W - this->next_state[modify_window_num].getWidth()));
+		this->next_state[modify_window_num].setX(ofRandom(0, DISPLAY_W - this->next_state[modify_window_num].getWidth()));
 		break;
 	case 1:
-		this->next_state[modify_window_num].setY(ofRandom(0, H - this->next_state[modify_window_num].getHeight()));
+		this->next_state[modify_window_num].setY(ofRandom(0, DISPLAY_H - this->next_state[modify_window_num].getHeight()));
 		break;
 	case 2:
-		this->next_state[modify_window_num].setWidth(ofRandom(30, W / 2));
+		this->next_state[modify_window_num].setWidth(ofRandom(30, DISPLAY_W / 2));
 		break;
 	case 3:
-		this->next_state[modify_window_num].setHeight(ofRandom(30, H / 2));
+		this->next_state[modify_window_num].setHeight(ofRandom(30, DISPLAY_H / 2));
 		break;
 	}
 
 	
 	for (const auto &s : this->next_state) {
 		/* パラメータの修正によって制約外の解になったら*/
-		if (s.second.getLeft() < 0.01*W || s.second.getRight() > 0.99*W || s.second.getTop() < 0.01*H || s.second.getBottom() > 0.99*H || s.second.width > W / 2 || s.second.height > H / 2) {
+		if (s.second.getLeft() < 0.01*DISPLAY_W || s.second.getRight() > 0.99*DISPLAY_W || s.second.getTop() < 0.01*DISPLAY_H || s.second.getBottom() > 0.99*DISPLAY_H || s.second.width > DISPLAY_W / 2 || s.second.height > DISPLAY_H / 2) {
 			return false;
 		}
 	}
@@ -98,16 +98,16 @@ void SimulatedAnnealing::calculate_cost() {
 
 		/* 矩形と他のカーソルとの距離 */
 		for (const auto &id : *this->main_window_user_list) {
-			if (s.second.inside(this->hc->track_data[id].current_pointer.x, this->hc->track_data[id].current_pointer.y)) {
+			if (s.second.inside(this->hc->track_data[id].transformed_current_cursor_point.x, this->hc->track_data[id].transformed_current_cursor_point.y)) {
 				this->next_cost += 100000;
 			}
-			this->next_cost -= 5000 * this->euclid_distance(s.second.x, s.second.y, this->hc->track_data[id].current_pointer.x, this->hc->track_data[id].current_pointer.y);
+			this->next_cost -= 5000 * this->euclid_distance(s.second.getCenter().x, s.second.getCenter().y, this->hc->track_data[id].transformed_current_cursor_point.x, this->hc->track_data[id].transformed_current_cursor_point.y);
 		}
 
 		/* 矩形と顔との距離 */
 		for (const auto &td : this->hc->track_data) {
 			if (this->sub_windows->at(s.first).get_user_id() == td.first) {
-				this->next_cost += 10 * this->euclid_distance(s.second.x, s.second.y, W - td.second.face.left() - td.second.face.width() / 2, td.second.face.top() + td.second.face.height() / 2);
+				this->next_cost += 10 * this->euclid_distance(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x, td.second.transformed_face_point.y);
 				continue;
 			}
 		}

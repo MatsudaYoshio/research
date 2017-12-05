@@ -5,16 +5,17 @@
 #include "ofMain.h"
 
 namespace param {
-	constexpr int W = 1920;
-	constexpr int H = 1080;
+	/* カメラで取得するRGB画像の解像度 */
+	constexpr int CAMERA_W = 1920;
+	constexpr int CAMERA_H = 1080;
 
-	constexpr int GRID_W = 120;
-	constexpr int GRID_H = 60;
+	/* ディスプレイ表示の解像度 */
+	constexpr int DISPLAY_W = 3840;
+	constexpr int DISPLAY_H = 2160;
 
-	constexpr int FORM_W = W / GRID_W;
-	constexpr int FORM_H = H / GRID_H;
-	constexpr int BITS_SIZE = FORM_W*FORM_H;
-	using genome_type = bitset<BITS_SIZE>;
+	/* カメラとディスプレイの解像度の比率 */
+	constexpr double RESOLUTION_RATIO_W = DISPLAY_W / CAMERA_W;
+	constexpr double RESOLUTION_RATIO_H = DISPLAY_H / CAMERA_H;
 
 	const enum class CONTENT_ID {
 		KYOTO_TOWER, HIGASHIHONGANJI, SYOSEIEN, NISHIHONGANJI, RYUKOKU_MUSEUM

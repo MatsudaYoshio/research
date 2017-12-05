@@ -2,31 +2,47 @@
 
 using namespace param;
 
+void MainScene::draw_cursor() {
+	try {
+		for (auto &id : this->user_id_list) {
+			int alpha = 255;
+			double r = 1;
+			for (int i = 0; i < 100; ++i) {
+				r += 3;
+				alpha -= 12;
+				ofSetColor(this->hc->track_data.at(id).cursor_color, alpha);
+				ofCircle(this->hc->track_data.at(id).transformed_current_cursor_point.x, this->hc->track_data.at(id).transformed_current_cursor_point.y, r);
+			}
+		}
+	}
+	catch (std::out_of_range&) {}
+}
+
 void MainScene::setup(HandCursor* hc) {
 	ofSetBackgroundAuto(true);
 
 	this->hc = hc;
 
-	this->title_font.loadFont("meiryob.ttc", 40);
-	this->kamogawa_font.loadFont("meiryob.ttc", 50);
+	this->title_font.loadFont("meiryob.ttc", 80);
+	this->kamogawa_font.loadFont("meiryob.ttc", 100);
 
 	ofLoadImage(this->hotel_texture, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/building_hotel_small.png");
 
 	this->curve_vertices.resize(this->curve_vertices_num);
-	this->curve_vertices[0].set(W, -0.185*H);
-	this->curve_vertices[1].set(0.936*W, 0.185*H);
-	this->curve_vertices[2].set(0.936*W, 0.185 * 2 * H);
-	this->curve_vertices[3].set(0.936*W, 0.185 * 3 * H);
-	this->curve_vertices[4].set(0.936*W, 0.185 * 4 * H);
-	this->curve_vertices[5].set(0.964*W, 0.926*H);
-	this->curve_vertices[6].set(1.042*W, H);
+	this->curve_vertices[0].set(DISPLAY_W, -0.185*DISPLAY_H);
+	this->curve_vertices[1].set(0.936*DISPLAY_W, 0.185*DISPLAY_H);
+	this->curve_vertices[2].set(0.936*DISPLAY_W, 0.185 * 2 * DISPLAY_H);
+	this->curve_vertices[3].set(0.936*DISPLAY_W, 0.185 * 3 * DISPLAY_H);
+	this->curve_vertices[4].set(0.936*DISPLAY_W, 0.185 * 4 * DISPLAY_H);
+	this->curve_vertices[5].set(0.964*DISPLAY_W, 0.926*DISPLAY_H);
+	this->curve_vertices[6].set(1.042*DISPLAY_W, DISPLAY_H);
 
 	this->icons.resize(5);
-	this->icons[static_cast<int>(CONTENT_ID::KYOTO_TOWER)].setup(800, 780, 200, 200, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/kyoto_tower.png", static_cast<int>(CONTENT_ID::KYOTO_TOWER));
-	this->icons[static_cast<int>(CONTENT_ID::HIGASHIHONGANJI)].setup(750, 450, 250, 250, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple.png", static_cast<int>(CONTENT_ID::HIGASHIHONGANJI));
-	this->icons[static_cast<int>(CONTENT_ID::SYOSEIEN)].setup(1300, 500, 200, 200, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/syoseien_t.png", static_cast<int>(CONTENT_ID::SYOSEIEN));
-	this->icons[static_cast<int>(CONTENT_ID::NISHIHONGANJI)].setup(200, 500, 200, 200, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple2.png", static_cast<int>(CONTENT_ID::NISHIHONGANJI));
-	this->icons[static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM)].setup(450, 450, 150, 150, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/tatemono_hakubutsukan.png", static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM));
+	this->icons[static_cast<int>(CONTENT_ID::KYOTO_TOWER)].setup(2000, 1560, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/kyoto_tower.png", static_cast<int>(CONTENT_ID::KYOTO_TOWER));
+	this->icons[static_cast<int>(CONTENT_ID::HIGASHIHONGANJI)].setup(2000, 1100, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple.png", static_cast<int>(CONTENT_ID::HIGASHIHONGANJI));
+	this->icons[static_cast<int>(CONTENT_ID::SYOSEIEN)].setup(2700, 1100, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/syoseien_t.png", static_cast<int>(CONTENT_ID::SYOSEIEN));
+	this->icons[static_cast<int>(CONTENT_ID::NISHIHONGANJI)].setup(500, 1100, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple2.png", static_cast<int>(CONTENT_ID::NISHIHONGANJI));
+	this->icons[static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM)].setup(900, 700, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/tatemono_hakubutsukan.png", static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM));
 
 	for (auto &i : this->icons) {
 		ofAddListener(i.select_event, this, &MainScene::select_icon);
@@ -42,7 +58,7 @@ void MainScene::update() {
 		case static_cast<int>(Icon::STATE::POINT) :
 			for (auto u = begin(this->user_id_list); u != end(this->user_id_list); ++u) {
 				try {
-					if (i.is_inside(ofPoint(W - this->hc->track_data.at(*u).current_pointer.x, this->hc->track_data.at(*u).current_pointer.y))) {
+					if (i.is_inside(ofPoint(this->hc->track_data.at(*u).transformed_current_cursor_point.x, this->hc->track_data.at(*u).transformed_current_cursor_point.y))) {
 						pair<int, int> id(i.get_content_id(), *u); // コンテンツidとユーザidの情報
 						ofNotifyEvent(this->point_event, id);
 						goto CONTINUE_LOOP;
@@ -68,13 +84,13 @@ void MainScene::draw() {
 
 	/* 左上に縁がある文字を描く */
 	ofSetColor(ofColor::black);
-	for (int x = -6; x < 6; ++x) {
-		for (int y = -6; y < 6; ++y) {
-			this->title_font.drawString(L"京都マップ", 70+x, 70+y);
+	for (int x = -10; x < 10; ++x) {
+		for (int y = -10; y < 10; ++y) {
+			this->title_font.drawString(L"京都マップ", 140 + x, 140 + y);
 		}
 	}
 	ofSetColor(ofColor::white);
-	this->title_font.drawString(L"京都マップ", 70, 70);
+	this->title_font.drawString(L"京都マップ", 140, 140);
 
 	/* 川の描画 */
 	ofFill();
@@ -100,44 +116,32 @@ void MainScene::draw() {
 	ofEndShape();
 
 	ofSetColor(ofColor::black);
-	this->kamogawa_font.drawString(L"鴨", 1820, 400);
-	this->kamogawa_font.drawString(L"川", 1820, 600);
+	this->kamogawa_font.drawString(L"鴨", 3640, 800);
+	this->kamogawa_font.drawString(L"川", 3640, 1300);
 
 	/* 道の描画 */
 	ofSetColor(ofColor::gold);
-	ofRectRounded(0.026*W, 0.185*H, 1.042*W, 0.026*W, 20);
-	ofRectRounded(0.026*W, 0.648*H, 1.042*W, 0.026*W, 20);
+	ofRectRounded(0.026*DISPLAY_W, 0.185*DISPLAY_H, 1.042*DISPLAY_W, 0.026*DISPLAY_W, 20);
+	ofRectRounded(0.026*DISPLAY_W, 0.648*DISPLAY_H, 1.042*DISPLAY_W, 0.026*DISPLAY_W, 20);
 
-	ofRectRounded(0.052*W, 0.093*H, 0.026*W, 0.815*H, 20);
-	ofRectRounded(0.208*W, 0.093*H, 0.026*W, 0.815*H, 20);
-	ofRectRounded(0.52*W, 0.093*H, 0.026*W, 0.815*H, 20);
-	ofRectRounded(0.781*W, 0.093*H, 0.026*W, 0.815*H, 20);
+	ofRectRounded(0.052*DISPLAY_W, 0.093*DISPLAY_H, 0.026*DISPLAY_W, 0.815*DISPLAY_H, 20);
+	ofRectRounded(0.208*DISPLAY_W, 0.093*DISPLAY_H, 0.026*DISPLAY_W, 0.815*DISPLAY_H, 20);
+	ofRectRounded(0.6*DISPLAY_W, 0.093*DISPLAY_H, 0.026*DISPLAY_W, 0.815*DISPLAY_H, 20);
+	ofRectRounded(0.781*DISPLAY_W, 0.093*DISPLAY_H, 0.026*DISPLAY_W, 0.815*DISPLAY_H, 20);
 
 	/* アイコンの描画 */
 	for (auto &i : this->icons) {
 		i.draw();
 	}
-	
+
 	/* ホテルテクスチャの描画 */
 	ofSetColor(ofColor::white);
-	this->hotel_texture.draw(660, 890, 80, 80);
-	this->hotel_texture.draw(300, 300, 80, 80);
-	this->hotel_texture.draw(890, 300, 80, 80);
+	this->hotel_texture.draw(600, 700, 180, 180);
+	this->hotel_texture.draw(1600, 1700, 180, 180);
+	this->hotel_texture.draw(2100, 700, 180, 180);
 
 	/* 手カーソルの描画 */
-	try {
-		for (auto &id : this->user_id_list) {
-			int alpha = 255;
-			double r = 1;
-			for (int i = 0; i < 100; ++i) {
-				r += 3;
-				alpha -= 12;
-				ofSetColor(this->hc->track_data.at(id).cursor_color, alpha);
-				ofCircle(W - this->hc->track_data.at(id).current_pointer.x, this->hc->track_data.at(id).current_pointer.y, r);
-			}
-		}
-	}
-	catch (std::out_of_range&) {}
+	this->draw_cursor();
 }
 
 void MainScene::select_icon(pair<int, int>& id) {

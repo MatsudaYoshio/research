@@ -80,7 +80,7 @@ ofRectangle RectangleOptimization::get_max_area_rect() const {
 ofRectangle RectangleOptimization::get_optimize_rect() const {
 	ofRectangle opt_rect(1,1,1,1);
 	for (const auto& r : this->rects) {
-		if (r.getWidth() > W / 2 || r.getHeight() > H / 2) {
+		if (r.getWidth() > this->field_width / 2 || r.getHeight() > this->field_height / 2) {
 			continue;
 		}
 		if (r.getArea() > opt_rect.getArea()) {

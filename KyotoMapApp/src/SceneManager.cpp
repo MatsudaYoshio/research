@@ -58,7 +58,7 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 		}
 
 	}
-	FINISH:
+FINISH:
 	this->transform_thread_flag = false;
 }
 
@@ -154,23 +154,23 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 	if (this->sub_windows.empty()) {
 		SubWindow sub_window;
 		switch (id.first) {
-		case static_cast<int>(CONTENT_ID::KYOTO_TOWER):
-			sub_window.setup(new KyotoTowerScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+		case static_cast<int>(CONTENT_ID::KYOTO_TOWER) :
+			sub_window.setup(new KyotoTowerScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, DISPLAY_W / 2, DISPLAY_H / 2));
 			break;
 		case static_cast<int>(CONTENT_ID::HIGASHIHONGANJI) :
-			sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+			sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, DISPLAY_W / 2, DISPLAY_H / 2));
 			break;
 		case static_cast<int>(CONTENT_ID::SYOSEIEN) :
-			sub_window.setup(new SyoseienScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+			sub_window.setup(new SyoseienScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, DISPLAY_W / 2, DISPLAY_H / 2));
 			break;
 		case static_cast<int>(CONTENT_ID::NISHIHONGANJI) :
-			sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+			sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, DISPLAY_W / 2, DISPLAY_H / 2));
 			break;
 		case static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM) :
-			sub_window.setup(new RyukokuMuseumScene(), this->hc, id.second, this->scene_id, ofRectangle(200, 200, W / 2, H / 2));
+			sub_window.setup(new RyukokuMuseumScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, DISPLAY_W / 2, DISPLAY_H / 2));
 			break;
 		}
-		
+
 		ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);
 		ofAddListener(sub_window.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
 		this->sub_windows.insert(make_pair(this->scene_id, sub_window));
@@ -179,7 +179,7 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 		this->active_scene_id_list.emplace_back(this->scene_id++);
 	}
 	else {
-		RectangleOptimization ro(W, H);
+		RectangleOptimization ro(DISPLAY_W, DISPLAY_H);
 
 		for (const auto &s : this->sub_windows) {
 			ro.add_block(s.second.get_rect());
@@ -189,7 +189,7 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 			if (td.first == id.second) {
 				continue;
 			}
-			ro.add_block(ofPoint(td.second.current_pointer.x, td.second.current_pointer.y));
+			ro.add_block(ofPoint(td.second.transformed_current_cursor_point.x, td.second.transformed_current_cursor_point.y));
 		}
 
 		ro.calculate();

@@ -1,12 +1,4 @@
-#include <opencv2/opencv.hpp>
-
 #include "Icon.h"
-
-using namespace cv;
-
-//Icon::Icon(const int &x, const int &y, const int &width, const int &height, const string &img_path, const int &content_id) {
-//	this->setup(x, y, width, height, img_path, content_id);
-//}
 
 void Icon::setup(const int &x, const int &y, const int &width, const int &height, const string &img_path, const int &content_id) {
 	this->content_id = content_id;

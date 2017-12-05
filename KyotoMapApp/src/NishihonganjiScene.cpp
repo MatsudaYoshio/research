@@ -17,20 +17,20 @@ void NishihonganjiScene::draw() {
 	ofBackground(255);
 	ofSetColor(ofColor::white);
 
-	this->img.draw(0, 0, W / 2, H / 4);
+	this->img.draw(0, 0, DISPLAY_W / 2, DISPLAY_H / 4);
 
 	ofSetColor(ofColor::black); // •¶ŽšF‚ðŽw’è
-	this->title_font.drawString(L"¼–{ŠèŽ›", 50, H / 4 + 50);
+	this->title_font.drawString(L"¼–{ŠèŽ›", 50, DISPLAY_H / 4 + 50);
 
-	this->sentence_font.drawString(L"¡ŠJ–åE•Â–åŽžŠÔF", 40, H / 4 + 100);
+	this->sentence_font.drawString(L"¡ŠJ–åE•Â–åŽžŠÔF", 40, DISPLAY_H / 4 + 100);
 	ofSetColor(ofColor::red);
-	this->sentence_font.drawString(L"5:50~17:00", 280, H / 4 + 100);
+	this->sentence_font.drawString(L"5:50~17:00", 280, DISPLAY_H / 4 + 100);
 	ofSetColor(ofColor::black);
-	this->sentence_font.drawString(L"\n\n¡ZŠF", 40, H / 4 + 100);
+	this->sentence_font.drawString(L"\n\n¡ZŠF", 40, DISPLAY_H / 4 + 100);
 	ofSetColor(ofColor::red);
-	this->sentence_font.drawString(L"\n\n‹ž“sŽs‰º‹ž‹æ–å‘O’¬–xì’Ê‰Ô‰®’¬‰º‚é", 150, H / 4 + 100);
+	this->sentence_font.drawString(L"\n\n‹ž“sŽs‰º‹ž‹æ–å‘O’¬–xì’Ê‰Ô‰®’¬‰º‚é", 150, DISPLAY_H / 4 + 100);
 	ofSetColor(ofColor::black);
-	this->sentence_font.drawString(L"\n\n\n\n¡TELF", 40, H / 4 + 100);
+	this->sentence_font.drawString(L"\n\n\n\n¡TELF", 40, DISPLAY_H / 4 + 100);
 	ofSetColor(ofColor::red);
-	this->sentence_font.drawString(L"\n\n\n\n075-371-5181", 150, H / 4 + 100);
+	this->sentence_font.drawString(L"\n\n\n\n075-371-5181", 150, DISPLAY_H / 4 + 100);
 }
