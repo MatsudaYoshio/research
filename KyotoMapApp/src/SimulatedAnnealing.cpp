@@ -2,6 +2,10 @@
 
 using namespace param;
 
+random_device SimulatedAnnealing::rd;
+mt19937 SimulatedAnnealing::mt(SimulatedAnnealing::rd());
+uniform_int_distribution<int> SimulatedAnnealing::random_parameter(0, 3);
+
 void SimulatedAnnealing::setup(HandCursor* hc, vector<int>* active_window_list, vector<int>* main_window_user_list, unordered_map<int, SubWindow>* sub_windows) {
 	this->hc = hc;
 	this->active_window_list = active_window_list;
@@ -23,7 +27,7 @@ void SimulatedAnnealing::operator() (const unordered_map<int, ofRectangle>& star
 
 		if (this->next_cost > this->current_cost) {
 			double diff = this->current_cost - this->next_cost;
-			double t = (double)i / this->MAX_ITERATION;
+			double t = static_cast<double>(i) / this->MAX_ITERATION;
 			if (ofRandomuf() < exp(diff / t)) {
 				this->current_cost = this->next_cost;
 				this->current_state = this->next_state;
@@ -44,27 +48,40 @@ void SimulatedAnnealing::operator() (const unordered_map<int, ofRectangle>& star
 bool SimulatedAnnealing::set_next_state() {
 	this->next_state = this->current_state;
 
-	this->modify_window_num = this->active_window_list->at(ofRandom(0, this->active_window_list->size())); // 修正するウィンドウをランダムに決める
+	uniform_int_distribution<int> random_window_num(0, this->active_window_list->size());
+	this->modify_window_num = (*this->active_window_list)[random_window_num(this->mt)]; // 修正するウィンドウをランダムに決める
 
-	this->modify_param = ofRandom(0, 4); // 修正するパラメータをランダムに決める
+	this->modify_param = this->random_parameter(this->mt); // 修正するパラメータをランダムに決める
 	switch (this->modify_param) {
 	case 0:
-		this->next_state[modify_window_num].setX(ofRandom(0, DISPLAY_W - this->next_state[modify_window_num].getWidth()));
-		break;
+	{
+		uniform_int_distribution<int> random_x(0, DISPLAY_W - this->next_state[modify_window_num].getWidth());
+		this->next_state[modify_window_num].setX(random_x(this->mt));
+	}
+	break;
 	case 1:
-		this->next_state[modify_window_num].setY(ofRandom(0, DISPLAY_H - this->next_state[modify_window_num].getHeight()));
-		break;
+	{
+		uniform_int_distribution<int> random_y(0, DISPLAY_H - this->next_state[modify_window_num].getHeight());
+		this->next_state[modify_window_num].setY(random_y(this->mt));
+	}
+	break;
 	case 2:
-		this->next_state[modify_window_num].setWidth(ofRandom(30, DISPLAY_W / 2));
-		break;
+	{
+		uniform_int_distribution<int> random_w(100, DISPLAY_W >> 1);
+		this->next_state[modify_window_num].setWidth(random_w(this->mt));
+	}
+	break;
 	case 3:
-		this->next_state[modify_window_num].setHeight(ofRandom(30, DISPLAY_H / 2));
-		break;
+	{
+		uniform_int_distribution<int> random_h(100, DISPLAY_H >> 1);
+		this->next_state[modify_window_num].setHeight(random_h(this->mt));
+	}
+	break;
 	}
 
-	
-	for (const auto &s : this->next_state) {
-		/* パラメータの修正によって制約外の解になったら*/
+
+	for (const auto& s : this->next_state) {
+		/* パラメータの修正によって制約外の解になったら */
 		if (s.second.getLeft() < 0.01*DISPLAY_W || s.second.getRight() > 0.99*DISPLAY_W || s.second.getTop() < 0.01*DISPLAY_H || s.second.getBottom() > 0.99*DISPLAY_H || s.second.width > DISPLAY_W / 2 || s.second.height > DISPLAY_H / 2) {
 			return false;
 		}
@@ -97,17 +114,20 @@ void SimulatedAnnealing::calculate_cost() {
 		this->next_cost -= 4000 * s.second.getArea(); // 面積
 
 		/* 矩形と他のカーソルとの距離 */
-		for (const auto &id : *this->main_window_user_list) {
-			if (s.second.inside(this->hc->track_data[id].transformed_current_cursor_point.x, this->hc->track_data[id].transformed_current_cursor_point.y)) {
-				this->next_cost += 100000;
+		try {
+			for (const auto& id : *this->main_window_user_list) {
+				if (s.second.inside(this->hc->track_data.at(id).transformed_cursor_point.x(), this->hc->track_data.at(id).transformed_cursor_point.y())) {
+					this->next_cost += 100000;
+				}
+				this->next_cost -= 5000 * ofDist(s.second.getCenter().x, s.second.getCenter().y, this->hc->track_data.at(id).transformed_cursor_point.x(), this->hc->track_data.at(id).transformed_cursor_point.y());
 			}
-			this->next_cost -= 5000 * this->euclid_distance(s.second.getCenter().x, s.second.getCenter().y, this->hc->track_data[id].transformed_current_cursor_point.x, this->hc->track_data[id].transformed_current_cursor_point.y);
 		}
+		catch (std::out_of_range&) {}
 
 		/* 矩形と顔との距離 */
-		for (const auto &td : this->hc->track_data) {
+		for (const auto& td : this->hc->track_data) {
 			if (this->sub_windows->at(s.first).get_user_id() == td.first) {
-				this->next_cost += 10 * this->euclid_distance(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x, td.second.transformed_face_point.y);
+				this->next_cost += 10 * ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x(), td.second.transformed_face_point.y());
 				continue;
 			}
 		}
@@ -123,8 +143,4 @@ void SimulatedAnnealing::calculate_cost() {
 	for (const auto &s : this->next_state) {
 		this->next_cost += 0.1*pow(area_mean - s.second.getArea(), 2); // 面積の分散
 	}
-}
-
-double SimulatedAnnealing::euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const {
-	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }

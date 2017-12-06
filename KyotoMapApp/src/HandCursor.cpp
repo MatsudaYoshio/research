@@ -26,11 +26,12 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 
 	this->frame = Mat(Size(CAMERA_W, CAMERA_H), CV_8UC3);
 
-	this->track_data[-1].current_cursor_point.x = 550;
-	this->track_data[-1].current_cursor_point.y = 650;
-	this->transform_point(this->track_data[-1].current_cursor_point, this->track_data[-1].transformed_current_cursor_point);
-	this->track_data[-1].face = dlib::rectangle(960, 540, 300, 300);
-	this->transform_point(Point((this->track_data[-1].face.left() + this->track_data[-1].face.right()) / 2, (this->track_data[-1].face.top() + this->track_data[-1].face.bottom()) / 2), this->track_data[-1].transformed_face_point);
+	this->track_data[-1].cursor_point.x() = 350;
+	this->track_data[-1].cursor_point.y() = 650;
+	this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
+	this->track_data[-1].face_rect = dlib::rectangle(960, 540, 300, 300);
+	this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
+	this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
 	this->track_data[-1].cursor_color_id = 0;
 	this->track_data[-1].cursor_color = ofColor::deepPink;
 
@@ -70,6 +71,14 @@ void HandCursor::exit() {
 	this->stop_flag = true;
 }
 
+void HandCursor::modulate_cursor(const int& user_id) {
+	try {
+		this->inverse_transform_point(this->track_data.at(user_id).transformed_cursor_point, this->track_data.at(user_id).cursor_point);
+	}
+	catch (std::out_of_range&) {}
+	
+}
+
 void HandCursor::show_detect_window() {
 	this->view_frame = this->frame;
 
@@ -82,7 +91,7 @@ void HandCursor::show_detect_window() {
 	});
 
 	for (const auto &t : this->track_data) {
-		cv::rectangle(view_frame, Point(t.second.current_pos.left(), t.second.current_pos.top()), Point(t.second.current_pos.right(), t.second.current_pos.bottom()), this->CV_ORANGE, 5);
+		cv::rectangle(view_frame, Point(t.second.hand.left(), t.second.hand.top()), Point(t.second.hand.right(), t.second.hand.bottom()), this->CV_ORANGE, 5);
 	}
 
 	imshow("detect window", view_frame);
@@ -99,7 +108,7 @@ void HandCursor::face_detect() {
 		/* 既に追跡している顔の近くの顔は除く */
 		for (const auto& td : this->track_data) {
 			for (auto fd = begin(this->face_dets); fd != end(this->face_dets);) {
-				if (this->euclid_distance((td.second.face.left() + td.second.face.right()) / 2, (td.second.face.top() + td.second.face.bottom()) / 2, (fd->left() + fd->right()) / 2, (fd->top() + fd->bottom()) / 2) < 400) {
+				if (this->euclid_distance(td.second.face_point, center(*fd)) < 400) {
 					fd = this->face_dets.erase(fd);
 				}
 				else {
@@ -127,7 +136,7 @@ void HandCursor::hand_detect() {
 	/* 既に追跡している顔の近くの顔は除く */
 	for (const auto &td : this->track_data) {
 		for (auto fd = begin(face_dets_tmp); fd != end(face_dets_tmp);) {
-			if (this->euclid_distance((td.second.face.left() + td.second.face.right()) / 2, (td.second.face.top() + td.second.face.bottom()) / 2, (fd->left() + fd->right()) / 2, (fd->top() + fd->bottom()) / 2) < 400) {
+			if (this->euclid_distance(td.second.face_point, center(*fd)) < 400) {
 				fd = face_dets_tmp.erase(fd);
 			}
 			else {
@@ -157,10 +166,10 @@ void HandCursor::hand_detect() {
 
 		if (!hand_dets_tmp.empty()) { // 検出された手があれば
 
-									  /* 既に追跡している手の近くの手を除く */
-			for (const auto &td : this->track_data) {
+			/* 既に追跡している手の近くの手を除く */
+			for (const auto& td : this->track_data) {
 				for (auto hd = begin(hand_dets_tmp); hd != end(hand_dets_tmp);) {
-					if (this->euclid_distance((td.second.hand.left() + td.second.hand.right()) / 2, (td.second.hand.top() + td.second.hand.bottom()) / 2, (hd->left() + hd->right()) / 2, (hd->top() + hd->bottom()) / 2) < 400) {
+					if (this->euclid_distance(center(td.second.hand), center(*hd)) < 400) {
 						hd = hand_dets_tmp.erase(hd);
 					}
 					else {
@@ -172,16 +181,16 @@ void HandCursor::hand_detect() {
 			/* NonMaximumSuppressionにかけて重複を取り除く */
 			this->nms(hand_dets_tmp, this->hand_dets);
 
-			this->track_data[this->track_id].hand = this->track_data[this->track_id].current_pos = this->hand_dets[0];
-			this->track_data[this->track_id].face = move(fd);
-			this->transform_point(Point((this->track_data[this->track_id].face.left() + this->track_data[this->track_id].face.right()) / 2, (this->track_data[this->track_id].face.top() + this->track_data[this->track_id].face.bottom()) / 2), this->track_data[this->track_id].transformed_face_point);
+			this->track_data[this->track_id].hand = this->hand_dets[0];
+			this->track_data[this->track_id].face_rect = fd;
+			this->track_data[this->track_id].face_point = center(fd);
+			this->transform_point(this->track_data[this->track_id].face_point, this->track_data[this->track_id].transformed_face_point);
 
 			correlation_tracker ct;
 			ct.start_track(this->org_image_buffer.get_read_position(), this->hand_dets[0]);
 
-			this->track_data[this->track_id].current_cursor_point = this->track_data[this->track_id].past_cursor_point = Point((this->hand_dets[0].left() + this->hand_dets[0].right()) / 2, (this->hand_dets[0].top() + this->hand_dets[0].bottom()) / 2);
-			this->transform_point(this->track_data[this->track_id].current_cursor_point, this->track_data[this->track_id].transformed_current_cursor_point);
-			this->transform_point(this->track_data[this->track_id].past_cursor_point, this->track_data[this->track_id].transformed_past_cursor_point);
+			this->track_data[this->track_id].cursor_point = center(this->hand_dets[0]);
+			this->transform_point(this->track_data[this->track_id].cursor_point, this->track_data[this->track_id].transformed_cursor_point);
 
 			/* カーソルの色をかぶらないように選ぶ */
 			int color_id;
@@ -231,8 +240,8 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 	int m;
 	int dx, dy;
 	drectangle past_pos, current_pos;
-	const double dx_rate = static_cast<double>(CAMERA_W) / this->track_data[user_id].face.width();
-	const double dy_rate = static_cast<double>(CAMERA_H) / this->track_data[user_id].face.height();
+	const double dx_rate = static_cast<double>(CAMERA_W) / this->track_data[user_id].face_rect.width();
+	const double dy_rate = static_cast<double>(CAMERA_H) / this->track_data[user_id].face_rect.height();
 
 	while (1) {
 		/* 直近のフレームで検出した手以外を消す */
@@ -252,7 +261,7 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 
 		/* 現在の追跡位置(矩形)を得る */
 		current_pos = ct.get_position();
-		this->track_data[user_id].hand = this->track_data[user_id].current_pos = current_pos;
+		this->track_data[user_id].hand = current_pos;
 
 		/* 現在の追跡位置の周辺のスライディングウィンドウを作成して手を検出 */
 		/* 周辺とは追跡している手の矩形1個分周辺の範囲 */
@@ -263,12 +272,9 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 		dx = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x方向
 		dy = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y方向
 
-		Point2f cp(std::max(std::min(this->track_data[user_id].past_cursor_point.x + dx_rate * dx, static_cast<double>(CAMERA_W)), 0.0), std::max(std::min((this->track_data[user_id].past_cursor_point.y + dy_rate * dy), static_cast<double>(CAMERA_H)), 0.0)); // 現在の追跡位置から相対的にポインタの位置を決定
-
-		/* ポインタの位置を更新 */
-		this->track_data[user_id].current_cursor_point = this->track_data[user_id].past_cursor_point = cp;
-		this->transform_point(this->track_data[user_id].current_cursor_point, this->track_data[user_id].transformed_current_cursor_point);
-		this->transform_point(this->track_data[user_id].past_cursor_point, this->track_data[user_id].transformed_past_cursor_point);
+		/* カーソルの位置を更新 */
+		this->track_data[user_id].cursor_point = point(ofClamp(this->track_data[user_id].cursor_point.x() + dx_rate * dx, 0, CAMERA_W), ofClamp(this->track_data[user_id].cursor_point.y() + dy_rate * dy, 0, CAMERA_H)); // 現在の追跡位置から相対的にカーソルの位置を決定
+		this->transform_point(this->track_data[user_id].cursor_point, this->track_data[user_id].transformed_cursor_point);
 
 		if (this->track_data[user_id].track_hand_dets.empty() || this->stop_flag) { // 直近フレームで手が検出されなかったら追跡をやめる
 			this->track_data.erase(user_id);
@@ -309,11 +315,16 @@ void HandCursor::fhog_to_feature_vector(X_type &feature_vector, const fhog_type 
 	}
 }
 
-double HandCursor::euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const {
-	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+double HandCursor::euclid_distance(const point& p1, const point& p2) const {
+	return ofDist(p1.x(), p1.y(), p2.x(), p2.y());
 }
 
-void HandCursor::transform_point(const cv::Point& src_point, cv::Point& dst_point) {
-	dst_point.x = DISPLAY_W - RESOLUTION_RATIO_W*src_point.x;
-	dst_point.y = RESOLUTION_RATIO_H * src_point.y;
+void HandCursor::transform_point(const point& src_point, point& dst_point) {
+	dst_point.x() = DISPLAY_W - RESOLUTION_RATIO_W*src_point.x();
+	dst_point.y() = RESOLUTION_RATIO_H * src_point.y();
+}
+
+void HandCursor::inverse_transform_point(const point& src_point, point& dst_point) {
+	dst_point.x() = (DISPLAY_W - src_point.x()) / RESOLUTION_RATIO_W;
+	dst_point.y() = src_point.y() / RESOLUTION_RATIO_H;
 }

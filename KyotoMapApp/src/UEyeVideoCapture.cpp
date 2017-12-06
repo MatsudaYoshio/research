@@ -82,9 +82,8 @@ UEyeVideoCapture::UEyeVideoCapture() :hCam(0) {
 
 Mat UEyeVideoCapture::get_image() {
 	if (is_FreezeVideo(this->hCam, IS_WAIT) == IS_SUCCESS) {
-		void *pMemVoid;
-		is_GetImageMem(this->hCam, &pMemVoid);
-		return Mat(this->img_height, this->img_width, CV_8UC3, pMemVoid);
+		is_GetImageMem(this->hCam, &this->pMemVoid);
+		return Mat(this->img_height, this->img_width, CV_8UC3, this->pMemVoid);
 	}
 }
 

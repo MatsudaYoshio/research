@@ -18,6 +18,7 @@ private:
 	HIDS hCam;
 	char* imgMem;
 	int memId;
+	void* pMemVoid;
 public:
 	UEyeVideoCapture();
 	~UEyeVideoCapture();

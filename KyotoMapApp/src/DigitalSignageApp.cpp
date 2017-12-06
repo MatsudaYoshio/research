@@ -9,6 +9,7 @@ void DigitalSignageApp::setup() {
 
 void DigitalSignageApp::update() {
 	this->hc.update(); // 手カーソルの更新
+
 	this->sm.update();
 }
 

@@ -2,22 +2,6 @@
 
 using namespace param;
 
-void MainScene::draw_cursor() {
-	try {
-		for (auto &id : this->user_id_list) {
-			int alpha = 255;
-			double r = 1;
-			for (int i = 0; i < 100; ++i) {
-				r += 3;
-				alpha -= 12;
-				ofSetColor(this->hc->track_data.at(id).cursor_color, alpha);
-				ofCircle(this->hc->track_data.at(id).transformed_current_cursor_point.x, this->hc->track_data.at(id).transformed_current_cursor_point.y, r);
-			}
-		}
-	}
-	catch (std::out_of_range&) {}
-}
-
 void MainScene::setup(HandCursor* hc) {
 	ofSetBackgroundAuto(true);
 
@@ -44,7 +28,7 @@ void MainScene::setup(HandCursor* hc) {
 	this->icons[static_cast<int>(CONTENT_ID::NISHIHONGANJI)].setup(500, 1100, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple2.png", static_cast<int>(CONTENT_ID::NISHIHONGANJI));
 	this->icons[static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM)].setup(900, 700, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/tatemono_hakubutsukan.png", static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM));
 
-	for (auto &i : this->icons) {
+	for (auto& i : this->icons) {
 		ofAddListener(i.select_event, this, &MainScene::select_icon);
 	}
 
@@ -52,13 +36,13 @@ void MainScene::setup(HandCursor* hc) {
 }
 
 void MainScene::update() {
-	for (auto &i : this->icons) {
+	for (auto& i : this->icons) {
 		switch (i.state) {
 		case static_cast<int>(Icon::STATE::INACTIVE) :
 		case static_cast<int>(Icon::STATE::POINT) :
 			for (auto u = begin(this->user_id_list); u != end(this->user_id_list); ++u) {
 				try {
-					if (i.is_inside(ofPoint(this->hc->track_data.at(*u).transformed_current_cursor_point.x, this->hc->track_data.at(*u).transformed_current_cursor_point.y))) {
+					if (i.is_inside(ofPoint(this->hc->track_data.at(*u).transformed_cursor_point.x(), this->hc->track_data.at(*u).transformed_cursor_point.y()))) {
 						pair<int, int> id(i.get_content_id(), *u); // コンテンツidとユーザidの情報
 						ofNotifyEvent(this->point_event, id);
 						goto CONTINUE_LOOP;
@@ -141,7 +125,19 @@ void MainScene::draw() {
 	this->hotel_texture.draw(2100, 700, 180, 180);
 
 	/* 手カーソルの描画 */
-	this->draw_cursor();
+	try {
+		for (auto& id : this->user_id_list) {
+			this->alpha = 255;
+			this->r = 1;
+			for (int i = 0; i < 100; ++i) {
+				this->r += 3;
+				this->alpha -= 12;
+				ofSetColor(this->hc->track_data.at(id).cursor_color, this->alpha);
+				ofCircle(this->hc->track_data.at(id).transformed_cursor_point.x(), this->hc->track_data.at(id).transformed_cursor_point.y(), this->r);
+			}
+		}
+	}
+	catch (std::out_of_range&) {}
 }
 
 void MainScene::select_icon(pair<int, int>& id) {
@@ -154,7 +150,7 @@ void MainScene::point_icon(const int &content_id, const int &user_id) {
 }
 
 MainScene::~MainScene() {
-	for (auto &i : this->icons) {
+	for (auto& i : this->icons) {
 		ofRemoveListener(i.select_event, this, &MainScene::select_icon);
 	}
 }

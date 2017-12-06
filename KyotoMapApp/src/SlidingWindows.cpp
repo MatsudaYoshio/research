@@ -13,9 +13,13 @@ using namespace std;
 using namespace dlib;
 
 SlidingWindows::SlidingWindows(const int &window_size, const int &step, const int &min_width, const int &max_width, const int &min_height, const int &max_height) :window_size(window_size), step(step), min_width(min_width), max_width(max_width), min_height(min_height), max_height(max_height) {
-	for (int i = this->min_height; i < this->max_height - this->window_size; i += this->step) {
-		for (int j = this->min_width; j < this->max_width - this->window_size; j += this->step) {
-			windows.emplace_back(rectangle(j, i, j + this->window_size, i + this->window_size));
+	const int max_i = max_height - window_size;
+	const int max_j = max_width - window_size;
+	this->windows.resize(((max_i - min_height) / step + 1)*((max_j - min_width) / step + 1));
+
+	for (int i = min_height, x = 0; i <= max_i; i += step) {
+		for (int j = min_width; j <= max_j; j += step) {
+			this->windows[x++] = dlib::rectangle(j, i, j + window_size, i + window_size);
 		}
 	}
 }

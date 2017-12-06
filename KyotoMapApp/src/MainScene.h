@@ -24,7 +24,9 @@ private:
 
 	ofTexture hotel_texture;
 
-	void draw_cursor();
+	/* èƒJ[ƒ\ƒ‹‚ğ•`‚­‚½‚ß‚Ì•Ï” */
+	int alpha;
+	double r;
 public:
 	vector<int> user_id_list;
 

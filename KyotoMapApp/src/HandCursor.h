@@ -27,7 +27,6 @@
 #include "NonMaximumSuppression.h"
 #include "UEyeVideoCapture.h"
 #include "FrameRateCounter.h"
-#include "ofColor.h"
 #include "AppParameters.h"
 #include "RingBuffer.cpp"
 
@@ -38,20 +37,16 @@ private:
 	using kernel_type = dlib::sparse_linear_kernel<X_type>; // ÉJÅ[ÉlÉãÇÃå^
 	using fhog_type = dlib::array2d<dlib::matrix<double, 31, 1 >>; // fhogì¡í•ó ÇÃå^
 	using track_data_type = struct {
-		dlib::rectangle hand, face;
-		cv::Point transformed_face_point;
-		cv::Point past_cursor_point, current_cursor_point;
-		cv::Point transformed_past_cursor_point, transformed_current_cursor_point;
+		dlib::rectangle hand, face_rect;
+		dlib::point cursor_point, face_point, transformed_face_point, transformed_cursor_point;
 		int cursor_color_id = -1;
 		ofColor cursor_color;
-		dlib::drectangle current_pos;
 		std::vector<std::pair<int, dlib::rectangle>> track_hand_dets;
 	};
 
 	static constexpr int resize_size = 80;
 	static constexpr double decision_ratio = 0.6;
 	static constexpr double overlap_ratio = 0.1;
-	static constexpr int image_buffer_max_size = 10;
 	static const char* model_path;
 	static const ofColor cursor_color_list[];
 	static const cv::Scalar CV_RED;
@@ -90,6 +85,7 @@ public:
 	HandCursor();
 	void update();
 	void exit();
+	void modulate_cursor(const int& user_id);
 private:
 	void show_detect_window();
 	void face_detect();
@@ -101,8 +97,9 @@ private:
 	void new_thread_hand_detect();
 	void new_thread_face_detect();
 	void fhog_to_feature_vector(X_type &feature_vector, const fhog_type &fhog);
-	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const;
-	void transform_point(const cv::Point& src_point, cv::Point& dst_point);
+	double euclid_distance(const dlib::point& p1, const dlib::point& p2) const;
+	void transform_point(const dlib::point& src_point, dlib::point& dst_point);
+	void inverse_transform_point(const dlib::point& src_point, dlib::point& dst_point);
 };
 
 #endif

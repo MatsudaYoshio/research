@@ -65,8 +65,9 @@ FINISH:
 void SceneManager::setup(HandCursor* hc) {
 	/* メインシーンの準備 */
 	this->main_scene.setup(hc);
-	ofAddListener(this->main_scene.point_event, this, &SceneManager::pointed);
+	ofAddListener(this->main_scene.point_event, this, &SceneManager::pointed); // ときどき、ここでなぜかmutex関係のエラーが出る
 	ofAddListener(this->main_scene.make_sub_window_event, this, &SceneManager::make_sub_window);
+
 
 	this->sa.setup(hc, &this->active_scene_id_list, &this->main_scene.user_id_list, &this->sub_windows);
 
@@ -119,7 +120,7 @@ void SceneManager::update() {
 	}
 
 	this->main_scene.update(); // メインシーンの更新
-
+	
 	for (auto &ss : this->sub_windows) {
 		ss.second.update();
 	}
@@ -189,7 +190,7 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 			if (td.first == id.second) {
 				continue;
 			}
-			ro.add_block(ofPoint(td.second.transformed_current_cursor_point.x, td.second.transformed_current_cursor_point.y));
+			ro.add_block(ofPoint(td.second.transformed_cursor_point.x(), td.second.transformed_cursor_point.y()));
 		}
 
 		ro.calculate();

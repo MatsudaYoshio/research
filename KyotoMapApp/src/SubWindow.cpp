@@ -23,13 +23,15 @@ void SubWindow::setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_i
 	this->cursor_state = "point";
 
 	/* ユーザのカーソルをサブウィンドウの中心に移動させる */
-	ofPoint center = this->view_rect.getCenter();
 	try {
-		this->hc->track_data.at(this->user_id).transformed_current_cursor_point = this->hc->track_data.at(this->user_id).transformed_past_cursor_point = Point(center.x, center.y);
+		this->hc->track_data.at(this->user_id).transformed_cursor_point.x() = w >> 1;
+		this->hc->track_data.at(this->user_id).transformed_cursor_point.y() = h >> 1;
+		this->hc->modulate_cursor(this->user_id);
 	}
 	catch (std::out_of_range&) {
 		this->cursor_state = "none";
 	}
+
 
 	this->life = this->max_life;
 }
@@ -72,16 +74,16 @@ void SubWindow::update() {
 			/* ウィンドウの表示領域の端っこに近づくとウィンドウ内でスライド */
 			int width_threshold = this->view_rect.getWidth()*0.1;
 			int height_threshold = this->view_rect.getHeight()*0.1;
-			if (this->view_rect.getRight() - this->hc->track_data.at(this->user_id).transformed_current_cursor_point.x < width_threshold) {
+			if (this->view_rect.getRight() - this->hc->track_data.at(this->user_id).transformed_cursor_point.x() < width_threshold) {
 				this->view_rect.setX(this->view_rect.getX() + 30);
 			}
-			else if (this->hc->track_data.at(this->user_id).transformed_current_cursor_point.x - this->view_rect.getLeft() < width_threshold) {
+			else if (this->hc->track_data.at(this->user_id).transformed_cursor_point.x() - this->view_rect.getLeft() < width_threshold) {
 				this->view_rect.setX(this->view_rect.getX() - 30);
 			}
-			else if (this->view_rect.getBottom() - this->hc->track_data.at(this->user_id).transformed_current_cursor_point.y < height_threshold) {
+			else if (this->view_rect.getBottom() - this->hc->track_data.at(this->user_id).transformed_cursor_point.y() < height_threshold) {
 				this->view_rect.setY(this->view_rect.getY() + 30);
 			}
-			else if (this->hc->track_data.at(this->user_id).transformed_current_cursor_point.y - this->view_rect.getTop() < height_threshold) {
+			else if (this->hc->track_data.at(this->user_id).transformed_cursor_point.y() - this->view_rect.getTop() < height_threshold) {
 				this->view_rect.setY(this->view_rect.getY() - 30);
 			}
 
@@ -90,13 +92,13 @@ void SubWindow::update() {
 			this->view_rect.setY(min(max(static_cast<int>(this->view_rect.getY()), 0), static_cast<int>(DISPLAY_H / 2 - this->view_rect.getHeight())));
 
 			/* カーソルがウィンドウ外に出ないように制限 */
-			if (this->hc->track_data.at(this->user_id).transformed_current_cursor_point.x < 0) {
-				this->hc->track_data.at(this->user_id).transformed_current_cursor_point.x = this->hc->track_data.at(this->user_id).transformed_past_cursor_point.x = 0;
+			if (this->hc->track_data.at(this->user_id).transformed_cursor_point.x() < 0) {
+				this->hc->track_data.at(this->user_id).transformed_cursor_point.x() = 0;
 			}
-			else if (this->hc->track_data.at(this->user_id).transformed_current_cursor_point.x > DISPLAY_W / 2) {
-				this->hc->track_data.at(this->user_id).transformed_current_cursor_point.x = this->hc->track_data.at(this->user_id).transformed_past_cursor_point.x = DISPLAY_W / 2;
+			else if (this->hc->track_data.at(this->user_id).transformed_cursor_point.x() > DISPLAY_W / 2) {
+				this->hc->track_data.at(this->user_id).transformed_cursor_point.x() = DISPLAY_W / 2;
 			}
-			this->hc->track_data.at(this->user_id).transformed_current_cursor_point.y = this->hc->track_data.at(this->user_id).transformed_past_cursor_point.y = max(min(this->hc->track_data.at(this->user_id).transformed_current_cursor_point.y, DISPLAY_H / 2), 0);
+			this->hc->track_data.at(this->user_id).transformed_cursor_point.y() = max(min(this->hc->track_data.at(this->user_id).transformed_cursor_point.y(), static_cast<long>(DISPLAY_H / 2)), 0L);
 		}
 		catch (std::out_of_range&) {
 			this->cursor_state = "none";
@@ -130,7 +132,7 @@ void SubWindow::draw() {
 				r += 3;
 				alpha -= 12;
 				ofSetColor(this->hc->track_data.at(this->user_id).cursor_color, alpha);
-				ofCircle(this->hc->track_data.at(this->user_id).transformed_current_cursor_point.x, this->hc->track_data.at(this->user_id).transformed_current_cursor_point.y, r);
+				ofCircle(this->hc->track_data.at(this->user_id).transformed_cursor_point.x(), this->hc->track_data.at(this->user_id).transformed_cursor_point.y(), r);
 			}
 		}
 
