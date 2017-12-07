@@ -14,10 +14,8 @@ void KyotoTowerScene::update() {
 }
 
 void KyotoTowerScene::draw() {
-	ofBackground(255);
 	ofSetColor(ofColor::white);
-
-	this->img.draw(0, 0, DISPLAY_W / 2, DISPLAY_H / 4);
+	this->img.draw(FRAME_SIZE, FRAME_SIZE, HALF_DISPLAY_W - 2 * FRAME_SIZE, (HALF_DISPLAY_H >> 1) - 2 * FRAME_SIZE);
 
 	ofSetColor(ofColor::black); // 文字色を指定
 	this->title_font.drawString(L"京都タワー", 30, DISPLAY_H / 4 + 50);

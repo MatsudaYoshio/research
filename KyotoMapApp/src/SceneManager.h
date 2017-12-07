@@ -8,8 +8,6 @@
 #include "MainScene.h"
 #include "SimulatedAnnealing.h"
 
-#include <mutex>
-
 class SceneManager {
 private:
 	HandCursor* hc;
@@ -24,7 +22,6 @@ private:
 	bool transform_thread_flag = false;
 	unordered_map<int, string> cursor_assignment;
 	vector<int> active_scene_id_list, active_scene_id_list_tmp;
-	std::mutex mtx;
 public:
 	void setup(HandCursor* hc);
 	void update();

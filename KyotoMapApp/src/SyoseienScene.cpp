@@ -14,10 +14,8 @@ void SyoseienScene::update() {
 }
 
 void SyoseienScene::draw() {
-	ofBackground(255);
 	ofSetColor(ofColor::white);
-
-	this->img.draw(0, 0, DISPLAY_W / 2, DISPLAY_H / 4);
+	this->img.draw(FRAME_SIZE, FRAME_SIZE, HALF_DISPLAY_W - 2 * FRAME_SIZE, (HALF_DISPLAY_H >> 1) - 2 * FRAME_SIZE);
 
 	ofSetColor(ofColor::black); // •¶šF‚ğw’è
 	this->title_font.drawString(L"Â¬‰€(kŠk“@)", 50, DISPLAY_H / 4 + 50);

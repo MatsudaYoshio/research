@@ -22,43 +22,35 @@ void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unorder
 	int x_sign, y_sign, w_sign, h_sign;
 	double x_change_val, y_change_val, w_change_val, h_change_val;
 
-	for (const auto &id : this->active_scene_id_list_tmp) {
-		w_sign = (new_rects[id].width > old_rects[id].width) ? +1 : -1;
-		h_sign = (new_rects[id].height > old_rects[id].height) ? +1 : -1;
-		w_change_val = change_rate*abs(new_rects[id].width - old_rects[id].width)*w_sign;
-		h_change_val = change_rate*abs(new_rects[id].height - old_rects[id].height)*h_sign;
+	try {
+		for (const auto &id : this->active_scene_id_list_tmp) {
+			w_sign = (new_rects[id].width > old_rects[id].width) ? +1 : -1;
+			h_sign = (new_rects[id].height > old_rects[id].height) ? +1 : -1;
+			w_change_val = change_rate*abs(new_rects[id].width - old_rects[id].width)*w_sign;
+			h_change_val = change_rate*abs(new_rects[id].height - old_rects[id].height)*h_sign;
 
-		for (int i = 0; i < change_times; ++i) {
-			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), id) == end(this->active_scene_id_list)) {
-				goto FINISH;
+			for (int i = 0; i < change_times; ++i) {
+				this->sub_windows.at(id).set_rect(old_rects[id]);
+				old_rects[id].setWidth(old_rects[id].width + w_change_val);
+				old_rects[id].setHeight(old_rects[id].height + h_change_val);
 			}
-			this->mtx.lock();
-			this->sub_windows[id].set_rect(old_rects[id]);
-			this->sub_windows[id].set_frame();
-			this->mtx.unlock();
-			old_rects[id].setWidth(old_rects[id].width + w_change_val);
-			old_rects[id].setHeight(old_rects[id].height + h_change_val);
-		}
 
-		x_sign = (new_rects[id].x > old_rects[id].x) ? +1 : -1;
-		y_sign = (new_rects[id].y > old_rects[id].y) ? +1 : -1;
-		x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
-		y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
+			x_sign = (new_rects[id].x > old_rects[id].x) ? +1 : -1;
+			y_sign = (new_rects[id].y > old_rects[id].y) ? +1 : -1;
+			x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
+			y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
 
-		for (int i = 0; i < change_times; ++i) {
-			if (find(begin(this->active_scene_id_list), end(this->active_scene_id_list), id) == end(this->active_scene_id_list)) {
-				goto FINISH;
+			for (int i = 0; i < change_times; ++i) {
+				this->sub_windows.at(id).set_rect(old_rects[id]);
+				old_rects[id].setX(old_rects[id].x + x_change_val);
+				old_rects[id].setY(old_rects[id].y + y_change_val);
 			}
-			this->mtx.lock();
-			this->sub_windows[id].set_rect(old_rects[id]);
-			this->sub_windows[id].set_frame();
-			this->mtx.unlock();
-			old_rects[id].setX(old_rects[id].x + x_change_val);
-			old_rects[id].setY(old_rects[id].y + y_change_val);
+
 		}
 
 	}
-FINISH:
+	catch (std::out_of_range&) {}
+
 	this->transform_thread_flag = false;
 }
 
@@ -67,7 +59,6 @@ void SceneManager::setup(HandCursor* hc) {
 	this->main_scene.setup(hc);
 	ofAddListener(this->main_scene.point_event, this, &SceneManager::pointed); // ときどき、ここでなぜかmutex関係のエラーが出る
 	ofAddListener(this->main_scene.make_sub_window_event, this, &SceneManager::make_sub_window);
-
 
 	this->sa.setup(hc, &this->active_scene_id_list, &this->main_scene.user_id_list, &this->sub_windows);
 
@@ -120,7 +111,7 @@ void SceneManager::update() {
 	}
 
 	this->main_scene.update(); // メインシーンの更新
-	
+
 	for (auto &ss : this->sub_windows) {
 		ss.second.update();
 	}

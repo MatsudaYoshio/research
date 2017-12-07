@@ -26,7 +26,7 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 
 	this->frame = Mat(Size(CAMERA_W, CAMERA_H), CV_8UC3);
 
-	this->track_data[-1].cursor_point.x() = 350;
+	this->track_data[-1].cursor_point.x() = 450;
 	this->track_data[-1].cursor_point.y() = 650;
 	this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
 	this->track_data[-1].face_rect = dlib::rectangle(960, 540, 300, 300);
