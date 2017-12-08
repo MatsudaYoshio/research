@@ -16,6 +16,12 @@ namespace param {
 	constexpr int HALF_DISPLAY_W = DISPLAY_W >> 1;
 	constexpr int HALF_DISPLAY_H = DISPLAY_H >> 1;
 
+	constexpr int MAX_SUB_WINDOW_W = HALF_DISPLAY_W;
+	constexpr int MAX_SUB_WINDOW_H = HALF_DISPLAY_H;
+
+	constexpr int HALF_MAX_SUB_WINDOW_W = MAX_SUB_WINDOW_W >> 1;
+	constexpr int HALF_MAX_SUB_WINDOW_H = MAX_SUB_WINDOW_H >> 1;
+
 	/* カメラとディスプレイの解像度の比率 */
 	constexpr double RESOLUTION_RATIO_W = DISPLAY_W / CAMERA_W;
 	constexpr double RESOLUTION_RATIO_H = DISPLAY_H / CAMERA_H;

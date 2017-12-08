@@ -11,6 +11,7 @@ void MainScene::setup(HandCursor* hc) {
 	this->kamogawa_font.loadFont("meiryob.ttc", 100);
 
 	ofLoadImage(this->hotel_texture, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/building_hotel_small.png");
+	ofLoadImage(this->face_texture, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/hirameki_41.png");
 
 	this->curve_vertices.resize(this->curve_vertices_num);
 	this->curve_vertices[0].set(DISPLAY_W, -0.185*DISPLAY_H);
@@ -118,11 +119,17 @@ void MainScene::draw() {
 		i.draw();
 	}
 
-	/* ホテルテクスチャの描画 */
 	ofSetColor(ofColor::white);
+
+	/* ホテルテクスチャの描画 */
 	this->hotel_texture.draw(600, 700, 180, 180);
 	this->hotel_texture.draw(1600, 1700, 180, 180);
 	this->hotel_texture.draw(2100, 700, 180, 180);
+
+	/* 検出された顔を描画 */
+	for (auto& fd : this->hc->detect_face_data) {
+		this->face_texture.draw(fd.x(), fd.y(), 250, 250);
+	}
 
 	/* 手カーソルの描画 */
 	try {

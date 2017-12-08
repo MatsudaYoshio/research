@@ -73,19 +73,22 @@ void SubWindow::update() {
 			/* ウィンドウの表示領域の端っこに近づくとウィンドウ内でスライド */
 			const double width_threshold = this->view_rect.getWidth()*0.1;
 			const double height_threshold = this->view_rect.getHeight()*0.1;
-
 			if (this->view_rect.getRight() - this->hc->track_data.at(this->user_id).transformed_cursor_point.x() < width_threshold) {
-				this->view_rect.setX(ofClamp(this->view_rect.getX() + width_threshold - this->view_rect.getRight() + this->hc->track_data.at(this->user_id).transformed_cursor_point.x(), 0, HALF_DISPLAY_W - this->view_rect.getWidth()));
+				this->view_rect.setX(this->view_rect.getX() + width_threshold - this->view_rect.getRight() + this->hc->track_data.at(this->user_id).transformed_cursor_point.x());
 			}
 			else if (this->hc->track_data.at(this->user_id).transformed_cursor_point.x() - this->view_rect.getLeft() < width_threshold) {
-				this->view_rect.setX(ofClamp(this->view_rect.getX() - width_threshold - this->view_rect.getLeft() + this->hc->track_data.at(this->user_id).transformed_cursor_point.x(), 0, HALF_DISPLAY_W - this->view_rect.getWidth()));
+				this->view_rect.setX(this->view_rect.getX() - width_threshold - this->view_rect.getLeft() + this->hc->track_data.at(this->user_id).transformed_cursor_point.x());
 			}
 			else if (this->view_rect.getBottom() - this->hc->track_data.at(this->user_id).transformed_cursor_point.y() < height_threshold) {
-				this->view_rect.setY(ofClamp(this->view_rect.getY() + height_threshold - this->view_rect.getBottom() + this->hc->track_data.at(this->user_id).transformed_cursor_point.y(), 0, HALF_DISPLAY_H - this->view_rect.getHeight()));
+				this->view_rect.setY(this->view_rect.getY() + height_threshold - this->view_rect.getBottom() + this->hc->track_data.at(this->user_id).transformed_cursor_point.y());
 			}
 			else if (this->hc->track_data.at(this->user_id).transformed_cursor_point.y() - this->view_rect.getTop() < height_threshold) {
-				this->view_rect.setY(ofClamp(this->view_rect.getY() - height_threshold - this->view_rect.getTop() + this->hc->track_data.at(this->user_id).transformed_cursor_point.y(), 0, HALF_DISPLAY_H - this->view_rect.getHeight()));
+				this->view_rect.setY(this->view_rect.getY() - height_threshold - this->view_rect.getTop() + this->hc->track_data.at(this->user_id).transformed_cursor_point.y());
 			}
+
+			/* ウィンドウの表示領域を制限 */
+			this->view_rect.setX(ofClamp(this->view_rect.getX(), 0, HALF_DISPLAY_W - this->view_rect.getWidth()));
+			this->view_rect.setY(ofClamp(this->view_rect.getY(), 0, HALF_DISPLAY_H - this->view_rect.getHeight()));
 
 			/* カーソルがウィンドウ外に出ないように制限 */
 			this->hc->track_data.at(this->user_id).transformed_cursor_point.x() = ofClamp(this->hc->track_data.at(this->user_id).transformed_cursor_point.x(), 0, HALF_DISPLAY_W);
@@ -106,6 +109,7 @@ void SubWindow::draw() {
 		gluLookAt(this->view_rect.getX(), this->view_rect.getY(), 0, this->view_rect.getX(), this->view_rect.getY(), -1, 0, 1, 0); // 視点移動
 
 		ofBackground(ofColor::white);
+		//ofBackgroundGradient(ofColor::white, this->hc->track_data.at(this->user_id).cursor_color, OF_GRADIENT_LINEAR);
 
 		this->scene->draw(); // シーンの描画
 

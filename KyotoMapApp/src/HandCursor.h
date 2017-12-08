@@ -80,6 +80,7 @@ private:
 	RingBuffer<dlib::array2d<unsigned char>> gs_image_buffer; // dlibのグレースケール画像のバッファ
 public:
 	std::map<long long int, track_data_type> track_data;
+	std::vector<dlib::point> detect_face_data;
 
 public:
 	HandCursor();

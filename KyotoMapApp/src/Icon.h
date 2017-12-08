@@ -7,11 +7,10 @@
 
 class Icon {
 private:
-	static constexpr double rotate_speed = 10.0;
-	static constexpr int resize_speed = 4;
+	static constexpr double big_ratio = 1.5;
 
 	int content_id;
-	ofRectangle rect; // アイコンの矩形
+	ofRectangle default_rect, big_rect, rect; // アイコンの矩形
 	int default_w, default_h;
 	ofTexture texture; // アイコンに表示するテクスチャ
 	int alpha;

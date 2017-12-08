@@ -23,6 +23,7 @@ private:
 	ofxTrueTypeFontUC kamogawa_font;
 
 	ofTexture hotel_texture;
+	ofTexture face_texture;
 
 	/* èƒJ[ƒ\ƒ‹‚ğ•`‚­‚½‚ß‚Ì•Ï” */
 	int alpha;

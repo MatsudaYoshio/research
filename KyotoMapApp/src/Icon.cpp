@@ -3,8 +3,8 @@
 void Icon::setup(const int &x, const int &y, const int &width, const int &height, const string &img_path, const int &content_id) {
 	this->content_id = content_id;
 	this->rect.set(x, y, width, height);
-	this->default_w = width;
-	this->default_h = height;
+	this->default_rect.set(this->rect);
+	this->big_rect.set(this->default_rect.getX() - (this->default_w*this->big_ratio - this->default_w), this->default_rect.getY() - (this->default_h*this->big_ratio - this->default_h), this->default_rect.getWidth()*this->big_ratio, this->default_rect.getHeight()*this->big_ratio);
 
 	this->alpha = 255;
 
@@ -14,7 +14,7 @@ void Icon::setup(const int &x, const int &y, const int &width, const int &height
 
 	ofLoadImage(this->texture, img_path);
 
-	this->pb.setup(this->rect.getCenter(), 1.1*(width>>1), 36, 10, ofColor::green);
+	this->pb.setup(this->big_rect.getCenter(), 1.1*this->big_ratio*width / 2, 48, 14, ofColor::green);
 }
 
 void Icon::update() {
@@ -26,10 +26,12 @@ void Icon::update() {
 
 	switch (this->state) {
 	case static_cast<int>(STATE::POINT) :
+		this->rect.set(this->big_rect);
 		this->pb.forward_state(3);
 		this->alpha = 100;
 		break;
 	case static_cast<int>(STATE::INACTIVE) :
+		this->rect.set(this->default_rect);
 		this->pb.reset_state();
 		this->alpha = 255;
 		break;
@@ -38,7 +40,7 @@ void Icon::update() {
 
 void Icon::draw() {
 	switch (this->state) {
-	case static_cast<int>(STATE::POINT) : 
+	case static_cast<int>(STATE::POINT) :
 		this->pb.draw();
 	case static_cast<int>(STATE::INACTIVE) :
 		ofSetColor(ofColor::white, this->alpha);
