@@ -14,6 +14,8 @@ public:
 
 	ofImage img;
 	ofxTrueTypeFontUC title_font, sentence_font;
+	ofTexture star_red, star_orange, star_brown;
+	ofRectangle stars_pos[3];
 };
 
 #endif
