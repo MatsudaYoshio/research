@@ -27,7 +27,7 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	this->frame = Mat(Size(CAMERA_W, CAMERA_H), CV_8UC3);
 
 	/* 渉成園 */
-	//this->track_data[-1].cursor_point.x() = 600;
+	//this->track_data[-1].cursor_point.x() = 550;
 	//this->track_data[-1].cursor_point.y() = 650;
 	/* 京都タワー */
 	/*this->track_data[-1].cursor_point.x() = 800;
@@ -39,21 +39,15 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-1].cursor_point.x() = 900;
 	//this->track_data[-1].cursor_point.y() = 600;
 	/* 西本願寺 */
-	this->track_data[-1].cursor_point.x() = 1550;
-	this->track_data[-1].cursor_point.y() = 600;
+	//this->track_data[-1].cursor_point.x() = 1550;
+	//this->track_data[-1].cursor_point.y() = 600;
 
-	this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
-	this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
-	this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
-	this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
-	this->track_data[-1].cursor_color_id = 0;
-	this->track_data[-1].cursor_color = ofColor::deepPink;
-
-	//this->track_data[-2].current_pointer.x = 1100;
-	//this->track_data[-2].current_pointer.y = 600;
-	//this->track_data[-2].face = dlib::rectangle(450, 600, 50, 50);
-	//this->track_data[-2].cursor_color_id = 1;
-	//this->track_data[-2].cursor_color = ofColor::mediumPurple;
+	//this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
+	//this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
+	//this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
+	//this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
+	//this->track_data[-1].cursor_color_id = 0;
+	//this->track_data[-1].cursor_color = ofColor::deepPink;
 }
 
 void HandCursor::update() {
@@ -84,7 +78,7 @@ void HandCursor::update() {
 		this->transform_point(fd.tl_corner(), this->detect_face_data[i++]);
 	}
 
-	this->show_detect_window(); // 検出チェック用のウィンドウを表示
+	//this->show_detect_window(); // 検出チェック用のウィンドウを表示
 }
 
 void HandCursor::exit() {
