@@ -27,8 +27,8 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	this->frame = Mat(Size(CAMERA_W, CAMERA_H), CV_8UC3);
 
 	/* 渉成園 */
-	//this->track_data[-1].cursor_point.x() = 550;
-	//this->track_data[-1].cursor_point.y() = 650;
+	this->track_data[-1].cursor_point.x() = 550;
+	this->track_data[-1].cursor_point.y() = 650;
 	/* 京都タワー */
 	/*this->track_data[-1].cursor_point.x() = 800;
 	this->track_data[-1].cursor_point.y() = 900;*/
@@ -42,12 +42,23 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-1].cursor_point.x() = 1550;
 	//this->track_data[-1].cursor_point.y() = 600;
 
-	//this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
-	//this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
-	//this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
-	//this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
-	//this->track_data[-1].cursor_color_id = 0;
-	//this->track_data[-1].cursor_color = ofColor::deepPink;
+	this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
+	this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
+	this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
+	this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
+	this->track_data[-1].cursor_color_id = 0;
+	this->track_data[-1].cursor_color = ofColor::deepPink;
+
+	/* 西本願寺 */
+	//this->track_data[-2].cursor_point.x() = 1550;
+	//this->track_data[-2].cursor_point.y() = 600;
+
+	//this->transform_point(this->track_data[-2].cursor_point, this->track_data[-2].transformed_cursor_point);
+	//this->track_data[-2].face_rect = dlib::rectangle(HALF_DISPLAY_W * 3 / 4, HALF_DISPLAY_H / 2 + 300, 300, 300);
+	//this->track_data[-2].face_point = center(this->track_data[-2].face_rect);
+	//this->transform_point(this->track_data[-2].face_point, this->track_data[-2].transformed_face_point);
+	//this->track_data[-2].cursor_color_id = 1;
+	//this->track_data[-2].cursor_color = ofColor::mediumPurple;
 }
 
 void HandCursor::update() {
@@ -90,7 +101,7 @@ void HandCursor::modulate_cursor(const int& user_id) {
 		this->inverse_transform_point(this->track_data.at(user_id).transformed_cursor_point, this->track_data.at(user_id).cursor_point);
 	}
 	catch (std::out_of_range&) {}
-	
+
 }
 
 void HandCursor::show_detect_window() {
@@ -169,6 +180,7 @@ void HandCursor::hand_detect() {
 		sliding_windows[1] = move(sw2.get_windows());
 		sliding_windows[2] = move(sw3.get_windows());
 
+		/* 顔の周辺のスライディングウィンドウで手検出 */
 		for (const auto& sw : sliding_windows) {
 			for (const auto& w : sw) {
 				extract_image_chip(this->gs_image_buffer.get_read_position(), w, roi);
@@ -178,49 +190,53 @@ void HandCursor::hand_detect() {
 			}
 		}
 
-		if (!hand_dets_tmp.empty()) { // 検出された手があれば
-
-			/* 既に追跡している手の近くの手を除く */
-			for (const auto& td : this->track_data) {
-				for (auto hd = begin(hand_dets_tmp); hd != end(hand_dets_tmp);) {
-					if (this->euclid_distance(center(td.second.hand), center(*hd)) < 400) {
-						hd = hand_dets_tmp.erase(hd);
-					}
-					else {
-						++hd;
-					}
-				}
-			}
-
-			/* NonMaximumSuppressionにかけて重複を取り除く */
-			this->nms(hand_dets_tmp, this->hand_dets);
-
-			this->track_data[this->track_id].hand = this->hand_dets[0];
-			this->track_data[this->track_id].face_rect = fd;
-			this->track_data[this->track_id].face_point = center(fd);
-			this->transform_point(this->track_data[this->track_id].face_point, this->track_data[this->track_id].transformed_face_point);
-
-			correlation_tracker ct;
-			ct.start_track(this->org_image_buffer.get_read_position(), this->hand_dets[0]);
-
-			this->track_data[this->track_id].cursor_point = center(this->hand_dets[0]);
-			this->transform_point(this->track_data[this->track_id].cursor_point, this->track_data[this->track_id].transformed_cursor_point);
-
-			/* カーソルの色をかぶらないように選ぶ */
-			int color_id;
-		SAME_COLOR:
-			color_id = this->random_color(this->mt);
-			for (const auto &t : this->track_data) {
-				if (t.second.cursor_color_id == color_id) {
-					goto SAME_COLOR;
-				}
-			}
-			this->track_data[this->track_id].cursor_color = this->cursor_color_list[color_id];
-			this->track_data[this->track_id].cursor_color_id = move(color_id);
-
-			this->new_thread_tracking(ct, this->track_id++);
+		if (hand_dets_tmp.empty()) { // 検出された手がなければ
+			continue;
 		}
 
+		/* 既に追跡している手の近くの手を除く */
+		for (const auto& td : this->track_data) {
+			for (auto hd = begin(hand_dets_tmp); hd != end(hand_dets_tmp);) {
+				if (this->euclid_distance(center(td.second.hand), center(*hd)) < 400) {
+					hd = hand_dets_tmp.erase(hd);
+				}
+				else {
+					++hd;
+				}
+			}
+		}
+
+		if (hand_dets_tmp.empty()) { // すべての手候補が既に追跡している手の近くの手として削除されたら
+			continue;
+		}
+
+		/* NonMaximumSuppressionにかけて重複を取り除く */
+		this->nms(hand_dets_tmp, this->hand_dets);
+
+		this->track_data[this->track_id].hand = this->hand_dets[0];
+		this->track_data[this->track_id].face_rect = fd;
+		this->track_data[this->track_id].face_point = center(fd);
+		this->transform_point(this->track_data[this->track_id].face_point, this->track_data[this->track_id].transformed_face_point);
+
+		correlation_tracker ct;
+		ct.start_track(this->org_image_buffer.get_read_position(), this->hand_dets[0]);
+
+		this->track_data[this->track_id].cursor_point = center(this->hand_dets[0]);
+		this->transform_point(this->track_data[this->track_id].cursor_point, this->track_data[this->track_id].transformed_cursor_point);
+
+		/* カーソルの色をかぶらないように選ぶ */
+		int color_id;
+	SAME_COLOR:
+		color_id = this->random_color(this->mt);
+		for (const auto& t : this->track_data) {
+			if (t.second.cursor_color_id == color_id) {
+				goto SAME_COLOR;
+			}
+		}
+		this->track_data[this->track_id].cursor_color = this->cursor_color_list[color_id];
+		this->track_data[this->track_id].cursor_color_id = move(color_id);
+
+		this->new_thread_tracking(ct, this->track_id++);
 	}
 
 	this->hand_thread_flag = false;
@@ -245,7 +261,7 @@ bool HandCursor::is_hand(array2d<unsigned char> &img) {
 	extract_fhog_features(img_resize, fhog);
 
 	X_type feature_vec;
-	fhog_to_feature_vector(feature_vec, fhog);
+	this->fhog_to_feature_vector(feature_vec, fhog);
 
 	return (df(feature_vec) > this->decision_ratio);
 }

@@ -5,6 +5,7 @@ using namespace param;
 random_device SimulatedAnnealing::rd;
 mt19937 SimulatedAnnealing::mt(SimulatedAnnealing::rd());
 uniform_int_distribution<int> SimulatedAnnealing::random_parameter(0, 3);
+uniform_real_distribution<double> SimulatedAnnealing::random_0to1(0.0, 1.0);
 
 void SimulatedAnnealing::setup(HandCursor* hc, vector<int>* active_window_list, vector<int>* main_window_user_list, unordered_map<int, SubWindow>* sub_windows) {
 	this->hc = hc;
@@ -26,9 +27,7 @@ void SimulatedAnnealing::operator() (const unordered_map<int, ofRectangle>& star
 		this->calculate_cost();
 
 		if (this->next_cost > this->current_cost) {
-			double diff = this->current_cost - this->next_cost;
-			double t = static_cast<double>(i) / this->MAX_ITERATION;
-			if (ofRandomuf() < exp(diff / t)) {
+			if (random_0to1(this->mt) < exp(this->MAX_ITERATION * (this->current_cost - this->next_cost) / i)) {
 				this->current_cost = this->next_cost;
 				this->current_state = this->next_state;
 			}
@@ -55,34 +54,33 @@ bool SimulatedAnnealing::set_next_state() {
 	switch (this->modify_param) {
 	case 0:
 	{
-		uniform_int_distribution<int> random_x(0, DISPLAY_W - this->next_state[modify_window_num].getWidth());
-		this->next_state[modify_window_num].setX(random_x(this->mt));
+		uniform_int_distribution<int> random_x(0, DISPLAY_W - this->next_state[this->modify_window_num].getWidth());
+		this->next_state[this->modify_window_num].setX(random_x(this->mt));
 	}
 	break;
 	case 1:
 	{
-		uniform_int_distribution<int> random_y(0, DISPLAY_H - this->next_state[modify_window_num].getHeight());
-		this->next_state[modify_window_num].setY(random_y(this->mt));
+		uniform_int_distribution<int> random_y(0, DISPLAY_H - this->next_state[this->modify_window_num].getHeight());
+		this->next_state[this->modify_window_num].setY(random_y(this->mt));
 	}
 	break;
 	case 2:
 	{
-		uniform_int_distribution<int> random_w(100, DISPLAY_W >> 1);
-		this->next_state[modify_window_num].setWidth(random_w(this->mt));
+		uniform_int_distribution<int> random_w(100, HALF_DISPLAY_W);
+		this->next_state[this->modify_window_num].setWidth(random_w(this->mt));
 	}
 	break;
 	case 3:
 	{
-		uniform_int_distribution<int> random_h(100, DISPLAY_H >> 1);
-		this->next_state[modify_window_num].setHeight(random_h(this->mt));
+		uniform_int_distribution<int> random_h(100, HALF_DISPLAY_H);
+		this->next_state[this->modify_window_num].setHeight(random_h(this->mt));
 	}
 	break;
 	}
 
-
 	for (const auto& s : this->next_state) {
 		/* パラメータの修正によって制約外の解になったら */
-		if (s.second.getLeft() < 0.01*DISPLAY_W || s.second.getRight() > 0.99*DISPLAY_W || s.second.getTop() < 0.01*DISPLAY_H || s.second.getBottom() > 0.99*DISPLAY_H || s.second.width > DISPLAY_W / 2 || s.second.height > DISPLAY_H / 2) {
+		if (s.second.getLeft() < 0.005*DISPLAY_W || s.second.getRight() > 0.995*DISPLAY_W || s.second.getTop() < 0.005*DISPLAY_H || s.second.getBottom() > 0.995*DISPLAY_H || s.second.width > HALF_DISPLAY_W || s.second.height > HALF_DISPLAY_H) {
 			return false;
 		}
 	}
@@ -93,54 +91,45 @@ bool SimulatedAnnealing::set_next_state() {
 void SimulatedAnnealing::calculate_cost() {
 	this->next_cost = 0.0;
 
-	constexpr double a = 100;
-	constexpr double b = 1.6;
-	constexpr double c = 1000;
+	this->overlap_cost = 0.0;
+	this->distance_cost = 0.0;
 
-	double area_sum = 0.0;
-
-	for (const auto &s : this->next_state) {
-		area_sum += s.second.getArea();
-
-		/* 矩形の縦横比 */
-		double aspect_ratio = s.second.width / s.second.height;
-		if (1.0 / b < aspect_ratio && aspect_ratio < b) {
-			this->next_cost += a*exp(-pow(aspect_ratio - ((b*b + 1) / (2 * b)), 2));
-		}
-		else {
-			this->next_cost += c;
-		}
-
-		this->next_cost -= 4000 * s.second.getArea(); // 面積
-
+	for (const auto& s : this->next_state) {
 		/* 矩形と他のカーソルとの距離 */
 		try {
 			for (const auto& id : *this->main_window_user_list) {
 				if (s.second.inside(this->hc->track_data.at(id).transformed_cursor_point.x(), this->hc->track_data.at(id).transformed_cursor_point.y())) {
-					this->next_cost += 100000;
+					// もし矩形とカーソルが重複していたら、コストを最大にしてコスト計算を終了
+					this->next_cost = DBL_MAX;
+					return;
 				}
-				this->next_cost -= 5000 * ofDist(s.second.getCenter().x, s.second.getCenter().y, this->hc->track_data.at(id).transformed_cursor_point.x(), this->hc->track_data.at(id).transformed_cursor_point.y());
 			}
 		}
 		catch (std::out_of_range&) {}
 
+		/* 重複面積の計算(自分自身との重複面積も足しているので、別でその分を減らす必要がある) */
+		for (const auto& s2 : this->next_state) {
+			overlap_cost += s.second.getIntersection(s2.second).getArea();
+		}
+
+		this->next_cost -= s.second.getArea(); // 自分との重複面積分減らす
+
+		/* 円形度 */
+		this->shape_cost -= 4 * PI*s.second.getArea() / (s.second.getPerimeter()*s.second.getPerimeter());
+
 		/* 矩形と顔との距離 */
-		for (const auto& td : this->hc->track_data) {
-			if (this->sub_windows->at(s.first).get_user_id() == td.first) {
-				this->next_cost += 10 * ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x(), td.second.transformed_face_point.y());
-				continue;
+		try {
+			for (const auto& td : this->hc->track_data) {
+				if (this->sub_windows->at(s.first).get_user_id() == td.first) {
+					this->distance_cost += ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x(), td.second.transformed_face_point.y());
+					continue;
+				}
 			}
 		}
-
-		for (const auto &s2 : this->next_state) {
-			this->next_cost += 500 * s.second.getIntersection(s2.second).getArea(); // 重複面積
-		}
-
+		catch (std::out_of_range&) {}
 	}
 
-	double area_mean = area_sum / this->next_state.size();
+	this->area_cost = -min_element(begin(this->next_state), end(this->next_state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
-	for (const auto &s : this->next_state) {
-		this->next_cost += 0.1*pow(area_mean - s.second.getArea(), 2); // 面積の分散
-	}
+	this->next_cost += this->area_cost + this->overlap_cost + 1000 * this->shape_cost + 100 * this->distance_cost;
 }
