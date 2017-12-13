@@ -7,8 +7,18 @@ void MainScene::setup(HandCursor* hc) {
 
 	this->hc = hc;
 
-	this->title_font.loadFont("meiryob.ttc", 80);
-	this->kamogawa_font.loadFont("meiryob.ttc", 100);
+	switch (LANGUAGE) {
+	case static_cast<int>(LANGUAGE_ID::JAPANENE) :
+		this->title_font.loadFont("meiryob.ttc", 80);
+		this->kamogawa_font.loadFont("meiryob.ttc", 100);
+
+		break;
+	case static_cast<int>(LANGUAGE_ID::ENGLISH) :
+		this->title_font.loadFont("arialbd.ttf", 110);
+		this->kamogawa_font.loadFont("arialbd.ttf", 100);
+
+		break;
+	}
 
 	ofLoadImage(this->hotel_texture, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/building_hotel_small.png");
 	ofLoadImage(this->face_texture, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/hirameki_41.png");
@@ -22,12 +32,13 @@ void MainScene::setup(HandCursor* hc) {
 	this->curve_vertices[5].set(0.964*DISPLAY_W, 0.926*DISPLAY_H);
 	this->curve_vertices[6].set(1.042*DISPLAY_W, DISPLAY_H);
 
-	this->icons.resize(5);
-	this->icons[static_cast<int>(CONTENT_ID::KYOTO_TOWER)].setup(2000, 1560, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/kyoto_tower.png", static_cast<int>(CONTENT_ID::KYOTO_TOWER));
-	this->icons[static_cast<int>(CONTENT_ID::HIGASHIHONGANJI)].setup(2000, 1100, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple.png", static_cast<int>(CONTENT_ID::HIGASHIHONGANJI));
-	this->icons[static_cast<int>(CONTENT_ID::SYOSEIEN)].setup(2700, 1100, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/syoseien_t.png", static_cast<int>(CONTENT_ID::SYOSEIEN));
-	this->icons[static_cast<int>(CONTENT_ID::NISHIHONGANJI)].setup(500, 1100, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/DigitalSignage/fig/simple_temple2.png", static_cast<int>(CONTENT_ID::NISHIHONGANJI));
-	this->icons[static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM)].setup(900, 700, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/tatemono_hakubutsukan.png", static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM));
+	this->icons.resize(6);
+	this->icons[static_cast<int>(CONTENT_ID::KYOTO_TOWER)].setup(2000, 1560, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/kyoto_tower.png", static_cast<int>(CONTENT_ID::KYOTO_TOWER));
+	this->icons[static_cast<int>(CONTENT_ID::HIGASHIHONGANJI)].setup(2000, 1100, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/simple_temple.png", static_cast<int>(CONTENT_ID::HIGASHIHONGANJI));
+	this->icons[static_cast<int>(CONTENT_ID::SYOSEIEN)].setup(2700, 1100, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/syoseien_t.png", static_cast<int>(CONTENT_ID::SYOSEIEN));
+	this->icons[static_cast<int>(CONTENT_ID::NISHIHONGANJI)].setup(880, 1100, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/simple_temple2.png", static_cast<int>(CONTENT_ID::NISHIHONGANJI));
+	this->icons[static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM)].setup(1280, 700, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/tatemono_hakubutsukan.png", static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM));
+	this->icons[static_cast<int>(CONTENT_ID::KYOTO_AQUARIUM)].setup(100, 1510, 300, 300, "C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/building_suizokukan.png", static_cast<int>(CONTENT_ID::KYOTO_AQUARIUM));
 
 	for (auto& i : this->icons) {
 		ofAddListener(i.select_event, this, &MainScene::select_icon);
@@ -67,15 +78,40 @@ void MainScene::update() {
 void MainScene::draw() {
 	this->db.draw(); // 背景(グラデーション)を描く
 
-	/* 左上に縁がある文字を描く */
-	ofSetColor(ofColor::black);
-	for (int x = -10; x < 10; ++x) {
-		for (int y = -10; y < 10; ++y) {
-			this->title_font.drawString(L"京都マップ", 140 + x, 140 + y);
+	switch (LANGUAGE) {
+	case static_cast<int>(LANGUAGE_ID::JAPANENE) :
+		/* 左上に縁がある文字を描く */
+		ofSetColor(ofColor::black);
+		for (int x = -10; x < 10; ++x) {
+			for (int y = -10; y < 10; ++y) {
+				this->title_font.drawString(L"京都マップ", 140 + x, 140 + y);
+			}
 		}
+		ofSetColor(ofColor::white);
+		this->title_font.drawString(L"京都マップ", 140, 140);
+
+		break;
+	case static_cast<int>(LANGUAGE_ID::ENGLISH) :
+		ofSetColor(ofColor::black);
+		for (int x = -10; x < 10; ++x) {
+			for (int y = -10; y < 10; ++y) {
+				this->title_font.drawString(L"Kyoto", 140 + x, 140 + y);
+			}
+		}
+		ofSetColor(ofColor::white);
+		this->title_font.drawString(L"Kyoto", 140, 140);
+
+		ofSetColor(ofColor::black);
+		for (int x = -10; x < 10; ++x) {
+			for (int y = -10; y < 10; ++y) {
+				this->title_font.drawString(L"Map", 620 + x, 140 + y);
+			}
+		}
+		ofSetColor(ofColor::white);
+		this->title_font.drawString(L"Map", 620, 140);
+
+		break;
 	}
-	ofSetColor(ofColor::white);
-	this->title_font.drawString(L"京都マップ", 140, 140);
 
 	/* 川の描画 */
 	ofFill();
@@ -100,17 +136,80 @@ void MainScene::draw() {
 
 	ofEndShape();
 
-	ofSetColor(ofColor::black);
-	this->kamogawa_font.drawString(L"鴨", 3640, 800);
-	this->kamogawa_font.drawString(L"川", 3640, 1300);
+	switch (LANGUAGE) {
+	case static_cast<int>(LANGUAGE_ID::JAPANENE) :
+		ofSetColor(ofColor::black);
+		this->kamogawa_font.drawString(L"鴨", 3640, 800);
+		this->kamogawa_font.drawString(L"川", 3640, 1300);
+
+		break;
+	case static_cast<int>(LANGUAGE_ID::ENGLISH) :
+		ofSetColor(ofColor::black);
+
+		ofPushMatrix();
+		ofTranslate(3740, 530);
+		ofRotateZ(90);
+		this->kamogawa_font.drawString(L"K", 0, 0);
+		ofPopMatrix();
+
+		ofPushMatrix();
+		ofTranslate(3740, 630);
+		ofRotateZ(90);
+		this->kamogawa_font.drawString(L"a", 0, 0);
+		ofPopMatrix();
+
+		ofPushMatrix();
+		ofTranslate(3740, 710);
+		ofRotateZ(90);
+		this->kamogawa_font.drawString(L"m", 0, 0);
+		ofPopMatrix();
+
+		ofPushMatrix();
+		ofTranslate(3740, 830);
+		ofRotateZ(90);
+		this->kamogawa_font.drawString(L"o", 0, 0);
+		ofPopMatrix();
+
+		ofPushMatrix();
+		ofTranslate(3620, 920);
+		ofRotateZ(90);
+		this->kamogawa_font.drawString(L"R", 0, 0);
+		ofPopMatrix();
+
+		ofPushMatrix();
+		ofTranslate(3620, 1020);
+		ofRotateZ(90);
+		this->kamogawa_font.drawString(L"i", 0, 0);
+		ofPopMatrix();
+
+		ofPushMatrix();
+		ofTranslate(3620, 1120);
+		ofRotateZ(90);
+		this->kamogawa_font.drawString(L"v", 0, 0);
+		ofPopMatrix();
+
+		ofPushMatrix();
+		ofTranslate(3620, 1220);
+		ofRotateZ(90);
+		this->kamogawa_font.drawString(L"e", 0, 0);
+		ofPopMatrix();
+
+		ofPushMatrix();
+		ofTranslate(3620, 1320);
+		ofRotateZ(90);
+		this->kamogawa_font.drawString(L"r", 0, 0);
+		ofPopMatrix();
+
+		break;
+	}
 
 	/* 道の描画 */
 	ofSetColor(ofColor::gold);
 	ofRectRounded(0.026*DISPLAY_W, 0.185*DISPLAY_H, 1.042*DISPLAY_W, 0.026*DISPLAY_W, 20);
 	ofRectRounded(0.026*DISPLAY_W, 0.648*DISPLAY_H, 1.042*DISPLAY_W, 0.026*DISPLAY_W, 20);
 
-	ofRectRounded(0.052*DISPLAY_W, 0.093*DISPLAY_H, 0.026*DISPLAY_W, 0.815*DISPLAY_H, 20);
-	ofRectRounded(0.208*DISPLAY_W, 0.093*DISPLAY_H, 0.026*DISPLAY_W, 0.815*DISPLAY_H, 20);
+	ofRectRounded(0.152*DISPLAY_W, 0.093*DISPLAY_H, 0.026*DISPLAY_W, 0.815*DISPLAY_H, 20);
+	ofRectRounded(0.308*DISPLAY_W, 0.093*DISPLAY_H, 0.026*DISPLAY_W, 0.815*DISPLAY_H, 20);
 	ofRectRounded(0.6*DISPLAY_W, 0.093*DISPLAY_H, 0.026*DISPLAY_W, 0.815*DISPLAY_H, 20);
 	ofRectRounded(0.781*DISPLAY_W, 0.093*DISPLAY_H, 0.026*DISPLAY_W, 0.815*DISPLAY_H, 20);
 
@@ -122,11 +221,12 @@ void MainScene::draw() {
 	ofSetColor(ofColor::white);
 
 	/* ホテルテクスチャの描画 */
-	this->hotel_texture.draw(600, 700, 180, 180);
+	this->hotel_texture.draw(980, 700, 180, 180);
 	this->hotel_texture.draw(1600, 1700, 180, 180);
 	this->hotel_texture.draw(2100, 700, 180, 180);
 
 	/* 検出された顔を描画 */
+	ofSetColor(ofColor::white, 200);
 	for (auto& fd : this->hc->detect_face_data) {
 		this->face_texture.draw(fd.x(), fd.y(), 250, 250);
 	}

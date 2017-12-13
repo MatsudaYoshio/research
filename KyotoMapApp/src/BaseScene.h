@@ -14,8 +14,8 @@ public:
 
 	ofImage img;
 	ofxTrueTypeFontUC title_font, sentence_font;
-	ofTexture star_red, star_orange, star_brown;
-	ofRectangle stars_pos[3];
+	ofTexture clock_texture, earth_texture, phone_texture, money_texture;
+	ofRectangle clock_rect = ofRectangle(40, 673, 80, 80), earth_rect = ofRectangle(30, 805, 100, 100), phone_rect = ofRectangle(40, 953, 80, 80), money_rect = ofRectangle(40, 805, 90, 90);
 };
 
 #endif

@@ -4,7 +4,7 @@ void Icon::setup(const int &x, const int &y, const int &width, const int &height
 	this->content_id = content_id;
 	this->rect.set(x, y, width, height);
 	this->default_rect.set(this->rect);
-	this->big_rect.set(this->default_rect.getX() - (this->default_w*this->big_ratio - this->default_w), this->default_rect.getY() - (this->default_h*this->big_ratio - this->default_h), this->default_rect.getWidth()*this->big_ratio, this->default_rect.getHeight()*this->big_ratio);
+	this->big_rect.set(this->default_rect.getX() - this->default_rect.getWidth()*(this->expansion_ratio - 1) / 2, this->default_rect.getY() - this->default_rect.getHeight()*(this->expansion_ratio - 1) / 2, this->default_rect.getWidth()*this->expansion_ratio, this->default_rect.getHeight()*this->expansion_ratio);
 
 	this->alpha = 255;
 
@@ -14,7 +14,7 @@ void Icon::setup(const int &x, const int &y, const int &width, const int &height
 
 	ofLoadImage(this->texture, img_path);
 
-	this->pb.setup(this->big_rect.getCenter(), 1.1*this->big_ratio*width / 2, 48, 14, ofColor::green);
+	this->pb.setup(this->big_rect.getCenter(), 1.1*this->expansion_ratio*width / 2, 48, 14, ofColor::green);
 }
 
 void Icon::update() {

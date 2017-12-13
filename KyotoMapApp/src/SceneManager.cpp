@@ -6,6 +6,7 @@
 #include "SyoseienScene.h"
 #include "NishihonganjiScene.h"
 #include "RyukokuMuseumScene.h"
+#include "KyotoAquariumScene.h"
 #include "AppParameters.h"
 
 #include <opencv2/opencv.hpp>
@@ -147,19 +148,22 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 		SubWindow sub_window;
 		switch (id.first) {
 		case static_cast<int>(CONTENT_ID::KYOTO_TOWER) :
-			sub_window.setup(new KyotoTowerScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, DISPLAY_W / 2, DISPLAY_H / 2));
+			sub_window.setup(new KyotoTowerScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
 			break;
 		case static_cast<int>(CONTENT_ID::HIGASHIHONGANJI) :
-			sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, DISPLAY_W / 2, DISPLAY_H / 2));
+			sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
 			break;
 		case static_cast<int>(CONTENT_ID::SYOSEIEN) :
-			sub_window.setup(new SyoseienScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, DISPLAY_W / 2, DISPLAY_H / 2));
+			sub_window.setup(new SyoseienScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
 			break;
 		case static_cast<int>(CONTENT_ID::NISHIHONGANJI) :
-			sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, DISPLAY_W / 2, DISPLAY_H / 2));
+			sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
 			break;
 		case static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM) :
-			sub_window.setup(new RyukokuMuseumScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, DISPLAY_W / 2, DISPLAY_H / 2));
+			sub_window.setup(new RyukokuMuseumScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
+			break;
+		case static_cast<int>(CONTENT_ID::KYOTO_AQUARIUM) :
+			sub_window.setup(new KyotoAquariumScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
 			break;
 		}
 
@@ -202,6 +206,9 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 			break;
 		case static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM) :
 			sub_window.setup(new RyukokuMuseumScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
+			break;
+		case static_cast<int>(CONTENT_ID::KYOTO_AQUARIUM) :
+			sub_window.setup(new KyotoAquariumScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
 			break;
 		}
 		ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);

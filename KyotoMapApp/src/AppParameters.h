@@ -29,8 +29,14 @@ namespace param {
 	constexpr int FRAME_SIZE = 20; // サブウィンドウの枠の大きさ
 
 	const enum class CONTENT_ID {
-		KYOTO_TOWER, HIGASHIHONGANJI, SYOSEIEN, NISHIHONGANJI, RYUKOKU_MUSEUM
+		KYOTO_TOWER, HIGASHIHONGANJI, SYOSEIEN, NISHIHONGANJI, RYUKOKU_MUSEUM, KYOTO_AQUARIUM
 	};
+
+	const enum class LANGUAGE_ID {
+		JAPANENE, ENGLISH
+	};
+
+	constexpr int LANGUAGE = static_cast<int>(LANGUAGE_ID::JAPANENE);
 }
 
 #endif

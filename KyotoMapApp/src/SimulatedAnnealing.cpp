@@ -80,7 +80,7 @@ bool SimulatedAnnealing::set_next_state() {
 
 	for (const auto& s : this->next_state) {
 		/* パラメータの修正によって制約外の解になったら */
-		if (s.second.getLeft() < 0.005*DISPLAY_W || s.second.getRight() > 0.995*DISPLAY_W || s.second.getTop() < 0.005*DISPLAY_H || s.second.getBottom() > 0.995*DISPLAY_H || s.second.width > HALF_DISPLAY_W || s.second.height > HALF_DISPLAY_H) {
+		if (s.second.getLeft() < 0.005*DISPLAY_W || s.second.getRight() > 0.995*DISPLAY_W || s.second.getTop() < 0.005*DISPLAY_H || s.second.getBottom() > 0.995*DISPLAY_H || s.second.width > MAX_SUB_WINDOW_W || s.second.height > MAX_SUB_WINDOW_H) {
 			return false;
 		}
 	}
@@ -131,5 +131,5 @@ void SimulatedAnnealing::calculate_cost() {
 
 	this->area_cost = -min_element(begin(this->next_state), end(this->next_state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
-	this->next_cost += this->area_cost + this->overlap_cost + 1000 * this->shape_cost + 100 * this->distance_cost;
+	this->next_cost += 10 * this->area_cost + this->overlap_cost + 100 * this->shape_cost + 1000 * this->distance_cost;
 }

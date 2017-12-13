@@ -7,11 +7,10 @@
 
 class Icon {
 private:
-	static constexpr double big_ratio = 1.5;
+	static constexpr double expansion_ratio = 1.5;
 
 	int content_id;
 	ofRectangle default_rect, big_rect, rect; // アイコンの矩形
-	int default_w, default_h;
 	ofTexture texture; // アイコンに表示するテクスチャ
 	int alpha;
 	int selected_user_id; // アイコンを選択したユーザのid
