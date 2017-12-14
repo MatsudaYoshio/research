@@ -236,7 +236,7 @@ void MainScene::draw() {
 		for (auto& id : this->user_id_list) {
 			this->alpha = 255;
 			this->r = 1;
-			for (int i = 0; i < 100; ++i) {
+			for (int i = 0; i < 30; ++i) {
 				this->r += 3;
 				this->alpha -= 12;
 				ofSetColor(this->hc->track_data.at(id).cursor_color, this->alpha);

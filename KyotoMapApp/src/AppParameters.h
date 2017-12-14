@@ -36,7 +36,7 @@ namespace param {
 		JAPANENE, ENGLISH
 	};
 
-	constexpr int LANGUAGE = static_cast<int>(LANGUAGE_ID::JAPANENE);
+	constexpr int LANGUAGE = static_cast<int>(LANGUAGE_ID::ENGLISH);
 }
 
 #endif

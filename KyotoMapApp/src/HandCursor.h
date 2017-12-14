@@ -38,7 +38,7 @@ private:
 	using fhog_type = dlib::array2d<dlib::matrix<double, 31, 1 >>; // fhog特徴量の型
 	using track_data_type = struct {
 		dlib::rectangle hand, face_rect;
-		dlib::point cursor_point, face_point, transformed_face_point, transformed_cursor_point;
+		dlib::point cursor_point, face_point, transformed_face_point, transformed_cursor_point, past_transformed_cursor_point;
 		int cursor_color_id = -1;
 		ofColor cursor_color;
 		std::vector<std::pair<int, dlib::rectangle>> track_hand_dets;
@@ -78,6 +78,8 @@ private:
 	/* 画像データのバッファ */
 	RingBuffer<dlib::array2d<dlib::bgr_pixel>> org_image_buffer; // dlibのbgr型画像のバッファ
 	RingBuffer<dlib::array2d<unsigned char>> gs_image_buffer; // dlibのグレースケール画像のバッファ
+
+	//cv::VideoWriter writer;
 public:
 	std::map<long long int, track_data_type> track_data;
 	std::vector<dlib::point> detect_face_data;

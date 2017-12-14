@@ -53,7 +53,7 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-1].cursor_color = ofColor::deepPink;
 
 	/* 西本願寺 */
-	//this->track_data[-2].cursor_point.x() = 1550;
+	//this->track_data[-2].cursor_point.x() = 1350;
 	//this->track_data[-2].cursor_point.y() = 600;
 
 	//this->transform_point(this->track_data[-2].cursor_point, this->track_data[-2].transformed_cursor_point);
@@ -62,6 +62,8 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->transform_point(this->track_data[-2].face_point, this->track_data[-2].transformed_face_point);
 	//this->track_data[-2].cursor_color_id = 1;
 	//this->track_data[-2].cursor_color = ofColor::mediumPurple;
+
+	//this->writer.open("hand_detect.avi", CV_FOURCC_DEFAULT, 12, Size(CAMERA_W, CAMERA_H), true);
 }
 
 void HandCursor::update() {
@@ -123,6 +125,8 @@ void HandCursor::show_detect_window() {
 	}
 
 	imshow("detect window", view_frame);
+
+	//this->writer << view_frame;
 }
 
 /* 顔検出 */
@@ -304,6 +308,8 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 		/* 現在の追跡位置と直前の追跡位置の差 */
 		dx = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x方向
 		dy = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y方向
+
+		this->track_data[user_id].past_transformed_cursor_point = this->track_data[user_id].transformed_cursor_point;
 
 		/* カーソルの位置を更新 */
 		this->track_data[user_id].cursor_point = point(ofClamp(this->track_data[user_id].cursor_point.x() + dx_rate * dx, 0, CAMERA_W), ofClamp(this->track_data[user_id].cursor_point.y() + dy_rate * dy, 0, CAMERA_H)); // 現在の追跡位置から相対的にカーソルの位置を決定

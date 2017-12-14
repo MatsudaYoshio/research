@@ -6,9 +6,6 @@ using namespace param;
 
 //========================================================================
 int main(){
-	/* メインウィンドウの起動 */
-	//ofSetupOpenGL(W, H, OF_WINDOW);
-
 	ofGLFWWindowSettings settings;
 	settings.setGLVersion(2, 1);
 	settings.width = DISPLAY_W;

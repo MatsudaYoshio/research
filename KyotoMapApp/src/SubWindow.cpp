@@ -119,7 +119,7 @@ void SubWindow::draw() {
 		if (this->cursor_state == static_cast<int>(CURSOR_STATE::POINT)) {
 			this->alpha = 255;
 			this->r = 1;
-			for (int i = 0; i < 50; ++i) {
+			for (int i = 0; i < 30; ++i) {
 				this->r += 3;
 				this->alpha -= 12;
 				ofSetColor(this->hc->track_data.at(this->user_id).cursor_color, this->alpha);

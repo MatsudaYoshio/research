@@ -7,6 +7,7 @@
 #include "DrawBackground.h"
 #include "Icon.h"
 #include "../../../addons/ofxTrueTypeFontUC/src/ofxTrueTypeFontUC.h"
+#include "ofxSPK.h"
 
 class MainScene {
 private:
