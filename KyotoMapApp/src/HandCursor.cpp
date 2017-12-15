@@ -1,4 +1,7 @@
 #include "HandCursor.h"
+#include <stdexcept>
+#include <math.h>
+#include <ctime>
 
 using namespace std;
 using namespace dlib;
@@ -19,7 +22,7 @@ const Scalar HandCursor::CV_RED = Scalar(0, 0, 255);
 const Scalar HandCursor::CV_BLUE = Scalar(255, 0, 0);
 const Scalar HandCursor::CV_ORANGE = Scalar(76, 183, 255);
 
-HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0) {
+HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0), f(this->frequency, this->mincutoff, this->beta, this->dcutoff), f2(this->frequency, 0.5, 1.5, this->dcutoff) {
 	this->face_detector = get_frontal_face_detector();
 
 	deserialize(this->model_path) >> df; // ファイルから学習済みのモデルを読み込む
@@ -63,7 +66,7 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-2].cursor_color_id = 1;
 	//this->track_data[-2].cursor_color = ofColor::mediumPurple;
 
-	//this->writer.open("hand_detect.avi", CV_FOURCC_DEFAULT, 12, Size(CAMERA_W, CAMERA_H), true);
+	//this->writer.open("hand_detect4.avi", CV_FOURCC_DEFAULT, 12, Size(CAMERA_W, CAMERA_H), true);
 }
 
 void HandCursor::update() {
@@ -94,6 +97,7 @@ void HandCursor::update() {
 		this->transform_point(fd.tl_corner(), this->detect_face_data[i++]);
 	}
 
+	//printf("frame count : %ld\n", this->frame_count);
 	//this->show_detect_window(); // 検出チェック用のウィンドウを表示
 }
 
@@ -279,6 +283,7 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 	drectangle past_pos, current_pos;
 	const double dx_rate = static_cast<double>(CAMERA_W) / this->track_data[user_id].face_rect.width();
 	const double dy_rate = static_cast<double>(CAMERA_H) / this->track_data[user_id].face_rect.height();
+	OneEuroFilter dx_filter(120, 0.1, 1.0, 1.0), dy_filter(120, 0.1, 1.0, 1.0);
 
 	while (1) {
 		/* 直近のフレームで検出した手以外を消す */
@@ -309,7 +314,8 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 		dx = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x方向
 		dy = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y方向
 
-		this->track_data[user_id].past_transformed_cursor_point = this->track_data[user_id].transformed_cursor_point;
+		dx = dx_filter.filter(dx);
+		dy = dy_filter.filter(dy);
 
 		/* カーソルの位置を更新 */
 		this->track_data[user_id].cursor_point = point(ofClamp(this->track_data[user_id].cursor_point.x() + dx_rate * dx, 0, CAMERA_W), ofClamp(this->track_data[user_id].cursor_point.y() + dy_rate * dy, 0, CAMERA_H)); // 現在の追跡位置から相対的にカーソルの位置を決定
