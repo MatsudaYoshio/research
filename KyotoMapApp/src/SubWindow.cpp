@@ -117,14 +117,13 @@ void SubWindow::draw() {
 
 		/* カーソルの描画 */
 		if (this->cursor_state == static_cast<int>(CURSOR_STATE::POINT)) {
-			this->alpha = 255;
-			this->r = 1;
-			for (int i = 0; i < 30; ++i) {
-				this->r += 3;
-				this->alpha -= 12;
-				ofSetColor(this->hc->track_data.at(this->user_id).cursor_color, this->alpha);
-				ofCircle(this->hc->track_data.at(this->user_id).transformed_cursor_point.x(), this->hc->track_data.at(this->user_id).transformed_cursor_point.y(), this->r);
-			}
+			ofNoFill();
+			ofSetLineWidth(60);
+			ofSetColor(ofColor::white);
+			ofDrawCircle(this->hc->track_data.at(this->user_id).transformed_cursor_point.x(), this->hc->track_data.at(this->user_id).transformed_cursor_point.y(), 60);
+			ofFill();
+			ofSetColor(this->hc->track_data.at(this->user_id).cursor_color);
+			ofDrawCircle(this->hc->track_data.at(this->user_id).transformed_cursor_point.x(), this->hc->track_data.at(this->user_id).transformed_cursor_point.y(), 55);
 		}
 
 		this->window.end(); // サブウィンドウのの描画終了

@@ -215,7 +215,7 @@ private:
 	//cv::VideoWriter writer;
 public:
 	std::map<long long int, track_data_type> track_data;
-	std::vector<dlib::point> detect_face_data;
+	//std::vector<dlib::point> detect_face_data;
 
 public:
 	HandCursor();

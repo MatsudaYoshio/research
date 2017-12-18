@@ -4,6 +4,7 @@ using namespace param;
 
 void MainScene::setup(HandCursor* hc) {
 	ofSetBackgroundAuto(true);
+	ofSetCircleResolution(256);
 
 	this->hc = hc;
 
@@ -44,7 +45,7 @@ void MainScene::setup(HandCursor* hc) {
 		ofAddListener(i.select_event, this, &MainScene::select_icon);
 	}
 
-	this->db.setup(ofColor::whiteSmoke, ofColor::silver, 80);
+	this->db.setup(ofColor::whiteSmoke, ofColor::silver, 20);
 }
 
 void MainScene::update() {
@@ -226,22 +227,21 @@ void MainScene::draw() {
 	this->hotel_texture.draw(2100, 700, 180, 180);
 
 	/* ŒŸo‚³‚ê‚½Šç‚ð•`‰æ */
-	ofSetColor(ofColor::white, 200);
-	for (auto& fd : this->hc->detect_face_data) {
-		this->face_texture.draw(fd.x(), fd.y(), 250, 250);
-	}
+	//ofSetColor(ofColor::white, 200);
+	//for (auto& fd : this->hc->detect_face_data) {
+	//	this->face_texture.draw(fd.x(), fd.y(), 250, 250);
+	//}
 
 	/* ŽèƒJ[ƒ\ƒ‹‚Ì•`‰æ */
 	try {
 		for (auto& id : this->user_id_list) {
-			this->alpha = 255;
-			this->r = 1;
-			for (int i = 0; i < 30; ++i) {
-				this->r += 3;
-				this->alpha -= 12;
-				ofSetColor(this->hc->track_data.at(id).cursor_color, this->alpha);
-				ofCircle(this->hc->track_data.at(id).transformed_cursor_point.x(), this->hc->track_data.at(id).transformed_cursor_point.y(), this->r);
-			}
+			ofNoFill();
+			ofSetLineWidth(60);
+			ofSetColor(ofColor::white);
+			ofDrawCircle(this->hc->track_data.at(id).transformed_cursor_point.x(), this->hc->track_data.at(id).transformed_cursor_point.y(), 60);
+			ofFill();
+			ofSetColor(this->hc->track_data.at(id).cursor_color);
+			ofDrawCircle(this->hc->track_data.at(id).transformed_cursor_point.x(), this->hc->track_data.at(id).transformed_cursor_point.y(), 55);
 		}
 	}
 	catch (std::out_of_range&) {}

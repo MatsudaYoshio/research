@@ -45,15 +45,15 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-1].cursor_point.x() = 1350;
 	//this->track_data[-1].cursor_point.y() = 600;
 	/* 京都水族館 */
-	//this->track_data[-1].cursor_point.x() = 1800;
-	//this->track_data[-1].cursor_point.y() = 900;
+	this->track_data[-1].cursor_point.x() = 1800;
+	this->track_data[-1].cursor_point.y() = 900;
 
-	//this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
-	//this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
-	//this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
-	//this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
-	//this->track_data[-1].cursor_color_id = 0;
-	//this->track_data[-1].cursor_color = ofColor::deepPink;
+	this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
+	this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
+	this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
+	this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
+	this->track_data[-1].cursor_color_id = 0;
+	this->track_data[-1].cursor_color = ofColor::deepPink;
 
 	/* 西本願寺 */
 	//this->track_data[-2].cursor_point.x() = 1350;
@@ -90,15 +90,15 @@ void HandCursor::update() {
 	}
 
 	/* 検出された顔のデータを準備する */
-	this->detect_face_data.clear();
-	this->detect_face_data.resize(face_dets.size());
-	int i = 0;
-	for (const auto& fd : face_dets) {
-		this->transform_point(fd.tl_corner(), this->detect_face_data[i++]);
-	}
+	//this->detect_face_data.clear();
+	//this->detect_face_data.resize(face_dets.size());
+	//int i = 0;
+	//for (const auto& fd : face_dets) {
+	//	this->transform_point(fd.tl_corner(), this->detect_face_data[i++]);
+	//}
 
 	//printf("frame count : %ld\n", this->frame_count);
-	//this->show_detect_window(); // 検出チェック用のウィンドウを表示
+	this->show_detect_window(); // 検出チェック用のウィンドウを表示
 }
 
 void HandCursor::exit() {
@@ -283,7 +283,7 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 	drectangle past_pos, current_pos;
 	const double dx_rate = static_cast<double>(CAMERA_W) / this->track_data[user_id].face_rect.width();
 	const double dy_rate = static_cast<double>(CAMERA_H) / this->track_data[user_id].face_rect.height();
-	OneEuroFilter dx_filter(120, 0.1, 1.0, 1.0), dy_filter(120, 0.1, 1.0, 1.0);
+	OneEuroFilter dx_filter(120, 0.1, 1.8, 1.0), dy_filter(120, 0.1, 1.8, 1.0);
 
 	while (1) {
 		/* 直近のフレームで検出した手以外を消す */
