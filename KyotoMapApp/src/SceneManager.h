@@ -14,6 +14,10 @@ private:
 	SimulatedAnnealing sa;
 	MainScene main_scene;
 
+	/* —” */
+	static std::random_device rd;
+	static std::mt19937 mt;
+
 	unordered_map<int, SubWindow> sub_windows;
 	set<long long int> cursor_log;
 	long long int scene_id = 0;

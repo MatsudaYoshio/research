@@ -12,7 +12,7 @@
 class MainScene {
 private:
 	HandCursor* hc;
-	DrawBackground db;
+	//DrawBackground db;
 
 	vector<Icon> icons;
 

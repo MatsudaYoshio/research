@@ -98,7 +98,7 @@ void SimulatedAnnealing::calculate_cost() {
 		/* 矩形と他のカーソルとの距離 */
 		try {
 			for (const auto& id : *this->main_window_user_list) {
-				if (s.second.intersects(ofRectangle(ofClamp(this->hc->track_data.at(id).transformed_cursor_point.x() - (HALF_MAX_SUB_WINDOW_W >> 1), 0, DISPLAY_W), ofClamp(this->hc->track_data.at(id).transformed_cursor_point.y() - (HALF_MAX_SUB_WINDOW_H >> 1), 0, DISPLAY_H), ofClamp(this->hc->track_data.at(id).transformed_cursor_point.x() + (HALF_MAX_SUB_WINDOW_W >> 1), 0, DISPLAY_W), ofClamp(this->hc->track_data.at(id).transformed_cursor_point.y() + (HALF_MAX_SUB_WINDOW_H >> 1), 0, DISPLAY_H)))) {
+				if (s.second.intersects(ofRectangle(ofClamp(this->hc->track_data.at(id).transformed_cursor_point.x() - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(this->hc->track_data.at(id).transformed_cursor_point.y() - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)))) {
 					// もし矩形とカーソルの周辺矩形が重複していたら、コストを最大にしてコスト計算を終了
 					this->next_cost = DBL_MAX;
 					return;
@@ -107,9 +107,16 @@ void SimulatedAnnealing::calculate_cost() {
 		}
 		catch (std::out_of_range&) {}
 
-		/* 重複面積の計算(自分自身との重複面積も足しているので、別でその分を減らす必要がある) */
+		/* 重複面積の計算 */
 		for (const auto& s2 : this->next_state) {
-			overlap_cost += s.second.getIntersection(s2.second).getArea();
+			if (s.second == s2.second) { // 自分との重複面積は除く
+				continue;
+			}
+			this->overlap_cost += s.second.getIntersection(s2.second).getArea();
+			if (this->overlap_cost > 0) { // もし重複していたら、コストを最大にしてコスト計算を終了
+				this->next_cost = DBL_MAX;
+				return;
+			}
 		}
 
 		this->next_cost -= s.second.getArea(); // 自分との重複面積分減らす
@@ -131,5 +138,5 @@ void SimulatedAnnealing::calculate_cost() {
 
 	this->area_cost = -min_element(begin(this->next_state), end(this->next_state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
-	this->next_cost += 10 * this->area_cost + this->overlap_cost + 100 * this->shape_cost + 10 * this->distance_cost;
+	this->next_cost += 150 * this->area_cost + this->overlap_cost + 1000 * this->shape_cost + 700 * this->distance_cost;
 }

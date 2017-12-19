@@ -14,43 +14,40 @@
 using namespace cv;
 using namespace param;
 
-void SceneManager::transform(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects) {
+random_device SceneManager::rd;
+mt19937 SceneManager::mt(SceneManager::rd());
+
+void SceneManager::transform(unordered_map<int, ofRectangle>& old_rects, unordered_map<int, ofRectangle>& new_rects) {
 	this->transform_thread_flag = true;
 
-	const double change_rate = 0.05;
-	const int change_times = 20;
+	const double change_rate = 0.01;
+	const int change_times = 100;
 
 	int x_sign, y_sign, w_sign, h_sign;
 	double x_change_val, y_change_val, w_change_val, h_change_val;
 
-	try {
-		for (const auto &id : this->active_scene_id_list_tmp) {
-			w_sign = (new_rects[id].width > old_rects[id].width) ? +1 : -1;
-			h_sign = (new_rects[id].height > old_rects[id].height) ? +1 : -1;
-			w_change_val = change_rate*abs(new_rects[id].width - old_rects[id].width)*w_sign;
-			h_change_val = change_rate*abs(new_rects[id].height - old_rects[id].height)*h_sign;
+	shuffle(begin(this->active_scene_id_list_tmp), end(this->active_scene_id_list_tmp), this->mt);
 
+	for (const auto &id : this->active_scene_id_list_tmp) {
+		w_sign = (new_rects[id].width > old_rects[id].width) ? +1 : -1;
+		h_sign = (new_rects[id].height > old_rects[id].height) ? +1 : -1;
+		w_change_val = change_rate*abs(new_rects[id].width - old_rects[id].width)*w_sign;
+		h_change_val = change_rate*abs(new_rects[id].height - old_rects[id].height)*h_sign;
+		x_sign = (new_rects[id].x > old_rects[id].x) ? +1 : -1;
+		y_sign = (new_rects[id].y > old_rects[id].y) ? +1 : -1;
+		x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
+		y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
+		try {
 			for (int i = 0; i < change_times; ++i) {
 				this->sub_windows.at(id).set_rect(old_rects[id]);
 				old_rects[id].setWidth(old_rects[id].width + w_change_val);
 				old_rects[id].setHeight(old_rects[id].height + h_change_val);
-			}
-
-			x_sign = (new_rects[id].x > old_rects[id].x) ? +1 : -1;
-			y_sign = (new_rects[id].y > old_rects[id].y) ? +1 : -1;
-			x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
-			y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
-
-			for (int i = 0; i < change_times; ++i) {
-				this->sub_windows.at(id).set_rect(old_rects[id]);
 				old_rects[id].setX(old_rects[id].x + x_change_val);
 				old_rects[id].setY(old_rects[id].y + y_change_val);
 			}
-
 		}
-
+		catch (std::out_of_range&) {}
 	}
-	catch (std::out_of_range&) {}
 
 	this->transform_thread_flag = false;
 }
@@ -144,81 +141,33 @@ void SceneManager::inactivate_sub_window(int &scene_id) {
 }
 
 void SceneManager::make_sub_window(pair<int, int>& id) {
-	if (this->sub_windows.empty()) {
-		SubWindow sub_window;
-		switch (id.first) {
-		case static_cast<int>(CONTENT_ID::KYOTO_TOWER) :
-			sub_window.setup(new KyotoTowerScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
-			break;
-		case static_cast<int>(CONTENT_ID::HIGASHIHONGANJI) :
-			sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
-			break;
-		case static_cast<int>(CONTENT_ID::SYOSEIEN) :
-			sub_window.setup(new SyoseienScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
-			break;
-		case static_cast<int>(CONTENT_ID::NISHIHONGANJI) :
-			sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
-			break;
-		case static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM) :
-			sub_window.setup(new RyukokuMuseumScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
-			break;
-		case static_cast<int>(CONTENT_ID::KYOTO_AQUARIUM) :
-			sub_window.setup(new KyotoAquariumScene(), this->hc, id.second, this->scene_id, ofRectangle(400, 400, MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H));
-			break;
-		}
-
-		ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);
-		ofAddListener(sub_window.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
-		this->sub_windows.insert(make_pair(this->scene_id, sub_window));
-		this->main_scene.user_id_list.erase(remove(begin(this->main_scene.user_id_list), end(this->main_scene.user_id_list), id.second), end(this->main_scene.user_id_list));
-
-		this->active_scene_id_list.emplace_back(this->scene_id++);
+	SubWindow sub_window;
+	switch (id.first) {
+	case static_cast<int>(CONTENT_ID::KYOTO_TOWER) :
+		sub_window.setup(new KyotoTowerScene(), this->hc, id.second, this->scene_id, ofRectangle(ofClamp(2000 - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(1560 - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)));
+		break;
+	case static_cast<int>(CONTENT_ID::HIGASHIHONGANJI) :
+		sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(ofClamp(2000 - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(1100 - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)));
+		break;
+	case static_cast<int>(CONTENT_ID::SYOSEIEN) :
+		sub_window.setup(new SyoseienScene(), this->hc, id.second, this->scene_id, ofRectangle(ofClamp(2700 - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(1100 - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)));
+		break;
+	case static_cast<int>(CONTENT_ID::NISHIHONGANJI) :
+		sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ofRectangle(ofClamp(880 - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(1100 - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)));
+		break;
+	case static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM) :
+		sub_window.setup(new RyukokuMuseumScene(), this->hc, id.second, this->scene_id, ofRectangle(ofClamp(1280 - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(700 - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)));
+		break;
+	case static_cast<int>(CONTENT_ID::KYOTO_AQUARIUM) :
+		sub_window.setup(new KyotoAquariumScene(), this->hc, id.second, this->scene_id, ofRectangle(ofClamp(100 - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(1510 - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)));
+		break;
 	}
-	else {
-		RectangleOptimization ro(DISPLAY_W, DISPLAY_H);
+	ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);
+	ofAddListener(sub_window.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
+	this->sub_windows.insert(make_pair(this->scene_id, sub_window));
+	this->main_scene.user_id_list.erase(remove(begin(this->main_scene.user_id_list), end(this->main_scene.user_id_list), id.second), end(this->main_scene.user_id_list));
 
-		for (const auto &s : this->sub_windows) {
-			ro.add_block(s.second.get_rect());
-		}
-
-		for (const auto &td : this->hc->track_data) {
-			if (td.first == id.second) {
-				continue;
-			}
-			ro.add_block(ofPoint(td.second.transformed_cursor_point.x(), td.second.transformed_cursor_point.y()));
-		}
-
-		ro.calculate();
-
-		SubWindow sub_window;
-		switch (id.first) {
-		case static_cast<int>(CONTENT_ID::KYOTO_TOWER) :
-			sub_window.setup(new KyotoTowerScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
-			break;
-		case static_cast<int>(CONTENT_ID::HIGASHIHONGANJI) :
-			sub_window.setup(new HigashihonganjiScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
-			break;
-		case static_cast<int>(CONTENT_ID::SYOSEIEN) :
-			sub_window.setup(new SyoseienScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
-			break;
-		case static_cast<int>(CONTENT_ID::NISHIHONGANJI) :
-			sub_window.setup(new NishihonganjiScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
-			break;
-		case static_cast<int>(CONTENT_ID::RYUKOKU_MUSEUM) :
-			sub_window.setup(new RyukokuMuseumScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
-			break;
-		case static_cast<int>(CONTENT_ID::KYOTO_AQUARIUM) :
-			sub_window.setup(new KyotoAquariumScene(), this->hc, id.second, this->scene_id, ro.get_optimize_rect());
-			break;
-		}
-		ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);
-		ofAddListener(sub_window.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
-		this->sub_windows.insert(make_pair(this->scene_id, sub_window));
-		this->main_scene.user_id_list.erase(remove(begin(this->main_scene.user_id_list), end(this->main_scene.user_id_list), id.second), end(this->main_scene.user_id_list));
-
-		this->active_scene_id_list.emplace_back(this->scene_id++);
-
-	}
+	this->active_scene_id_list.emplace_back(this->scene_id++);
 }
 
 void SceneManager::delete_sub_window(int &scene_id) {

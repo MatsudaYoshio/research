@@ -10,6 +10,7 @@ class DigitalSignageApp : public ofBaseApp {
 private:
 	HandCursor hc;
 	SceneManager sm;
+	bool stop_flag = false;
 public:
 	void setup();
 	void update();

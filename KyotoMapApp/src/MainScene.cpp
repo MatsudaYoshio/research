@@ -45,7 +45,7 @@ void MainScene::setup(HandCursor* hc) {
 		ofAddListener(i.select_event, this, &MainScene::select_icon);
 	}
 
-	this->db.setup(ofColor::whiteSmoke, ofColor::silver, 20);
+	//this->db.setup(ofColor::silver, ofColor::silver, 120);
 }
 
 void MainScene::update() {
@@ -77,7 +77,8 @@ void MainScene::update() {
 }
 
 void MainScene::draw() {
-	this->db.draw(); // 背景(グラデーション)を描く
+	//this->db.draw(); // 背景(グラデーション)を描く
+	ofBackgroundGradient(ofColor::silver, ofColor::silver, OF_GRADIENT_CIRCULAR);
 
 	switch (LANGUAGE) {
 	case static_cast<int>(LANGUAGE_ID::JAPANENE) :

@@ -27,7 +27,7 @@ void Icon::update() {
 	switch (this->state) {
 	case static_cast<int>(STATE::POINT) :
 		this->rect.set(this->big_rect);
-		this->pb.forward_state(3);
+		this->pb.forward_state(1);
 		this->alpha = 100;
 		break;
 	case static_cast<int>(STATE::INACTIVE) :

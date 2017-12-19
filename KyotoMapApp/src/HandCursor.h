@@ -222,6 +222,7 @@ public:
 	void update();
 	void exit();
 	void modulate_cursor(const int& user_id);
+	void new_thread_update();
 private:
 	void show_detect_window();
 	void face_detect();

@@ -14,7 +14,7 @@ random_device HandCursor::rd;
 std::mt19937 HandCursor::mt(HandCursor::rd());
 
 /* カーソルの色 */
-const ofColor HandCursor::cursor_color_list[] = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::pink };
+const ofColor HandCursor::cursor_color_list[] = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::orange };
 uniform_int_distribution<int> HandCursor::random_color(0, 7);
 
 /* Scalar型の色 */
@@ -45,15 +45,15 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-1].cursor_point.x() = 1350;
 	//this->track_data[-1].cursor_point.y() = 600;
 	/* 京都水族館 */
-	this->track_data[-1].cursor_point.x() = 1800;
-	this->track_data[-1].cursor_point.y() = 900;
+	//this->track_data[-1].cursor_point.x() = 1800;
+	//this->track_data[-1].cursor_point.y() = 900;
 
-	this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
-	this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
-	this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
-	this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
-	this->track_data[-1].cursor_color_id = 0;
-	this->track_data[-1].cursor_color = ofColor::deepPink;
+	//this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
+	//this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
+	//this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
+	//this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
+	//this->track_data[-1].cursor_color_id = 0;
+	//this->track_data[-1].cursor_color = ofColor::deepPink;
 
 	/* 西本願寺 */
 	//this->track_data[-2].cursor_point.x() = 1350;
@@ -70,35 +70,37 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 }
 
 void HandCursor::update() {
-	++this->frame_count;
+	while (!this->stop_flag) {
+		++this->frame_count;
 
-	/* fpsを表示 */
-	//frc.NewFrame();
-	//printf("fps : %lf\n", frc.GetFrameRate());
+		/* fpsを表示 */
+		//frc.NewFrame();
+		//printf("fps : %lf\n", frc.GetFrameRate());
 
-	this->frame = this->cap.get_image(); // カメラから画像を取得
+		this->frame = this->cap.get_image(); // カメラから画像を取得
 
-	assign_image(this->org_image_buffer.get_push_position(), cv_image<bgr_pixel>(this->frame));
-	this->org_image_buffer.forward_offset();
+		assign_image(this->org_image_buffer.get_push_position(), cv_image<bgr_pixel>(this->frame));
+		this->org_image_buffer.forward_offset();
 
-	assign_image(this->gs_image_buffer.get_push_position(), this->org_image_buffer.get_read_position());
-	this->gs_image_buffer.forward_offset();
+		assign_image(this->gs_image_buffer.get_push_position(), this->org_image_buffer.get_read_position());
+		this->gs_image_buffer.forward_offset();
 
-	this->new_thread_face_detect();
-	if (!this->face_dets.empty()) {
-		this->new_thread_hand_detect();
+		this->new_thread_face_detect();
+		if (!this->face_dets.empty()) {
+			this->new_thread_hand_detect();
+		}
+
+		/* 検出された顔のデータを準備する */
+		//this->detect_face_data.clear();
+		//this->detect_face_data.resize(face_dets.size());
+		//int i = 0;
+		//for (const auto& fd : face_dets) {
+		//	this->transform_point(fd.tl_corner(), this->detect_face_data[i++]);
+		//}
+
+		//printf("frame count : %ld\n", this->frame_count);
+		//this->show_detect_window(); // 検出チェック用のウィンドウを表示
 	}
-
-	/* 検出された顔のデータを準備する */
-	//this->detect_face_data.clear();
-	//this->detect_face_data.resize(face_dets.size());
-	//int i = 0;
-	//for (const auto& fd : face_dets) {
-	//	this->transform_point(fd.tl_corner(), this->detect_face_data[i++]);
-	//}
-
-	//printf("frame count : %ld\n", this->frame_count);
-	this->show_detect_window(); // 検出チェック用のウィンドウを表示
 }
 
 void HandCursor::exit() {
@@ -348,6 +350,12 @@ void HandCursor::new_thread_face_detect() {
 		thread th(funcp, this);
 		th.detach();
 	}
+}
+
+void HandCursor::new_thread_update() {
+	void(HandCursor::*funcp)() = &HandCursor::update;
+	thread th(funcp, this);
+	th.detach();
 }
 
 void HandCursor::fhog_to_feature_vector(X_type &feature_vector, const fhog_type &fhog) {

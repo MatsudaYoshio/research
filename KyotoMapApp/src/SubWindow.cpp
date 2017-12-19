@@ -56,7 +56,7 @@ void SubWindow::update() {
 		}
 
 		/* ウィンドウのライフを減らしてサイズを小さくしていく */
-		this->life -= 5;
+		this->life -= 2;
 		this->window.setWindowSize(this->tmp_width*this->life / this->max_life, this->tmp_height*this->life / this->max_life);
 		this->view_rect.setWidth(this->window.getWidth());
 		this->view_rect.setHeight(this->window.getHeight());
