@@ -95,9 +95,9 @@ void SimulatedAnnealing::calculate_cost() {
 	this->distance_cost = 0.0;
 
 	for (const auto& s : this->next_state) {
-		/* 矩形と他のカーソルとの距離 */
 		try {
 			for (const auto& id : *this->main_window_user_list) {
+				//this->overlap_cost += s.second.getIntersection(ofRectangle(ofClamp(this->hc->track_data.at(id).transformed_cursor_point.x() - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(this->hc->track_data.at(id).transformed_cursor_point.y() - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H))).getArea();
 				if (s.second.intersects(ofRectangle(ofClamp(this->hc->track_data.at(id).transformed_cursor_point.x() - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(this->hc->track_data.at(id).transformed_cursor_point.y() - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)))) {
 					// もし矩形とカーソルの周辺矩形が重複していたら、コストを最大にしてコスト計算を終了
 					this->next_cost = DBL_MAX;
@@ -138,5 +138,5 @@ void SimulatedAnnealing::calculate_cost() {
 
 	this->area_cost = -min_element(begin(this->next_state), end(this->next_state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
-	this->next_cost += 150 * this->area_cost + this->overlap_cost + 1000 * this->shape_cost + 700 * this->distance_cost;
+	this->next_cost += 150 * this->area_cost + 10000*this->overlap_cost + 1000 * this->shape_cost + 700 * this->distance_cost;
 }

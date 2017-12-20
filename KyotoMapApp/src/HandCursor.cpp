@@ -33,8 +33,8 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-1].cursor_point.x() = 550;
 	//this->track_data[-1].cursor_point.y() = 650;
 	/* 京都タワー */
-	//this->track_data[-1].cursor_point.x() = 800;
-	//this->track_data[-1].cursor_point.y() = 900;
+	this->track_data[-1].cursor_point.x() = 800;
+	this->track_data[-1].cursor_point.y() = 900;
 	/* 龍谷ミュージアム */
 	//this->track_data[-1].cursor_point.x() = 1200;
 	//this->track_data[-1].cursor_point.y() = 450;
@@ -48,12 +48,12 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-1].cursor_point.x() = 1800;
 	//this->track_data[-1].cursor_point.y() = 900;
 
-	//this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
-	//this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
-	//this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
-	//this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
-	//this->track_data[-1].cursor_color_id = 0;
-	//this->track_data[-1].cursor_color = ofColor::deepPink;
+	this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
+	this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
+	this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
+	this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
+	this->track_data[-1].cursor_color_id = 0;
+	this->track_data[-1].cursor_color = ofColor::deepPink;
 
 	/* 西本願寺 */
 	//this->track_data[-2].cursor_point.x() = 1350;
@@ -146,7 +146,7 @@ void HandCursor::face_detect() {
 		/* 既に追跡している顔の近くの顔は除く */
 		for (const auto& td : this->track_data) {
 			for (auto fd = begin(this->face_dets); fd != end(this->face_dets);) {
-				if (this->euclid_distance(td.second.face_point, center(*fd)) < 400) {
+				if (this->euclid_distance(td.second.face_point, center(*fd)) < 300) {
 					fd = this->face_dets.erase(fd);
 				}
 				else {
@@ -174,7 +174,7 @@ void HandCursor::hand_detect() {
 	/* 既に追跡している顔の近くの顔は除く */
 	for (const auto &td : this->track_data) {
 		for (auto fd = begin(face_dets_tmp); fd != end(face_dets_tmp);) {
-			if (this->euclid_distance(td.second.face_point, center(*fd)) < 400) {
+			if (this->euclid_distance(td.second.face_point, center(*fd)) < 300) {
 				fd = face_dets_tmp.erase(fd);
 			}
 			else {
@@ -210,7 +210,7 @@ void HandCursor::hand_detect() {
 		/* 既に追跡している手の近くの手を除く */
 		for (const auto& td : this->track_data) {
 			for (auto hd = begin(hand_dets_tmp); hd != end(hand_dets_tmp);) {
-				if (this->euclid_distance(center(td.second.hand), center(*hd)) < 400) {
+				if (this->euclid_distance(center(td.second.hand), center(*hd)) < 300) {
 					hd = hand_dets_tmp.erase(hd);
 				}
 				else {
@@ -285,7 +285,7 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 	drectangle past_pos, current_pos;
 	const double dx_rate = static_cast<double>(CAMERA_W) / this->track_data[user_id].face_rect.width();
 	const double dy_rate = static_cast<double>(CAMERA_H) / this->track_data[user_id].face_rect.height();
-	OneEuroFilter dx_filter(120, 0.1, 1.8, 1.0), dy_filter(120, 0.1, 1.8, 1.0);
+	OneEuroFilter dx_filter(120, 0.5, 1.6, 1.0), dy_filter(120, 0.5, 1.6, 1.0);
 
 	while (1) {
 		/* 直近のフレームで検出した手以外を消す */

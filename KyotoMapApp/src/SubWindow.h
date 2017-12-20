@@ -21,9 +21,14 @@ private:
 	int cursor_state;
 	int user_id, scene_id;
 	int tmp_width, tmp_height, tmp_id;
-	int alpha, r;
 	double life;
 public:
+	static constexpr int track_rects_num = 100;
+	static constexpr int TRACK_READY = -1;
+
+	ofRectangle track_rects[track_rects_num];
+	int track_index;
+
 	void setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_id, int x, int y, int w, int h);
 	void setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_id, ofRectangle rect);
 	void update();

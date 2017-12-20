@@ -20,13 +20,10 @@ mt19937 SceneManager::mt(SceneManager::rd());
 void SceneManager::transform(unordered_map<int, ofRectangle>& old_rects, unordered_map<int, ofRectangle>& new_rects) {
 	this->transform_thread_flag = true;
 
-	const double change_rate = 0.01;
-	const int change_times = 100;
+	const double change_rate = 1.0 / SubWindow::track_rects_num;
 
 	int x_sign, y_sign, w_sign, h_sign;
 	double x_change_val, y_change_val, w_change_val, h_change_val;
-
-	shuffle(begin(this->active_scene_id_list_tmp), end(this->active_scene_id_list_tmp), this->mt);
 
 	for (const auto &id : this->active_scene_id_list_tmp) {
 		w_sign = (new_rects[id].width > old_rects[id].width) ? +1 : -1;
@@ -38,13 +35,14 @@ void SceneManager::transform(unordered_map<int, ofRectangle>& old_rects, unorder
 		x_change_val = change_rate*abs(new_rects[id].x - old_rects[id].x)*x_sign;
 		y_change_val = change_rate*abs(new_rects[id].y - old_rects[id].y)*y_sign;
 		try {
-			for (int i = 0; i < change_times; ++i) {
-				this->sub_windows.at(id).set_rect(old_rects[id]);
+			for (int i = 0; i < SubWindow::track_rects_num; ++i) {
+				this->sub_windows.at(id).track_rects[i] = old_rects[id];
 				old_rects[id].setWidth(old_rects[id].width + w_change_val);
 				old_rects[id].setHeight(old_rects[id].height + h_change_val);
 				old_rects[id].setX(old_rects[id].x + x_change_val);
 				old_rects[id].setY(old_rects[id].y + y_change_val);
 			}
+			this->sub_windows.at(id).track_index = 0;
 		}
 		catch (std::out_of_range&) {}
 	}
@@ -73,6 +71,12 @@ void SceneManager::update() {
 	}
 
 	if (!this->transform_thread_flag && !this->sub_windows.empty() && !this->active_scene_id_list.empty()) {
+		for (const auto& s : this->sub_windows) {
+			if (s.second.track_index != SubWindow::TRACK_READY) {
+				goto THROUGH_OPT;
+			}
+		}
+
 		this->rects_tmp.clear();
 
 		for (const auto &s : this->sub_windows) {
@@ -89,7 +93,7 @@ void SceneManager::update() {
 		thread th(funcp, this, this->old_rects, this->best_rects);
 		th.detach();
 	}
-
+THROUGH_OPT:
 	/* 新しく検出したカーソルがあればメインシーンのユーザidリストに追加する */
 	for (const auto &t : this->hc->track_data) {
 		if (this->cursor_log.find(t.first) == end(this->cursor_log)) {
@@ -162,6 +166,7 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 		sub_window.setup(new KyotoAquariumScene(), this->hc, id.second, this->scene_id, ofRectangle(ofClamp(100 - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(1510 - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)));
 		break;
 	}
+
 	ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);
 	ofAddListener(sub_window.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
 	this->sub_windows.insert(make_pair(this->scene_id, sub_window));

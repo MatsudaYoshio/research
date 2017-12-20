@@ -34,6 +34,8 @@ void SubWindow::setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_i
 	}
 
 	this->life = this->max_life;
+
+	this->track_index = this->TRACK_READY;
 }
 
 void SubWindow::setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_id, ofRectangle rect) {
@@ -41,6 +43,15 @@ void SubWindow::setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_i
 }
 
 void SubWindow::update() {
+	if (this->cursor_state == static_cast<int>(CURSOR_STATE::POINT)) {
+		if (this->track_index == this->track_rects_num) {
+			this->track_index = this->TRACK_READY;
+		}
+		else if (this->track_index != this->TRACK_READY) {
+			this->set_rect(this->track_rects[this->track_index++]);
+		}
+	}
+
 	this->view_rect.setWidth(this->window.getWidth());
 	this->view_rect.setHeight(this->window.getHeight());
 
