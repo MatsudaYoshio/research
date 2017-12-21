@@ -163,8 +163,6 @@ class HandCursor {
 
 	};
 
-	OneEuroFilter f, f2;
-
 private:
 	using X_type = std::map<unsigned long, double>; // 特徴ベクトルの型
 	using kernel_type = dlib::sparse_linear_kernel<X_type>; // カーネルの型
@@ -219,11 +217,11 @@ public:
 
 public:
 	HandCursor();
-	void update();
 	void exit();
 	void modulate_cursor(const int& user_id);
 	void new_thread_update();
 private:
+	void update();
 	void show_detect_window();
 	void face_detect();
 	void hand_detect();

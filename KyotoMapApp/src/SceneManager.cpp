@@ -62,14 +62,6 @@ void SceneManager::setup(HandCursor* hc) {
 }
 
 void SceneManager::update() {
-	if (!this->transform_thread_flag) {
-		while (!this->erase_scene_id.empty()) {
-			this->sub_windows.erase(this->erase_scene_id.front());
-			this->active_scene_id_list.erase(find(begin(this->active_scene_id_list), end(this->active_scene_id_list), this->erase_scene_id.front()));
-			this->erase_scene_id.pop();
-		}
-	}
-
 	if (!this->transform_thread_flag && !this->sub_windows.empty() && !this->active_scene_id_list.empty()) {
 		for (const auto& s : this->sub_windows) {
 			if (s.second.track_index != SubWindow::TRACK_READY) {
@@ -122,15 +114,9 @@ THROUGH_OPT:
 void SceneManager::draw() {
 	this->main_scene.draw();
 
-	while (!this->erase_scene_id.empty()) {
-		this->sub_windows.erase(this->erase_scene_id.front());
-		this->erase_scene_id.pop();
-	}
-
 	for (auto &ss : this->sub_windows) {
 		ss.second.draw();
 	}
-
 }
 
 void SceneManager::pointed(pair<int, int> &id) {
@@ -175,9 +161,9 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 	this->active_scene_id_list.emplace_back(this->scene_id++);
 }
 
-void SceneManager::delete_sub_window(int &scene_id) {
+void SceneManager::delete_sub_window(int& scene_id) {
 	this->sub_windows[scene_id].exit();
-	this->erase_scene_id.push(scene_id);
+	this->sub_windows.erase(scene_id);
 }
 
 SceneManager::~SceneManager() {

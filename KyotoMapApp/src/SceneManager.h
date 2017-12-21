@@ -21,7 +21,6 @@ private:
 	unordered_map<int, SubWindow> sub_windows;
 	set<long long int> cursor_log;
 	long long int scene_id = 0;
-	queue<int> erase_scene_id;
 	unordered_map<int, ofRectangle> rects_tmp, best_rects, old_rects;
 	bool transform_thread_flag = false;
 	unordered_map<int, string> cursor_assignment;
@@ -30,11 +29,11 @@ public:
 	void setup(HandCursor* hc);
 	void update();
 	void draw();
-	void pointed(pair<int, int> &id);
+	void pointed(pair<int, int>& id);
 	void make_sub_window(pair<int, int>& id);
-	void delete_sub_window(int &scene_id);
-	void inactivate_sub_window(int &scene_id);
-	void transform(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects);
+	void delete_sub_window(int& scene_id);
+	void inactivate_sub_window(int& scene_id);
+	void transform(unordered_map<int, ofRectangle>& old_rects, unordered_map<int, ofRectangle>& new_rects);
 	~SceneManager();
 };
 

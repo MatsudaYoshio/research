@@ -22,7 +22,7 @@ const Scalar HandCursor::CV_RED = Scalar(0, 0, 255);
 const Scalar HandCursor::CV_BLUE = Scalar(255, 0, 0);
 const Scalar HandCursor::CV_ORANGE = Scalar(76, 183, 255);
 
-HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0), f(this->frequency, this->mincutoff, this->beta, this->dcutoff), f2(this->frequency, 0.5, 1.5, this->dcutoff) {
+HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0) {
 	this->face_detector = get_frontal_face_detector();
 
 	deserialize(this->model_path) >> df; // ファイルから学習済みのモデルを読み込む
@@ -33,11 +33,11 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-1].cursor_point.x() = 550;
 	//this->track_data[-1].cursor_point.y() = 650;
 	/* 京都タワー */
-	this->track_data[-1].cursor_point.x() = 800;
-	this->track_data[-1].cursor_point.y() = 900;
+	//this->track_data[-1].cursor_point.x() = 800;
+	//this->track_data[-1].cursor_point.y() = 900;
 	/* 龍谷ミュージアム */
-	//this->track_data[-1].cursor_point.x() = 1200;
-	//this->track_data[-1].cursor_point.y() = 450;
+	this->track_data[-1].cursor_point.x() = 1200;
+	this->track_data[-1].cursor_point.y() = 450;
 	/* 東本願寺 */
 	//this->track_data[-1].cursor_point.x() = 900;
 	//this->track_data[-1].cursor_point.y() = 600;
@@ -49,7 +49,7 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-1].cursor_point.y() = 900;
 
 	this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
-	this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W*3/4+300, HALF_DISPLAY_H/2-300, 300, 300);
+	this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W * 3 / 4 + 300, HALF_DISPLAY_H / 2 - 300, 300, 300);
 	this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
 	this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
 	this->track_data[-1].cursor_color_id = 0;
@@ -85,8 +85,11 @@ void HandCursor::update() {
 		assign_image(this->gs_image_buffer.get_push_position(), this->org_image_buffer.get_read_position());
 		this->gs_image_buffer.forward_offset();
 
-		this->new_thread_face_detect();
-		if (!this->face_dets.empty()) {
+		if (!this->face_thread_flag) {
+			this->new_thread_face_detect();
+		}
+
+		if (!this->face_dets.empty() && !this->hand_thread_flag) {
 			this->new_thread_hand_detect();
 		}
 
@@ -112,7 +115,6 @@ void HandCursor::modulate_cursor(const int& user_id) {
 		this->inverse_transform_point(this->track_data.at(user_id).transformed_cursor_point, this->track_data.at(user_id).cursor_point);
 	}
 	catch (std::out_of_range&) {}
-
 }
 
 void HandCursor::show_detect_window() {
@@ -155,7 +157,9 @@ void HandCursor::face_detect() {
 			}
 		}
 
-		this->new_thread_hand_detect(); // 手検出スレッドを起動
+		if (!this->hand_thread_flag) {
+			this->new_thread_hand_detect(); // 手検出スレッドを起動
+		}
 	}
 
 	this->face_thread_flag = false;
@@ -325,7 +329,7 @@ void HandCursor::tracking(correlation_tracker &ct, const int user_id) {
 
 		if (this->track_data[user_id].track_hand_dets.empty() || this->stop_flag) { // 直近フレームで手が検出されなかったら追跡をやめる
 			this->track_data.erase(user_id);
-			break;
+			return;
 		}
 	}
 }
@@ -337,19 +341,15 @@ void HandCursor::new_thread_tracking(correlation_tracker &ct, const int track_id
 }
 
 void HandCursor::new_thread_hand_detect() {
-	if (!this->hand_thread_flag) {
-		void(HandCursor::*funcp)() = &HandCursor::hand_detect;
-		thread th(funcp, this);
-		th.detach();
-	}
+	void(HandCursor::*funcp)() = &HandCursor::hand_detect;
+	thread th(funcp, this);
+	th.detach();
 }
 
 void HandCursor::new_thread_face_detect() {
-	if (!this->face_thread_flag) {
-		void(HandCursor::*funcp)() = &HandCursor::face_detect;
-		thread th(funcp, this);
-		th.detach();
-	}
+	void(HandCursor::*funcp)() = &HandCursor::face_detect;
+	thread th(funcp, this);
+	th.detach();
 }
 
 void HandCursor::new_thread_update() {

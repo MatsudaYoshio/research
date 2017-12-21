@@ -78,11 +78,9 @@ void NishihonganjiScene::draw() {
 		this->money_texture.draw(this->money_rect);
 		ofSetColor(ofColor::black);
 		this->sentence_font.drawString(L"\n\nEntrance", 130, HALF_MAX_SUB_WINDOW_H + 200);
-		ofSetColor(ofColor::black);
 		this->sentence_font.drawString(L"\n\nFees:", 440, HALF_MAX_SUB_WINDOW_H + 200);
 		ofSetColor(ofColor::red);
 		this->sentence_font.drawString(L"\n\nNot", 630, HALF_MAX_SUB_WINDOW_H + 200);
-		ofSetColor(ofColor::red);
 		this->sentence_font.drawString(L"\n\nspecified", 780, HALF_MAX_SUB_WINDOW_H + 200);
 
 		ofSetColor(ofColor::white);

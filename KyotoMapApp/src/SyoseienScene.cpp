@@ -78,7 +78,6 @@ void SyoseienScene::draw() {
 		this->money_texture.draw(this->money_rect);
 		ofSetColor(ofColor::black);
 		this->sentence_font.drawString(L"\n\nEntrance", 130, HALF_MAX_SUB_WINDOW_H + 200);
-		ofSetColor(ofColor::black);
 		this->sentence_font.drawString(L"\n\nFees:", 440, HALF_MAX_SUB_WINDOW_H + 200);
 		ofSetColor(ofColor::red);
 		this->sentence_font.drawString(L"\n\n500yen", 630, HALF_MAX_SUB_WINDOW_H + 200);
