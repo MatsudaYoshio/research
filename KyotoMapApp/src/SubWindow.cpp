@@ -165,6 +165,7 @@ bool SubWindow::is_inside(const ofPoint& p) const {
 
 void SubWindow::exit() {
 	delete this->scene;
+	this->scene = NULL;
 	this->window.hide();
 	this->window.close();
 }
