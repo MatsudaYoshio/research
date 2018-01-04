@@ -25,6 +25,7 @@ private:
 	bool transform_thread_flag = false;
 	unordered_map<int, string> cursor_assignment;
 	vector<int> active_scene_id_list, active_scene_id_list_tmp;
+	queue<int> delete_scene_list;
 public:
 	void setup(HandCursor* hc);
 	void update();

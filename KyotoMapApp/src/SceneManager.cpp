@@ -62,29 +62,32 @@ void SceneManager::setup(HandCursor* hc) {
 }
 
 void SceneManager::update() {
-	if (!this->transform_thread_flag && !this->sub_windows.empty() && !this->active_scene_id_list.empty()) {
-		for (const auto& s : this->sub_windows) {
-			if (s.second.track_index != SubWindow::TRACK_READY) {
-				goto THROUGH_OPT;
+	try {
+		if (!this->transform_thread_flag && !this->sub_windows.empty() && !this->active_scene_id_list.empty()) {
+			for (const auto& s : this->sub_windows) {
+				if (this->sub_windows.at(s.first).track_index != SubWindow::TRACK_READY) {
+					goto THROUGH_OPT;
+				}
 			}
+
+			this->rects_tmp.clear();
+
+			for (const auto& s : this->sub_windows) {
+				this->rects_tmp.insert(make_pair(s.first, this->sub_windows.at(s.first).get_rect()));
+			}
+
+			this->active_scene_id_list_tmp = this->active_scene_id_list;
+
+			this->old_rects = this->rects_tmp;
+
+			this->sa(this->rects_tmp, this->best_rects);
+
+			void(SceneManager::*funcp)(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects) = &SceneManager::transform;
+			thread th(funcp, this, this->old_rects, this->best_rects);
+			th.detach();
 		}
-
-		this->rects_tmp.clear();
-
-		for (const auto &s : this->sub_windows) {
-			this->rects_tmp.insert(make_pair(s.first, s.second.get_rect()));
-		}
-
-		this->active_scene_id_list_tmp = this->active_scene_id_list;
-
-		this->old_rects = this->rects_tmp;
-
-		this->sa(this->rects_tmp, this->best_rects);
-
-		void(SceneManager::*funcp)(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects) = &SceneManager::transform;
-		thread th(funcp, this, this->old_rects, this->best_rects);
-		th.detach();
 	}
+	catch (std::out_of_range&) {}
 THROUGH_OPT:
 	/* 新しく検出したカーソルがあればメインシーンのユーザidリストに追加する */
 	for (const auto &t : this->hc->track_data) {
@@ -108,6 +111,12 @@ THROUGH_OPT:
 
 	for (auto &ss : this->sub_windows) {
 		ss.second.update();
+	}
+
+	while (!this->delete_scene_list.empty()) {
+		this->sub_windows[this->delete_scene_list.front()].exit();
+		this->sub_windows.erase(this->delete_scene_list.front());
+		this->delete_scene_list.pop();
 	}
 }
 
@@ -162,8 +171,15 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 }
 
 void SceneManager::delete_sub_window(int& scene_id) {
-	this->sub_windows[scene_id].exit();
-	this->sub_windows.erase(scene_id);
+	auto ite = find(begin(this->active_scene_id_list), end(this->active_scene_id_list), scene_id);
+	if (ite != end(this->active_scene_id_list)) {
+		this->active_scene_id_list.erase(ite);
+	}
+
+	this->delete_scene_list.push(scene_id);
+
+	//this->sub_windows[scene_id].exit();
+	//this->sub_windows.erase(scene_id);
 }
 
 SceneManager::~SceneManager() {

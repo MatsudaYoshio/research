@@ -23,7 +23,7 @@ private:
 	int tmp_width, tmp_height, tmp_id;
 	double life;
 public:
-	static constexpr int track_rects_num = 100;
+	static constexpr int track_rects_num = 25;
 	static constexpr int TRACK_READY = -1;
 
 	ofRectangle track_rects[track_rects_num];

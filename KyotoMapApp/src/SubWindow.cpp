@@ -56,6 +56,11 @@ void SubWindow::update() {
 	this->view_rect.setHeight(this->window.getHeight());
 
 	if (this->hc->track_data.find(this->user_id) == end(this->hc->track_data) || this->cursor_state == static_cast<int>(CURSOR_STATE::INACTIVE)) {
+		this->cursor_state = static_cast<int>(CURSOR_STATE::INACTIVE);
+		this->tmp_id = this->scene_id;
+		ofNotifyEvent(this->delete_sub_window_event, this->tmp_id); // サブウィンドウ削除イベント発火
+		return;
+
 		if (this->life == this->max_life) {
 			this->tmp_id = this->scene_id;
 			ofNotifyEvent(this->cursor_disappear_event, this->tmp_id); // カーソル消滅イベント発火
