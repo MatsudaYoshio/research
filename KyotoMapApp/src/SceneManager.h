@@ -33,7 +33,7 @@ public:
 	void pointed(pair<int, int>& id);
 	void make_sub_window(pair<int, int>& id);
 	void delete_sub_window(int& scene_id);
-	void inactivate_sub_window(int& scene_id);
+	//void inactivate_sub_window(int& scene_id);
 	void transform(unordered_map<int, ofRectangle>& old_rects, unordered_map<int, ofRectangle>& new_rects);
 	~SceneManager();
 };

@@ -33,7 +33,7 @@ void SubWindow::setup(BaseScene* scene, HandCursor* hc, int user_id, int scene_i
 		this->cursor_state = static_cast<int>(CURSOR_STATE::INACTIVE);
 	}
 
-	this->life = this->max_life;
+	//this->life = this->max_life;
 
 	this->track_index = this->TRACK_READY;
 }
@@ -60,29 +60,28 @@ void SubWindow::update() {
 		this->tmp_id = this->scene_id;
 		ofNotifyEvent(this->delete_sub_window_event, this->tmp_id); // サブウィンドウ削除イベント発火
 		return;
+		//if (this->life == this->max_life) {
+		//	this->tmp_id = this->scene_id;
+		//	ofNotifyEvent(this->cursor_disappear_event, this->tmp_id); // カーソル消滅イベント発火
 
-		if (this->life == this->max_life) {
-			this->tmp_id = this->scene_id;
-			ofNotifyEvent(this->cursor_disappear_event, this->tmp_id); // カーソル消滅イベント発火
+		//	this->tmp_width = this->window.getWidth();
+		//	this->tmp_height = this->window.getHeight();
 
-			this->tmp_width = this->window.getWidth();
-			this->tmp_height = this->window.getHeight();
+		//	this->cursor_state = static_cast<int>(CURSOR_STATE::INACTIVE);
+		//}
 
-			this->cursor_state = static_cast<int>(CURSOR_STATE::INACTIVE);
-		}
+		///* ウィンドウのライフを減らしてサイズを小さくしていく */
+		//this->life -= 2;
+		//this->window.setWindowSize(this->tmp_width*this->life / this->max_life, this->tmp_height*this->life / this->max_life);
+		//this->view_rect.setWidth(this->window.getWidth());
+		//this->view_rect.setHeight(this->window.getHeight());
 
-		/* ウィンドウのライフを減らしてサイズを小さくしていく */
-		this->life -= 2;
-		this->window.setWindowSize(this->tmp_width*this->life / this->max_life, this->tmp_height*this->life / this->max_life);
-		this->view_rect.setWidth(this->window.getWidth());
-		this->view_rect.setHeight(this->window.getHeight());
-
-		/* ウィンドウが一定のサイズ以下になったらウィンドウを消す */
-		if (this->window.getWidth() < 500 && this->window.getHeight() < 500) {
-			this->tmp_id = this->scene_id;
-			ofNotifyEvent(this->delete_sub_window_event, this->tmp_id); // サブウィンドウ削除イベント発火
-			return;
-		}
+		///* ウィンドウが一定のサイズ以下になったらウィンドウを消す */
+		//if (this->window.getWidth() < 500 && this->window.getHeight() < 500) {
+		//	this->tmp_id = this->scene_id;
+		//	ofNotifyEvent(this->delete_sub_window_event, this->tmp_id); // サブウィンドウ削除イベント発火
+		//	return;
+		//}
 	}
 	else {
 		try {

@@ -30,8 +30,8 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	this->frame = Mat(Size(CAMERA_W, CAMERA_H), CV_8UC3);
 
 	/* Â¬‰€ */
-	//this->track_data[-1].cursor_point.x() = 550;
-	//this->track_data[-1].cursor_point.y() = 650;
+	this->track_data[-1].cursor_point.x() = 550;
+	this->track_data[-1].cursor_point.y() = 650;
 	/* ‹ž“sƒ^ƒ[ */
 	//this->track_data[-1].cursor_point.x() = 800;
 	//this->track_data[-1].cursor_point.y() = 900;
@@ -48,12 +48,12 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//this->track_data[-1].cursor_point.x() = 1800;
 	//this->track_data[-1].cursor_point.y() = 900;
 
-	//this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
-	//this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W * 3 / 4 + 300, HALF_DISPLAY_H / 2 - 300, 300, 300);
-	//this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
-	//this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
-	//this->track_data[-1].cursor_color_id = 0;
-	//this->track_data[-1].cursor_color = ofColor::deepPink;
+	this->transform_point(this->track_data[-1].cursor_point, this->track_data[-1].transformed_cursor_point);
+	this->track_data[-1].face_rect = dlib::rectangle(HALF_DISPLAY_W * 3 / 4 + 300, HALF_DISPLAY_H / 2 - 300, 300, 300);
+	this->track_data[-1].face_point = center(this->track_data[-1].face_rect);
+	this->transform_point(this->track_data[-1].face_point, this->track_data[-1].transformed_face_point);
+	this->track_data[-1].cursor_color_id = 0;
+	this->track_data[-1].cursor_color = ofColor::deepPink;
 
 	/* ¼–{ŠèŽ› */
 	//this->track_data[-2].cursor_point.x() = 1350;

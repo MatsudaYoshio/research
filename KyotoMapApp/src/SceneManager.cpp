@@ -1,7 +1,7 @@
 #include "SceneManager.h"
 #include "KyotoTowerScene.h"
 #include "windows.h"
-#include "RectangleOptimization.h"
+//#include "RectangleOptimization.h"
 #include "HigashihonganjiScene.h"
 #include "SyoseienScene.h"
 #include "NishihonganjiScene.h"
@@ -62,32 +62,29 @@ void SceneManager::setup(HandCursor* hc) {
 }
 
 void SceneManager::update() {
-	try {
-		if (!this->transform_thread_flag && !this->sub_windows.empty() && !this->active_scene_id_list.empty()) {
-			for (const auto& s : this->sub_windows) {
-				if (this->sub_windows.at(s.first).track_index != SubWindow::TRACK_READY) {
-					goto THROUGH_OPT;
-				}
+	if (!this->transform_thread_flag && !this->sub_windows.empty() && !this->active_scene_id_list.empty()) {
+		for (const auto& s : this->sub_windows) {
+			if (s.second.track_index != SubWindow::TRACK_READY) {
+				goto THROUGH_OPT;
 			}
-
-			this->rects_tmp.clear();
-
-			for (const auto& s : this->sub_windows) {
-				this->rects_tmp.insert(make_pair(s.first, this->sub_windows.at(s.first).get_rect()));
-			}
-
-			this->active_scene_id_list_tmp = this->active_scene_id_list;
-
-			this->old_rects = this->rects_tmp;
-
-			this->sa(this->rects_tmp, this->best_rects);
-
-			void(SceneManager::*funcp)(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects) = &SceneManager::transform;
-			thread th(funcp, this, this->old_rects, this->best_rects);
-			th.detach();
 		}
+
+		this->rects_tmp.clear();
+
+		for (const auto& s : this->sub_windows) {
+			this->rects_tmp.insert(make_pair(s.first, s.second.get_rect()));
+		}
+
+		this->active_scene_id_list_tmp = this->active_scene_id_list;
+
+		this->old_rects = this->rects_tmp;
+
+		this->sa(this->rects_tmp, this->best_rects);
+
+		void(SceneManager::*funcp)(unordered_map<int, ofRectangle> &old_rects, unordered_map<int, ofRectangle> &new_rects) = &SceneManager::transform;
+		thread th(funcp, this, this->old_rects, this->best_rects);
+		th.detach();
 	}
-	catch (std::out_of_range&) {}
 THROUGH_OPT:
 	/* 新しく検出したカーソルがあればメインシーンのユーザidリストに追加する */
 	for (const auto &t : this->hc->track_data) {
@@ -132,12 +129,12 @@ void SceneManager::pointed(pair<int, int> &id) {
 	this->main_scene.point_icon(id.first, id.second);
 }
 
-void SceneManager::inactivate_sub_window(int &scene_id) {
-	auto ite = find(begin(this->active_scene_id_list), end(this->active_scene_id_list), scene_id);
-	if (ite != end(this->active_scene_id_list)) {
-		this->active_scene_id_list.erase(ite);
-	}
-}
+//void SceneManager::inactivate_sub_window(int &scene_id) {
+//	auto ite = find(begin(this->active_scene_id_list), end(this->active_scene_id_list), scene_id);
+//	if (ite != end(this->active_scene_id_list)) {
+//		this->active_scene_id_list.erase(ite);
+//	}
+//}
 
 void SceneManager::make_sub_window(pair<int, int>& id) {
 	SubWindow sub_window;
@@ -163,7 +160,7 @@ void SceneManager::make_sub_window(pair<int, int>& id) {
 	}
 
 	ofAddListener(sub_window.delete_sub_window_event, this, &SceneManager::delete_sub_window);
-	ofAddListener(sub_window.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
+	//ofAddListener(sub_window.cursor_disappear_event, this, &SceneManager::inactivate_sub_window);
 	this->sub_windows.insert(make_pair(this->scene_id, sub_window));
 	this->main_scene.user_id_list.erase(remove(begin(this->main_scene.user_id_list), end(this->main_scene.user_id_list), id.second), end(this->main_scene.user_id_list));
 

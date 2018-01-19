@@ -10,7 +10,7 @@
 
 class SubWindow {
 private:
-	static constexpr double max_life = 100;
+	//static constexpr double max_life = 100;
 
 	BaseScene* scene;
 	HandCursor* hc;
@@ -20,8 +20,9 @@ private:
 
 	int cursor_state;
 	int user_id, scene_id;
-	int tmp_width, tmp_height, tmp_id;
-	double life;
+	//int tmp_width, tmp_height, tmp_id;
+	int tmp_id;
+	//double life;
 public:
 	static constexpr int track_rects_num = 25;
 	static constexpr int TRACK_READY = -1;
@@ -44,8 +45,7 @@ public:
 	int get_user_id() const;
 
 	ofEvent<int> delete_sub_window_event;
-	ofEvent<pair<int, int>> user_leave_event;
-	ofEvent<int> cursor_disappear_event;
+	//ofEvent<int> cursor_disappear_event;
 	void exit();
 private:
 };
