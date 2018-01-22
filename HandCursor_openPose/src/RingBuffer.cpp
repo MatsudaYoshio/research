@@ -1,0 +1,35 @@
+#pragma once
+#ifndef ___Class_RingBuffer
+#define ___Class_RingBuffer
+
+#include <vector>
+
+using namespace std;
+
+template <typename T>
+class RingBuffer {
+private:
+	vector<T> buffer;
+	int buffer_size, push_offset, read_offset;
+public:
+	RingBuffer(int buffer_size = 64) :buffer_size(buffer_size), push_offset(0) {
+		this->buffer.resize(buffer_size);
+	}
+
+	void forward_offset() {
+		this->read_offset = this->push_offset++;
+	}
+
+	T& get_push_position() {
+		if (this->push_offset == this->buffer_size) {
+			this->push_offset = 0;
+		}
+		return this->buffer[this->push_offset];
+	}
+
+	const T& get_read_position() {
+		return this->buffer[this->read_offset];
+	}
+};
+
+#endif
