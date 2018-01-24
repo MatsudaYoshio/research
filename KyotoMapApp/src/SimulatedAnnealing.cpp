@@ -17,9 +17,12 @@ void SimulatedAnnealing::setup(HandCursor* hc, vector<int>* active_window_list, 
 void SimulatedAnnealing::operator() (const unordered_map<int, ofRectangle>& start_state, unordered_map<int, ofRectangle>& best_state) {
 	this->current_state = start_state;
 
-	this->current_cost = this->next_cost = this->best_cost = DBL_MAX;
+	this->current_cost = this->next_cost = this->best_cost = 0.0;
 
+	//this->ofs.open("cost_data" + to_string(this->file_index) + ".txt");
 	for (int i = 0; i < this->MAX_ITERATION; ++i) {
+		//this->ofs << this->current_cost << endl;
+
 		if (!this->set_next_state()) { // パラメータの修正によって制約外の解になったらパラメータの修正を行わない
 			continue;
 		}
@@ -27,7 +30,8 @@ void SimulatedAnnealing::operator() (const unordered_map<int, ofRectangle>& star
 		this->calculate_cost();
 
 		if (this->next_cost > this->current_cost) {
-			if (random_0to1(this->mt) < exp(this->MAX_ITERATION * (this->current_cost - this->next_cost) / i)) {
+			//cout << exp(-1 * this->MAX_ITERATION * log(this->next_cost - this->current_cost) / 100000000 * i) << endl;
+			if (random_0to1(this->mt) < exp(-1 * this->MAX_ITERATION * log(this->next_cost - this->current_cost) / 10000000 * i)) {
 				this->current_cost = this->next_cost;
 				this->current_state = this->next_state;
 			}
@@ -42,6 +46,8 @@ void SimulatedAnnealing::operator() (const unordered_map<int, ofRectangle>& star
 			}
 		}
 	}
+	//this->ofs.close();
+	//++this->file_index;
 }
 
 bool SimulatedAnnealing::set_next_state() {
@@ -100,7 +106,7 @@ void SimulatedAnnealing::calculate_cost() {
 				//this->overlap_cost += s.second.getIntersection(ofRectangle(ofClamp(this->hc->track_data.at(id).transformed_cursor_point.x() - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(this->hc->track_data.at(id).transformed_cursor_point.y() - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H))).getArea();
 				if (s.second.intersects(ofRectangle(ofClamp(this->hc->track_data.at(id).transformed_cursor_point.x() - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(this->hc->track_data.at(id).transformed_cursor_point.y() - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)))) {
 					// もし矩形とカーソルの周辺矩形が重複していたら、コストを最大にしてコスト計算を終了
-					this->next_cost = DBL_MAX;
+					this->next_cost = 0.0;
 					return;
 				}
 			}
@@ -114,7 +120,7 @@ void SimulatedAnnealing::calculate_cost() {
 			}
 			this->overlap_cost += s.second.getIntersection(s2.second).getArea();
 			if (this->overlap_cost > 0) { // もし重複していたら、コストを最大にしてコスト計算を終了
-				this->next_cost = DBL_MAX;
+				this->next_cost = 0.0;
 				return;
 			}
 		}
@@ -138,5 +144,5 @@ void SimulatedAnnealing::calculate_cost() {
 
 	this->area_cost = -min_element(begin(this->next_state), end(this->next_state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
-	this->next_cost += 150 * this->area_cost + 10000*this->overlap_cost + 1000 * this->shape_cost + 700 * this->distance_cost;
+	this->next_cost += 150 * this->area_cost + 10000 * this->overlap_cost + 1000 * this->shape_cost + 700 * this->distance_cost;
 }
