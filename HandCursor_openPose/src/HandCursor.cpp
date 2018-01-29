@@ -22,30 +22,7 @@ const Scalar HandCursor::CV_RED = Scalar(0, 0, 255);
 const Scalar HandCursor::CV_BLUE = Scalar(255, 0, 0);
 const Scalar HandCursor::CV_ORANGE = Scalar(76, 183, 255);
 
-DEFINE_int32(logging_level, 3, "The logging level. Integer in the range [0, 255]. 0 will output any log() message, while"
-	" 255 will not output any. Current OpenPose library messages are in the range 0-4: 1 for"
-	" low priority messages and 4 for important ones.");
-// Producer
-DEFINE_string(image_path, "C:/openpose-1.2.1/examples/media/COCO_val2014_000000000192.jpg", "Process the desired image.");
-// OpenPose
-DEFINE_string(model_pose, "COCO", "Model to be used. E.g. `COCO` (18 keypoints), `MPI` (15 keypoints, ~10% faster), "
-	"`MPI_4_layers` (15 keypoints, even faster but less accurate).");
-DEFINE_string(model_folder, "C:/openpose-1.2.1/models/", "Folder path (absolute or relative) where the models (pose, face, ...) are located.");
-DEFINE_string(net_resolution, "-1x368", "Multiples of 16. If it is increased, the accuracy potentially increases. If it is"
-	" decreased, the speed increases. For maximum speed-accuracy balance, it should keep the"
-	" closest aspect ratio possible to the images or videos to be processed. Using `-1` in"
-	" any of the dimensions, OP will choose the optimal aspect ratio depending on the user's"
-	" input value. E.g. the default `-1x368` is equivalent to `656x368` in 16:9 resolutions,"
-	" e.g. full HD (1980x1080) and HD (1280x720) resolutions.");
-DEFINE_string(output_resolution, "-1x-1", "The image resolution (display and output). Use \"-1x-1\" to force the program to use the"
-	" input image resolution.");
-DEFINE_int32(num_gpu_start, 0, "GPU device start number.");
-DEFINE_double(scale_gap, 0.3, "Scale gap between scales. No effect unless scale_number > 1. Initial scale is always 1."
-	" If you want to change the initial scale, you actually want to multiply the"
-	" `net_resolution` by your desired initial scale.");
-DEFINE_int32(scale_number, 1, "Number of scales to average.");
-
-HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0), f(this->frequency, this->mincutoff, this->beta, this->dcutoff), f2(this->frequency, 0.5, 1.5, this->dcutoff) {
+HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), hand_thread_flag(false), stop_flag(false), frame_count(0), track_id(0) {
 	this->face_detector = get_frontal_face_detector();
 
 	deserialize(this->model_path) >> df; // ファイルから学習済みのモデルを読み込む
@@ -64,7 +41,7 @@ void HandCursor::update() {
 
 	this->frame = this->cap.get_image(); // カメラから画像を取得
 
-	this->body_part_detect();
+	this->body_part_extractor(this->pose_key_points, this->frame);
 
 	//assign_image(this->org_image_buffer.get_push_position(), cv_image<bgr_pixel>(this->frame));
 	//this->org_image_buffer.forward_offset();
@@ -90,20 +67,20 @@ void HandCursor::modulate_cursor(const int& user_id) {
 		this->inverse_transform_point(this->track_data.at(user_id).transformed_cursor_point, this->track_data.at(user_id).cursor_point);
 	}
 	catch (std::out_of_range&) {}
-
 }
 
 void HandCursor::show_detect_window() {
 	this->view_frame = this->frame;
 
-	const auto numberPeopleDetected = this->points_tmp.getSize(0);
+	const auto numberPeopleDetected = this->pose_key_points.getSize(0);
 	cout << "detect num : " << numberPeopleDetected << endl;
 	for (int i = 0; i < numberPeopleDetected; ++i) {
-		cv::circle(this->view_frame, Point(this->points_tmp[{i, 0, 0}], this->points_tmp[{i, 0, 1}]), 20, this->CV_BLUE, -1);
-		cv::circle(this->view_frame, Point(this->points_tmp[{i, 4, 0}], this->points_tmp[{i, 4, 1}]), 20, this->CV_RED, -1);
-		cv::circle(this->view_frame, Point(this->points_tmp[{i, 7, 0}], this->points_tmp[{i, 7, 1}]), 20, this->CV_RED, -1);
+		this->pose_key_points.at({ i, 0, 0 });
+		cv::circle(this->view_frame, Point(this->pose_key_points[{i, 0, 0}], this->pose_key_points[{i, 0, 1}]), 20, this->CV_BLUE, -1);
+		cv::circle(this->view_frame, Point(this->pose_key_points[{i, 4, 0}], this->pose_key_points[{i, 4, 1}]), 20, this->CV_RED, -1);
+		cv::circle(this->view_frame, Point(this->pose_key_points[{i, 7, 0}], this->pose_key_points[{i, 7, 1}]), 20, this->CV_RED, -1);
 
-		cout << this->points_tmp[{i, 0, 0}] << " " << this->points_tmp[{i, 0, 1}] << endl;
+		cout << this->pose_key_points[{i, 0, 0}] << " " << this->pose_key_points[{i, 0, 1}] << " " << this->pose_key_points[{i, 4, 0}] << " " << this->pose_key_points[{i, 4, 1}] << endl;
 	}
 
 	//parallel_for(0, this->hand_dets.size(), [&](int i) {
@@ -121,44 +98,6 @@ void HandCursor::show_detect_window() {
 	imshow("detect window", view_frame);
 
 	//this->writer << view_frame;
-}
-
-void HandCursor::body_part_detect() {
-	const auto outputSize = op::flagsToPoint(FLAGS_output_resolution, "-1x-1");
-	const auto netInputSize = op::flagsToPoint(FLAGS_net_resolution, "-1x368");
-	const auto poseModel = op::flagsToPoseModel(FLAGS_model_pose);
-
-	op::ScaleAndSizeExtractor scaleAndSizeExtractor(netInputSize, outputSize, FLAGS_scale_number, FLAGS_scale_gap);
-	op::CvMatToOpInput cvMatToOpInput;
-	op::CvMatToOpOutput cvMatToOpOutput;
-	op::PoseExtractorCaffe poseExtractorCaffe{ poseModel, FLAGS_model_folder, FLAGS_num_gpu_start };
-	op::OpOutputToCvMat opOutputToCvMat;
-	op::FrameDisplayer frameDisplayer{ "OpenPose Tutorial - Example 1", outputSize };
-	// Step 4 - Initialize resources on desired thread (in this case single thread, i.e. we init resources here)
-	poseExtractorCaffe.initializationOnThread();
-
-	// ------------------------- POSE ESTIMATION AND RENDERING -------------------------
-	// Step 1 - Read and load image, error if empty (possibly wrong path)
-	// Alternative: cv::imread(FLAGS_image_path, CV_LOAD_IMAGE_COLOR);
-	cv::Mat inputImage = this->frame;
-	if (inputImage.empty())
-		op::error("Could not open or find the image: " + FLAGS_image_path, __LINE__, __FUNCTION__, __FILE__);
-	const op::Point<int> imageSize{ inputImage.cols, inputImage.rows };
-	// Step 2 - Get desired scale sizes
-	std::vector<double> scaleInputToNetInputs;
-	std::vector<op::Point<int>> netInputSizes;
-	double scaleInputToOutput;
-	op::Point<int> outputResolution;
-	std::tie(scaleInputToNetInputs, netInputSizes, scaleInputToOutput, outputResolution)
-		= scaleAndSizeExtractor.extract(imageSize);
-	// Step 3 - Format input image to OpenPose input and output formats
-	const auto netInputArray = cvMatToOpInput.createArray(inputImage, scaleInputToNetInputs, netInputSizes);
-	auto outputArray = cvMatToOpOutput.createArray(inputImage, scaleInputToOutput, outputResolution);
-	// Step 4 - Estimate poseKeypoints
-	poseExtractorCaffe.forwardPass(netInputArray, imageSize, scaleInputToNetInputs);
-	this->points_tmp.reset();
-	this->points_tmp = poseExtractorCaffe.getPoseKeypoints();
-	//this->points_tmp = poseKeypoints;
 }
 
 /* 顔検出 */
