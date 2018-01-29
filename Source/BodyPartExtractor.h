@@ -12,8 +12,6 @@
 #include <openpose/pose/headers.hpp>
 #include <openpose/utilities/headers.hpp>
 
-#include "AppParameters.h"
-
 class BodyPartExtractor {
 private:
 	/* ’è” */
