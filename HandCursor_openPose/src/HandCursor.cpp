@@ -29,19 +29,34 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 
 	this->frame = Mat(Size(CAMERA_W, CAMERA_H), CV_8UC3);
 
+	this->mat_org_image_buffer.get_push_position() = this->cap.get_image();
+	this->mat_org_image_buffer.forward_offset();
+
+	thread frame_thread(&HandCursor::get_frame, this);
+	frame_thread.detach();
+
+	//thread detect_thread(&HandCursor::detect, this);
+	//detect_thread.detach();
+
 	//this->writer.open("hand_detect_5.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 15, Size(CAMERA_W, CAMERA_H), true);
 }
 
+void HandCursor::detect() {
+	while (!this->stop_flag) {
+		this->body_part_extractor(this->pose_key_points, this->mat_org_image_buffer.get_read_position());
+	}
+}
+
 void HandCursor::update() {
-	++this->frame_count;
+	//++this->frame_count;
 
 	/* fps‚ð•\Ž¦ */
 	//frc.NewFrame();
 	//printf("fps : %lf\n", frc.GetFrameRate());
 
-	this->frame = this->cap.get_image(); // ƒJƒƒ‰‚©‚ç‰æ‘œ‚ðŽæ“¾
+	//this->frame = this->cap.get_image(); // ƒJƒƒ‰‚©‚ç‰æ‘œ‚ðŽæ“¾
 
-	this->body_part_extractor(this->pose_key_points, this->frame);
+	this->body_part_extractor(this->pose_key_points, this->mat_org_image_buffer.get_read_position());
 
 	//assign_image(this->org_image_buffer.get_push_position(), cv_image<bgr_pixel>(this->frame));
 	//this->org_image_buffer.forward_offset();
@@ -62,6 +77,14 @@ void HandCursor::exit() {
 	this->stop_flag = true;
 }
 
+void HandCursor::get_frame() {
+	while (!this->stop_flag) {
+		this->mat_org_image_buffer.get_push_position() = this->cap.get_image();
+		this->mat_org_image_buffer.forward_offset();
+		++this->frame_count;
+	}
+}
+
 void HandCursor::modulate_cursor(const int& user_id) {
 	try {
 		this->inverse_transform_point(this->track_data.at(user_id).transformed_cursor_point, this->track_data.at(user_id).cursor_point);
@@ -70,17 +93,39 @@ void HandCursor::modulate_cursor(const int& user_id) {
 }
 
 void HandCursor::show_detect_window() {
-	this->view_frame = this->frame;
+	this->view_frame = this->mat_org_image_buffer.get_read_position();
 
 	const auto numberPeopleDetected = this->pose_key_points.getSize(0);
-	cout << "detect num : " << numberPeopleDetected << endl;
+	//cout << "detect num : " << numberPeopleDetected << endl;
 	for (int i = 0; i < numberPeopleDetected; ++i) {
-		this->pose_key_points.at({ i, 0, 0 });
-		cv::circle(this->view_frame, Point(this->pose_key_points[{i, 0, 0}], this->pose_key_points[{i, 0, 1}]), 20, this->CV_BLUE, -1);
-		cv::circle(this->view_frame, Point(this->pose_key_points[{i, 4, 0}], this->pose_key_points[{i, 4, 1}]), 20, this->CV_RED, -1);
-		cv::circle(this->view_frame, Point(this->pose_key_points[{i, 7, 0}], this->pose_key_points[{i, 7, 1}]), 20, this->CV_RED, -1);
+		if (this->pose_key_points[{i, 0, 0}] != 0.0 && this->pose_key_points[{i, 0, 1}] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points.at({ i, 0, 0 }), this->pose_key_points.at({ i, 0, 1 })), 20, this->CV_BLUE, -1);
+		}
+			
+		if (this->pose_key_points[{i, 4, 0}] != 0.0 && this->pose_key_points[{i, 4, 1}] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points.at({ i, 4, 0 }), this->pose_key_points.at({ i, 4, 1 })), 20, this->CV_RED, -1);
+		}
 
-		cout << this->pose_key_points[{i, 0, 0}] << " " << this->pose_key_points[{i, 0, 1}] << " " << this->pose_key_points[{i, 4, 0}] << " " << this->pose_key_points[{i, 4, 1}] << endl;
+		if (this->pose_key_points[{i, 7, 0}] != 0.0 && this->pose_key_points[{i, 7, 1}] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points.at({ i, 7, 0 }), this->pose_key_points.at({ i, 7, 1 })), 20, this->CV_RED, -1);
+		}
+
+		/*try {
+			cv::circle(this->view_frame, Point(this->pose_key_points.at({ i, 4, 0 }), this->pose_key_points.at({ i, 4, 1 })), 20, this->CV_RED, -1);
+		}
+		catch (std::out_of_range&) {}
+
+		try {
+			cv::circle(this->view_frame, Point(this->pose_key_points.at({ i, 7, 0 }), this->pose_key_points.at({ i, 7, 1 })), 20, this->CV_RED, -1);
+		}
+		catch (std::out_of_range&) {}*/
+
+		//this->pose_key_points.at({ i, 0, 0 });
+		//cv::circle(this->view_frame, Point(this->pose_key_points[{i, 0, 0}], this->pose_key_points[{i, 0, 1}]), 20, this->CV_BLUE, -1);
+		//cv::circle(this->view_frame, Point(this->pose_key_points[{i, 4, 0}], this->pose_key_points[{i, 4, 1}]), 20, this->CV_RED, -1);
+		//cv::circle(this->view_frame, Point(this->pose_key_points[{i, 7, 0}], this->pose_key_points[{i, 7, 1}]), 20, this->CV_RED, -1);
+
+		//cout << this->pose_key_points[{i, 0, 0}] << " " << this->pose_key_points[{i, 0, 1}] << " " << this->pose_key_points[{i, 4, 0}] << " " << this->pose_key_points[{i, 4, 1}] << endl;
 	}
 
 	//parallel_for(0, this->hand_dets.size(), [&](int i) {

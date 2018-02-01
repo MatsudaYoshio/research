@@ -27,7 +27,7 @@ public:
 		return this->buffer[this->push_offset];
 	}
 
-	const T& get_read_position() {
+	T& get_read_position() {
 		return this->buffer[this->read_offset];
 	}
 };

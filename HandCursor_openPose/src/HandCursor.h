@@ -77,14 +77,15 @@ private:
 	FrameRateCounter frc;
 
 	/* 画像データのバッファ */
+	RingBuffer<cv::Mat> mat_org_image_buffer;
 	RingBuffer<dlib::array2d<dlib::bgr_pixel>> org_image_buffer; // dlibのbgr型画像のバッファ
 	RingBuffer<dlib::array2d<unsigned char>> gs_image_buffer; // dlibのグレースケール画像のバッファ
 
 	cv::VideoWriter writer;
 
 	BodyPartExtractor body_part_extractor;
-	op::Array<float> pose_key_points;
 public:
+	op::Array<float> pose_key_points;
 	std::map<long long int, track_data_type> track_data;
 
 public:
@@ -94,7 +95,6 @@ public:
 	void modulate_cursor(const int& user_id);
 private:
 	void show_detect_window();
-	void body_part_detect();
 	void face_detect();
 	void hand_detect();
 	void hand_detect(const std::vector<dlib::rectangle> &sliding_windows, const int &user_id);
@@ -103,6 +103,8 @@ private:
 	void new_thread_tracking(dlib::correlation_tracker &ct, const int track_id);
 	void new_thread_hand_detect();
 	void new_thread_face_detect();
+	void get_frame();
+	void detect();
 	void fhog_to_feature_vector(X_type &feature_vector, const fhog_type &fhog);
 	double euclid_distance(const dlib::point& p1, const dlib::point& p2) const;
 	void transform_point(const dlib::point& src_point, dlib::point& dst_point);
