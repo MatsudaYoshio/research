@@ -29,6 +29,8 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 
 	this->frame = Mat(Size(CAMERA_W, CAMERA_H), CV_8UC3);
 
+	this->view_frame = Mat(Size(CAMERA_W, CAMERA_H), CV_8UC3);
+
 	this->mat_org_image_buffer.get_push_position() = this->cap.get_image();
 	this->mat_org_image_buffer.forward_offset();
 
@@ -38,25 +40,61 @@ HandCursor::HandCursor() :nms(this->overlap_ratio), face_thread_flag(false), han
 	//thread detect_thread(&HandCursor::detect, this);
 	//detect_thread.detach();
 
-	//this->writer.open("hand_detect_5.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 15, Size(CAMERA_W, CAMERA_H), true);
+	this->writer.open("body_parts_detect_thread.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 8, Size(CAMERA_W, CAMERA_H), true);
 }
 
 void HandCursor::detect() {
-	while (!this->stop_flag) {
-		this->body_part_extractor(this->pose_key_points, this->mat_org_image_buffer.get_read_position());
-	}
+	//while (!this->stop_flag) {
+	//	this->body_part_extractor(this->pose_key_points, this->mat_org_image_buffer.get_read_position());
+	//}
 }
 
 void HandCursor::update() {
 	//++this->frame_count;
 
 	/* fps‚ð•\Ž¦ */
-	//frc.NewFrame();
-	//printf("fps : %lf\n", frc.GetFrameRate());
+	frc.NewFrame();
+	printf("fps : %lf\n", frc.GetFrameRate());
 
 	//this->frame = this->cap.get_image(); // ƒJƒƒ‰‚©‚ç‰æ‘œ‚ðŽæ“¾
 
-	this->body_part_extractor(this->pose_key_points, this->mat_org_image_buffer.get_read_position());
+	//this->frame = this->cap.get_image();
+	//this->body_part_extractor(this->pose_key_points.get_push_position(), this->frame);
+	//this->pose_key_points.forward_offset();
+
+	this->body_part_extractor(this->pose_key_points.get_push_position(), this->mat_org_image_buffer.get_read_position());
+	this->pose_key_points.forward_offset();
+
+	/*this->people_num = this->pose_key_points.get_read_position().getSize(0);
+	for (int i = 0; i < this->people_num; ++i) {
+		if (this->pose_key_points.get_read_position()[{i, 0, 0}] == 0.0 || this->pose_key_points.get_read_position()[{i, 0, 1}] == 0.0 || this->pose_key_points.get_read_position()[{i, 4, 0}] == 0.0 || this->pose_key_points.get_read_position()[{i, 4, 1}] == 0.0) {
+			continue;
+		}
+
+
+		double dx_rate = CAMERA_W / 200;
+		double dy_rate = CAMERA_H / 200;
+
+		bool flag = false;
+
+		for (auto& ud : this->user_data) {
+			if (ofDist(this->pose_key_points.get_read_position()[{i, 0, 0}], this->pose_key_points.get_read_position()[{i, 0, 1}], ud.second.face_x, ud.second.face_y) < 100) {
+				ud.second.face_x = this->pose_key_points.get_read_position()[{i, 0, 0}];
+				ud.second.face_y = this->pose_key_points.get_read_position()[{i, 0, 1}];
+
+				ud.second.cursor_point_x = ofClamp(ud.second.cursor_point_x + dx_rate * (this->pose_key_points.get_read_position()[{i, 4, 0}] - ud.second.cursor_point_x), 0, CAMERA_W);
+				ud.second.cursor_point_y = ofClamp(ud.second.cursor_point_y + dy_rate * (this->pose_key_points.get_read_position()[{i, 4, 1}] - ud.second.cursor_point_y), 0, CAMERA_H);
+				flag = true;
+			}
+		}
+
+		if (flag) {
+			continue;
+		}
+
+		this->user_data.emplace(make_pair(this->track_id++, user_data_type{ this->pose_key_points.get_read_position()[{i, 4, 0}], this->pose_key_points.get_read_position()[{i, 4, 1}], this->pose_key_points.get_read_position()[{i, 4, 0}], this->pose_key_points.get_read_position()[{i, 4, 1}], this->pose_key_points.get_read_position()[{i, 0, 0}], this->pose_key_points.get_read_position()[{i, 0, 1}] }));
+	}*/
+
 
 	//assign_image(this->org_image_buffer.get_push_position(), cv_image<bgr_pixel>(this->frame));
 	//this->org_image_buffer.forward_offset();
@@ -93,21 +131,22 @@ void HandCursor::modulate_cursor(const int& user_id) {
 }
 
 void HandCursor::show_detect_window() {
+	//this->view_frame = this->frame;
 	this->view_frame = this->mat_org_image_buffer.get_read_position();
 
-	const auto numberPeopleDetected = this->pose_key_points.getSize(0);
+	const auto numberPeopleDetected = this->pose_key_points.get_read_position().getSize(0);
 	//cout << "detect num : " << numberPeopleDetected << endl;
 	for (int i = 0; i < numberPeopleDetected; ++i) {
-		if (this->pose_key_points[{i, 0, 0}] != 0.0 && this->pose_key_points[{i, 0, 1}] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points.at({ i, 0, 0 }), this->pose_key_points.at({ i, 0, 1 })), 20, this->CV_BLUE, -1);
-		}
-			
-		if (this->pose_key_points[{i, 4, 0}] != 0.0 && this->pose_key_points[{i, 4, 1}] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points.at({ i, 4, 0 }), this->pose_key_points.at({ i, 4, 1 })), 20, this->CV_RED, -1);
+		if (this->pose_key_points.get_read_position()[{i, 0, 0}] != 0.0 && this->pose_key_points.get_read_position()[{i, 0, 1}] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points.get_read_position()[{ i, 0, 0 }], this->pose_key_points.get_read_position()[{ i, 0, 1 }]), 15, this->CV_BLUE, -1);
 		}
 
-		if (this->pose_key_points[{i, 7, 0}] != 0.0 && this->pose_key_points[{i, 7, 1}] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points.at({ i, 7, 0 }), this->pose_key_points.at({ i, 7, 1 })), 20, this->CV_RED, -1);
+		if (this->pose_key_points.get_read_position()[{i, 4, 0}] != 0.0 && this->pose_key_points.get_read_position()[{i, 4, 1}] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points.get_read_position()[{ i, 4, 0 }], this->pose_key_points.get_read_position()[{ i, 4, 1 }]), 15, this->CV_RED, -1);
+		}
+
+		if (this->pose_key_points.get_read_position()[{i, 7, 0}] != 0.0 && this->pose_key_points.get_read_position()[{i, 7, 1}] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points.get_read_position()[{ i, 7, 0 }], this->pose_key_points.get_read_position()[{ i, 7, 1 }]), 15, this->CV_RED, -1);
 		}
 
 		/*try {
@@ -142,7 +181,7 @@ void HandCursor::show_detect_window() {
 
 	imshow("detect window", view_frame);
 
-	//this->writer << view_frame;
+	this->writer << view_frame;
 }
 
 /* ŠçŒŸo */

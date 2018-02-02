@@ -45,6 +45,10 @@ private:
 		std::vector<std::pair<int, dlib::rectangle>> track_hand_dets;
 	};
 
+	using user_data_type = struct {
+		double initial_x, initial_y, cursor_point_x, cursor_point_y, face_x, face_y;
+	};
+
 	static constexpr int resize_size = 80;
 	static constexpr double decision_ratio = 0.6;
 	static constexpr double overlap_ratio = 0.1;
@@ -84,9 +88,12 @@ private:
 	cv::VideoWriter writer;
 
 	BodyPartExtractor body_part_extractor;
+	int people_num;
 public:
-	op::Array<float> pose_key_points;
+	//op::Array<float> pose_key_points;
+	RingBuffer<op::Array<float>> pose_key_points;
 	std::map<long long int, track_data_type> track_data;
+	std::unordered_map<long long int, user_data_type> user_data;
 
 public:
 	HandCursor();
