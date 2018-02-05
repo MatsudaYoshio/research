@@ -46,7 +46,12 @@ private:
 	};
 
 	using user_data_type = struct {
-		double initial_x, initial_y, cursor_point_x, cursor_point_y, face_x, face_y;
+		dlib::rectangle hand;
+		dlib::point cursor_point, face_point, transformed_face_point, transformed_cursor_point;
+		int cursor_color_id = -1;
+		int update_count;
+		int face_size;
+		ofColor cursor_color;
 	};
 
 	static constexpr int resize_size = 80;
@@ -70,6 +75,7 @@ private:
 	bool face_thread_flag;
 	bool hand_thread_flag;
 	bool stop_flag;
+	bool body_part_flag;
 
 	/* frame_countとtrack_idはインクリメントによってオーバフローする可能性がある */
 	long long int frame_count;
@@ -90,8 +96,8 @@ private:
 	BodyPartExtractor body_part_extractor;
 	int people_num;
 public:
-	//op::Array<float> pose_key_points;
-	RingBuffer<op::Array<float>> pose_key_points;
+	op::Array<float> pose_key_points;
+	//RingBuffer<op::Array<float>> pose_key_points;
 	std::map<long long int, track_data_type> track_data;
 	std::unordered_map<long long int, user_data_type> user_data;
 
@@ -99,6 +105,7 @@ public:
 	HandCursor();
 	void update();
 	void exit();
+	//void detect_body_part(Mat & image);
 	void modulate_cursor(const int& user_id);
 private:
 	void show_detect_window();
@@ -112,6 +119,8 @@ private:
 	void new_thread_face_detect();
 	void get_frame();
 	void detect();
+	void detect_body_part(bool* flag, op::Array<float>* pose_key_points, cv::Mat image);
+	void new_thread_detect_body_part();
 	void fhog_to_feature_vector(X_type &feature_vector, const fhog_type &fhog);
 	double euclid_distance(const dlib::point& p1, const dlib::point& p2) const;
 	void transform_point(const dlib::point& src_point, dlib::point& dst_point);
