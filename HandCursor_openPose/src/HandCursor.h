@@ -32,6 +32,15 @@
 #include "OneEuroFilter.h"
 #include "BodyPartExtractor.h"
 
+#define NOSE_X(i) {i,0,0}
+#define NOSE_Y(i) {i,0,1}
+#define RIGHT_WRIST_X(i) {i,4,0}
+#define RIGHT_WRIST_Y(i) {i,4,1}
+#define RIGHT_EAR_X(i) {i,16,0}
+#define RIGHT_EAR_Y(i) {i,16,1}
+#define LEFT_EAR_X(i) {i,17,0}
+#define LEFT_EAR_Y(i) {i,17,1}
+
 class HandCursor {
 private:
 	using X_type = std::map<unsigned long, double>; // “Á’¥ƒxƒNƒgƒ‹‚ÌŒ^
@@ -52,6 +61,7 @@ private:
 		int update_count;
 		int face_size;
 		ofColor cursor_color;
+		std::vector<std::pair<int, dlib::rectangle>> track_hand_dets;
 	};
 
 	static constexpr int resize_size = 80;
