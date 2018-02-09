@@ -12,7 +12,7 @@ private:
 	vector<T> buffer;
 	int buffer_size, push_offset, read_offset;
 public:
-	RingBuffer(int buffer_size = 64) :buffer_size(buffer_size), push_offset(0) {
+	explicit RingBuffer(int buffer_size = 64) :buffer_size(buffer_size), push_offset(0) {
 		this->buffer.resize(buffer_size);
 	}
 

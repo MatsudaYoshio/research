@@ -60,7 +60,6 @@ private:
 		dlib::point transformed_face_point, transformed_cursor_point;
 		std::vector<std::pair<int, dlib::rectangle>> track_hand_dets;
 	};
-
 	/* 乱数 */
 	static std::random_device rd;
 	static std::mt19937 mt;
@@ -73,6 +72,7 @@ private:
 	static constexpr double default_face_size{ 60 };
 	static constexpr double face_hand_distance{ 300 };
 	static constexpr double face_error{ 100 };
+	static constexpr double windows_range_rate_top = { 2.0 }, windows_range_rate_bottom{ 0.5 }, windows_range_rate_left{ 1.5 }, windows_range_rate_right{ 1.5 };
 	static const char* model_path;
 	static const ofColor cursor_color_list[];
 	static const cv::Scalar CV_RED;
@@ -82,16 +82,16 @@ private:
 	dlib::decision_function<kernel_type> df; // 決定境界の関数
 	std::vector<dlib::rectangle> hand_dets_tmp, hand_dets;
 	dlib::array2d<unsigned char> roi, roi_tracking;
-
+	std::vector<std::vector<dlib::rectangle>> sliding_windows;
 
 	bool stop_flag{ false };
 
-	/* frame_countとtrack_idはインクリメントによってオーバフローする可能性がある */
 	long long int frame_count{ 0 };
 	long long int user_id{ 1 };
 
-	cv::Mat frame{ cv::Size(param::CAMERA_W, param::CAMERA_H), CV_8UC3 };
 	cv::Mat view_frame;
+
+	SlidingWindows sw;
 	NonMaximumSuppression nms{ overlap_ratio };
 	UEyeVideoCapture cap;
 	FrameRateCounter frc;
