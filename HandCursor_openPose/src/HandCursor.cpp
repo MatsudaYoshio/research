@@ -33,7 +33,7 @@ HandCursor::HandCursor() :mat_org_image_buffer(256), org_image_buffer(256), gs_i
 	frame_thread.detach();
 
 	/* 動画撮影 */
-	//this->writer.open("hand_tracking_openPose.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 30, Size(CAMERA_W, CAMERA_H), true);
+	//this->writer.open("hand_tracking_openPose2.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 35, Size(CAMERA_W, CAMERA_H), true);
 }
 
 void HandCursor::update() {
@@ -46,6 +46,7 @@ void HandCursor::update() {
 
 		const int people_num{ this->pose_key_points.getSize(0) }; // 検出された人数
 		for (int i = 0; i < people_num; ++i) {
+
 			if (this->pose_key_points[NOSE_X(i)] == 0.0 || this->pose_key_points[RIGHT_WRIST_X(i)] == 0.0) { // 顔か右手が検出されなければ
 				continue;
 			}
@@ -54,9 +55,13 @@ void HandCursor::update() {
 				continue;
 			}
 
-			auto face_size{ this->estimate_face_size(i) }; // 顔の大きさを推定
+			double face_size{ this->estimate_face_size(i) }; // 顔の大きさを推定
 
-			auto user_id{ this->decide_user_id(i) };
+			if (face_size == 0.0) {
+				continue;
+			}
+
+			long long int user_id{ this->decide_user_id(i) };
 
 			if (user_id == 0) {
 				if (this->hand_detect(i, face_size)) {
@@ -71,7 +76,6 @@ void HandCursor::update() {
 			}
 		}
 	}
-
 	this->show_detect_window(); // 動作確認用のウィンドウを表示
 }
 
@@ -108,7 +112,7 @@ double HandCursor::estimate_face_size(const int personal_id) {
 }
 
 int HandCursor::decide_user_id(const int personal_id) {
-	int user_id{ 0 };
+	long long int user_id{ 0 };
 	double best_d{ DBL_MAX };
 	for (const auto& ud : this->user_data) {
 		const double d{ ofDist(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)], ud.second.face_point.x(), ud.second.face_point.y()) };
@@ -150,10 +154,11 @@ bool HandCursor::hand_detect(const int personal_id, const int face_size) {
 }
 
 /* 追跡時用の手検出 */
-void HandCursor::hand_detect(const std::vector<dlib::rectangle>& sliding_windows, const int user_id) {
+void HandCursor::hand_detect(const std::vector<dlib::rectangle>& sliding_windows, const long long int user_id) {
 	for (const auto& w : sliding_windows) {
-		extract_image_chip(this->gs_image_buffer.get_read_position(), w, this->roi_tracking);
-		if (this->is_hand(this->roi_tracking)) {
+		array2d<unsigned char> roi;
+		extract_image_chip(this->gs_image_buffer.get_read_position(), w, roi);
+		if (this->is_hand(roi)) {
 			this->user_data[user_id].track_hand_dets.emplace_back(make_pair(this->frame_count, w));
 		}
 	}
@@ -170,7 +175,7 @@ SAME_COLOR:
 		}
 	}
 
-	this->user_data.emplace_hint(cend(this->user_data), this->user_id, user_data_type{this->hand_dets[0], center(this->hand_dets[0]), point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]), face_size, move(color_id), this->cursor_color_list[color_id], });
+	this->user_data.emplace(this->user_id, user_data_type{this->hand_dets[0], center(this->hand_dets[0]), point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]), face_size, color_id, this->cursor_color_list[color_id], });
 
 	this->transform_point(this->user_data[this->user_id].face_point, this->user_data[this->user_id].transformed_face_point);
 	this->transform_point(this->user_data[this->user_id].cursor_point, this->user_data[this->user_id].transformed_cursor_point);
@@ -182,7 +187,7 @@ SAME_COLOR:
 	th.detach();
 }
 
-void HandCursor::renew_user_data(const int personal_id, const int face_size, const int user_id) {
+void HandCursor::renew_user_data(const int personal_id, const int face_size, const long long int user_id) {
 	try {
 		this->user_data.at(user_id).face_size = face_size;
 
@@ -207,7 +212,7 @@ void HandCursor::get_frame() {
 	}
 }
 
-void HandCursor::tracking(correlation_tracker& ct, const int user_id) {
+void HandCursor::tracking(correlation_tracker& ct, const long long int user_id) {
 	int m;
 	int dx, dy;
 	drectangle past_pos, current_pos;
@@ -224,16 +229,17 @@ void HandCursor::tracking(correlation_tracker& ct, const int user_id) {
 			}
 			break;
 		}
-		this->user_data[user_id].track_hand_dets.erase(begin(this->user_data[user_id].track_hand_dets), begin(this->user_data[user_id].track_hand_dets) + m);
+		this->user_data[user_id].track_hand_dets.erase(cbegin(this->user_data[user_id].track_hand_dets), cbegin(this->user_data[user_id].track_hand_dets) + m);
 
 		past_pos = ct.get_position(); // 直近フレームの手の位置を得る
-		cout << "user_id : " << user_id << endl;
+
 		ct.update(this->org_image_buffer.get_read_position()); // 追跡位置の更新
-		puts("1");
+
 		/* 現在の追跡位置(矩形)を得る */
 		current_pos = ct.get_position();
+		
 		this->user_data[user_id].hand = current_pos;
-		puts("2");
+
 		/* 現在の追跡位置の周辺のスライディングウィンドウを作成して手を検出 */
 		/* 周辺とは追跡している手の矩形1個分周辺の範囲 */
 		this->hand_detect(this->sw(current_pos.width(), current_pos.width() / 5, std::max(static_cast<int>(current_pos.left() - this->user_data[user_id].hand.width()), 0), std::min(static_cast<int>(current_pos.right() + this->user_data[user_id].hand.width()), CAMERA_W), std::max(static_cast<int>(current_pos.top() - this->user_data[user_id].hand.height()), 0), std::min(static_cast<int>(current_pos.bottom() + this->user_data[user_id].hand.height()), CAMERA_H)), user_id);
@@ -247,6 +253,7 @@ void HandCursor::tracking(correlation_tracker& ct, const int user_id) {
 
 		/* カーソルの位置を更新 */
 		this->user_data[user_id].cursor_point = point(ofClamp(this->user_data[user_id].cursor_point.x() + dx_rate * dx, 0, CAMERA_W), ofClamp(this->user_data[user_id].cursor_point.y() + dy_rate * dy, 0, CAMERA_H)); // 現在の追跡位置から相対的にカーソルの位置を決定
+
 		this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point);
 
 		if (this->user_data[user_id].track_hand_dets.empty() || this->stop_flag) { // 直近フレームで手が検出されなかったら追跡をやめる
@@ -289,7 +296,7 @@ void HandCursor::inverse_transform_point(const point& src_point, point& dst_poin
 	dst_point.y() = src_point.y() / RESOLUTION_RATIO_H;
 }
 
-void HandCursor::modulate_cursor(const int& user_id) {
+void HandCursor::modulate_cursor(const long long int& user_id) {
 	try {
 		this->inverse_transform_point(this->user_data.at(user_id).transformed_cursor_point, this->user_data.at(user_id).cursor_point);
 	}
@@ -321,5 +328,5 @@ void HandCursor::show_detect_window() {
 	imshow("detect window", img);
 
 	/* 動画撮影 */
-	//this->writer << this->view_frame;
+	//this->writer << img;
 }

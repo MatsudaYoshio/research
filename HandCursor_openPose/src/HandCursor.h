@@ -81,8 +81,9 @@ private:
 
 	dlib::decision_function<kernel_type> df; // Œˆ’è‹«ŠE‚ÌŠÖ”
 	std::vector<dlib::rectangle> hand_dets_tmp, hand_dets;
-	dlib::array2d<unsigned char> roi, roi_tracking;
+	dlib::array2d<unsigned char> roi;
 	std::vector<std::vector<dlib::rectangle>> sliding_windows;
+	std::vector<bool> color_state;
 
 	bool stop_flag{ false };
 
@@ -108,11 +109,11 @@ private:
 	double estimate_face_size(int personal_id);
 	int decide_user_id(int personal_id);
 	bool hand_detect(int personal_id, int face_size);
-	void hand_detect(const std::vector<dlib::rectangle>& sliding_windows, int user_id);
+	void hand_detect(const std::vector<dlib::rectangle>& sliding_windows, long long int user_id);
 	void start_track(int personal_id, int face_size);
-	void renew_user_data(int personal_id, int face_size, int user_id);
+	void renew_user_data(int personal_id, int face_size, long long int user_id);
 	void get_frame();
-	void tracking(dlib::correlation_tracker& ct, const int user_id);
+	void tracking(dlib::correlation_tracker& ct, long long int user_id);
 	bool is_hand(dlib::array2d<unsigned char>& img);
 	void fhog_to_feature_vector(X_type& feature_vector, const fhog_type& fhog);
 	void transform_point(const dlib::point& src_point, dlib::point& dst_point);
@@ -125,7 +126,7 @@ public:
 	HandCursor();
 	void update();
 	void exit();
-	void modulate_cursor(const int& user_id);
+	void modulate_cursor(const long long int& user_id);
 };
 
 #endif
