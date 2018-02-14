@@ -10,19 +10,15 @@ using namespace param;
 
 const char* HandCursor::model_path = "C:/Users/matsuda/workspace/machine_learning_data/hand/20170813/linear_svm_function.dat"; // 学習モデルのパス
 
-random_device HandCursor::rd;
-std::mt19937 HandCursor::mt(HandCursor::rd());
-
 /* カーソルの色 */
-const ofColor HandCursor::cursor_color_list[] = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::orange };
-uniform_int_distribution<int> HandCursor::random_color(0, 7);
+const std::array<ofColor, HandCursor::cursor_color_num> HandCursor::cursor_colors = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::orange };
 
 /* Scalar型の色 */
 const Scalar HandCursor::CV_RED{ Scalar(0, 0, 255) };
 const Scalar HandCursor::CV_BLUE{ Scalar(255, 0, 0) };
 const Scalar HandCursor::CV_ORANGE{ Scalar(76, 183, 255) };
 
-HandCursor::HandCursor() :mat_org_image_buffer(256), org_image_buffer(256), gs_image_buffer(256) {
+HandCursor::HandCursor() {
 	deserialize(this->model_path) >> df; // ファイルから学習済みのモデルを読み込む
 
 	/* 最初の一枚を取り込んでおく */
@@ -57,22 +53,18 @@ void HandCursor::update() {
 
 			double face_size{ this->estimate_face_size(i) }; // 顔の大きさを推定
 
-			if (face_size == 0.0) {
-				continue;
-			}
+			long long int user_id{ this->decide_user_id(i) }; // user_idを決定
 
-			long long int user_id{ this->decide_user_id(i) };
-
-			if (user_id == 0) {
-				if (this->hand_detect(i, face_size)) {
-					this->start_track(i, face_size);
+			if (user_id == 0) { // user_idが0(新たなユーザ)であれば
+				if (this->hand_detect(i, face_size)) { // 手が検出されれば
+					this->start_track(i, face_size); // 追跡開始
 				}
 				else {
 					continue;
 				}
 			}
 			else {
-				this->renew_user_data(i, face_size, user_id);
+				this->renew_user_data(i, face_size, user_id); // ユーザの情報を更新
 			}
 		}
 	}
@@ -83,7 +75,7 @@ void HandCursor::exit() {
 	this->stop_flag = true;
 }
 
-double HandCursor::estimate_face_size(const int personal_id) {
+double HandCursor::estimate_face_size(const int personal_id) const {
 	if (this->pose_key_points[RIGHT_EAR_X(personal_id)] != 0.0 && this->pose_key_points[LEFT_EAR_X(personal_id)] != 0.0) { // 両耳の位置が取得できていれば
 		return ofDist(this->pose_key_points[LEFT_EAR_X(personal_id)], this->pose_key_points[LEFT_EAR_Y(personal_id)], this->pose_key_points[RIGHT_EAR_X(personal_id)], this->pose_key_points[RIGHT_EAR_Y(personal_id)]); // 両耳間の距離を返す
 	}
@@ -111,7 +103,7 @@ double HandCursor::estimate_face_size(const int personal_id) {
 	}
 }
 
-int HandCursor::decide_user_id(const int personal_id) {
+int HandCursor::decide_user_id(const int personal_id) const {
 	long long int user_id{ 0 };
 	double best_d{ DBL_MAX };
 	for (const auto& ud : this->user_data) {
@@ -125,13 +117,13 @@ int HandCursor::decide_user_id(const int personal_id) {
 	return user_id;
 }
 
-bool HandCursor::hand_detect(const int personal_id, const int face_size) {
-	this->sliding_windows.resize(3);
-	this->sw(this->sliding_windows[0], face_size, face_size / 5, std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] - face_size*this->windows_range_rate_left), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] + face_size*this->windows_range_rate_right), CAMERA_W), std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - face_size*this->windows_range_rate_top), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] + face_size*this->windows_range_rate_bottom), CAMERA_H));
+bool HandCursor::hand_detect(const int personal_id, const double face_size) {
+	/* 3種類のスライディングウィンドウを作成 */
+	this->generate_sliding_windows(this->sliding_windows[0], face_size, face_size*this->sliding_window_step_rate, std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] - face_size*this->windows_range_rate_left), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] + face_size*this->windows_range_rate_right), CAMERA_W), std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - face_size*this->windows_range_rate_top), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] + face_size*this->windows_range_rate_bottom), CAMERA_H));
 
-	this->sw(this->sliding_windows[1], face_size + 50, face_size / 5 + 10, std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] - face_size*this->windows_range_rate_left), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] + face_size*this->windows_range_rate_right), CAMERA_W), std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - face_size*this->windows_range_rate_top), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] + face_size*this->windows_range_rate_bottom), CAMERA_H));
+	this->generate_sliding_windows(this->sliding_windows[1], face_size*1.2, face_size*1.2*this->sliding_window_step_rate, std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] - face_size*this->windows_range_rate_left), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] + face_size*this->windows_range_rate_right), CAMERA_W), std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - face_size*this->windows_range_rate_top), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] + face_size*this->windows_range_rate_bottom), CAMERA_H));
 
-	this->sw(this->sliding_windows[2], face_size + 100, face_size / 5 + 20, std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] - face_size*this->windows_range_rate_left), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] + face_size*this->windows_range_rate_right), CAMERA_W), std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - face_size*this->windows_range_rate_top), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] + face_size*this->windows_range_rate_bottom), CAMERA_H));
+	this->generate_sliding_windows(this->sliding_windows[2], face_size*1.8, face_size*1.8*this->sliding_window_step_rate, std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] - face_size*this->windows_range_rate_left), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(personal_id)] + face_size*this->windows_range_rate_right), CAMERA_W), std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - face_size*this->windows_range_rate_top), 0), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(personal_id)] + face_size*this->windows_range_rate_bottom), CAMERA_H));
 
 	this->hand_dets_tmp.clear();
 	for (const auto& sw : sliding_windows) {
@@ -164,30 +156,25 @@ void HandCursor::hand_detect(const std::vector<dlib::rectangle>& sliding_windows
 	}
 }
 
-void HandCursor::start_track(const int personal_id, const int face_size) {
-	/* カーソルの色をかぶらないように選ぶ */
-	int color_id;
-SAME_COLOR:
-	color_id = this->random_color(this->mt);
-	for (const auto& t : this->user_data) {
-		if (t.second.cursor_color_id == color_id) {
-			goto SAME_COLOR;
-		}
-	}
+void HandCursor::start_track(const int personal_id, const double face_size) {
+	int cursor_color_id = distance(cbegin(this->cursor_color_state), find_if_not(cbegin(this->cursor_color_state), cend(this->cursor_color_state), [](auto x) {return x; })); // 未使用の色からカーソルの色を選ぶ
 
-	this->user_data.emplace(this->user_id, user_data_type{this->hand_dets[0], center(this->hand_dets[0]), point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]), face_size, color_id, this->cursor_color_list[color_id], });
+	this->cursor_color_state[cursor_color_id] = true; // 選んだカーソルの色を使用済みとする
 
-	this->transform_point(this->user_data[this->user_id].face_point, this->user_data[this->user_id].transformed_face_point);
-	this->transform_point(this->user_data[this->user_id].cursor_point, this->user_data[this->user_id].transformed_cursor_point);
+	this->user_data.emplace(this->user_id, user_data_type{this->hand_dets[0], center(this->hand_dets[0]), point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]), face_size, cursor_color_id, this->cursor_colors[cursor_color_id], }); // ユーザの情報をできるだけ詰める
 
+	this->transform_point(this->user_data[this->user_id].face_point, this->user_data[this->user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
+	this->transform_point(this->user_data[this->user_id].cursor_point, this->user_data[this->user_id].transformed_cursor_point); // カーソルの座標を画面上の座標に変換
+
+	/* 追跡を開始する */
 	correlation_tracker ct;
 	ct.start_track(this->org_image_buffer.get_read_position(), this->user_data[this->user_id].hand);
-
 	thread th(&HandCursor::tracking, this, ct, this->user_id++);
 	th.detach();
 }
 
-void HandCursor::renew_user_data(const int personal_id, const int face_size, const long long int user_id) {
+void HandCursor::renew_user_data(const int personal_id, const double face_size, const long long int user_id) {
+	/* 顔の座標と大きさを更新する */
 	try {
 		this->user_data.at(user_id).face_size = face_size;
 
@@ -237,17 +224,18 @@ void HandCursor::tracking(correlation_tracker& ct, const long long int user_id) 
 
 		/* 現在の追跡位置(矩形)を得る */
 		current_pos = ct.get_position();
-		
+
 		this->user_data[user_id].hand = current_pos;
 
 		/* 現在の追跡位置の周辺のスライディングウィンドウを作成して手を検出 */
 		/* 周辺とは追跡している手の矩形1個分周辺の範囲 */
-		this->hand_detect(this->sw(current_pos.width(), current_pos.width() / 5, std::max(static_cast<int>(current_pos.left() - this->user_data[user_id].hand.width()), 0), std::min(static_cast<int>(current_pos.right() + this->user_data[user_id].hand.width()), CAMERA_W), std::max(static_cast<int>(current_pos.top() - this->user_data[user_id].hand.height()), 0), std::min(static_cast<int>(current_pos.bottom() + this->user_data[user_id].hand.height()), CAMERA_H)), user_id);
+		this->hand_detect(this->generate_sliding_windows(current_pos.width(), current_pos.width()*this->sliding_window_step_rate, std::max(static_cast<int>(current_pos.left() - this->user_data[user_id].hand.width()), 0), std::min(static_cast<int>(current_pos.right() + this->user_data[user_id].hand.width()), CAMERA_W), std::max(static_cast<int>(current_pos.top() - this->user_data[user_id].hand.height()), 0), std::min(static_cast<int>(current_pos.bottom() + this->user_data[user_id].hand.height()), CAMERA_H)), user_id);
 
 		/* 現在の追跡位置と直前の追跡位置の差 */
 		dx = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x方向
 		dy = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y方向
 
+		/* それぞれの方向の差にフィルタをかける */
 		dx = dx_filter.filter(dx);
 		dy = dy_filter.filter(dy);
 
@@ -257,10 +245,36 @@ void HandCursor::tracking(correlation_tracker& ct, const long long int user_id) 
 		this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point);
 
 		if (this->user_data[user_id].track_hand_dets.empty() || this->stop_flag) { // 直近フレームで手が検出されなかったら追跡をやめる
+			this->cursor_color_state[this->user_data[user_id].cursor_color_id] = false;
 			this->user_data.erase(user_id);
 			break;
 		}
 	}
+}
+
+void HandCursor::generate_sliding_windows(std::vector<dlib::rectangle>& windows, const int window_size, const int step, const int min_width, const int max_width, const int min_height, const int max_height) {
+	if (step == 0) {
+		return;
+	}
+
+	const auto max_i{ max_height - window_size };
+	const auto max_j{ max_width - window_size };
+
+	windows.resize(((max_i - min_height) / step + 1)*((max_j - min_width) / step + 1));
+
+	for (int i = min_height, x = 0; i <= max_i; i += step) {
+		for (int j = min_width; j <= max_j; j += step) {
+			windows[x++] = dlib::rectangle(j, i, j + window_size, i + window_size);
+		}
+	}
+}
+
+std::vector<dlib::rectangle> HandCursor::generate_sliding_windows(const int window_size, const int step, const int min_width, const int max_width, const int min_height, const int max_height) {
+	std::vector<dlib::rectangle> windows;
+
+	this->generate_sliding_windows(windows, window_size, step, min_width, max_width, min_height, max_height);
+
+	return windows;
 }
 
 bool HandCursor::is_hand(array2d<unsigned char>& img) {
@@ -276,7 +290,7 @@ bool HandCursor::is_hand(array2d<unsigned char>& img) {
 	return (df(feature_vec) > this->decision_ratio);
 }
 
-void HandCursor::fhog_to_feature_vector(X_type& feature_vector, const fhog_type& fhog) {
+void HandCursor::fhog_to_feature_vector(X_type& feature_vector, const fhog_type& fhog) const {
 	for (int r = 0, j = 0; r < fhog.nr(); ++r) {
 		for (int c = 0; c < fhog.nc(); ++c) {
 			for (int i = 0; i < 31; ++i) {
@@ -286,12 +300,12 @@ void HandCursor::fhog_to_feature_vector(X_type& feature_vector, const fhog_type&
 	}
 }
 
-void HandCursor::transform_point(const point& src_point, point& dst_point) {
+void HandCursor::transform_point(const point& src_point, point& dst_point) const {
 	dst_point.x() = DISPLAY_W - RESOLUTION_RATIO_W*src_point.x();
 	dst_point.y() = RESOLUTION_RATIO_H * src_point.y();
 }
 
-void HandCursor::inverse_transform_point(const point& src_point, point& dst_point) {
+void HandCursor::inverse_transform_point(const point& src_point, point& dst_point) const {
 	dst_point.x() = (DISPLAY_W - src_point.x()) / RESOLUTION_RATIO_W;
 	dst_point.y() = src_point.y() / RESOLUTION_RATIO_H;
 }

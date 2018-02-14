@@ -13,8 +13,8 @@ using namespace dlib;
 
 NonMaximumSuppression::NonMaximumSuppression(const double threshold) :threshold(threshold) {}
 
-void NonMaximumSuppression::operator() (const std::vector<dlib::rectangle> &src_rects, std::vector<dlib::rectangle> &dst_rects) const {
-	for (auto r : src_rects) {
+void NonMaximumSuppression::operator() (const std::vector<dlib::rectangle>& src_rects, std::vector<dlib::rectangle>& dst_rects) const {
+	for (const auto& r : src_rects) {
 		if (this->overlaps_any_rect(dst_rects, r)) {
 			continue;
 		}
@@ -22,8 +22,8 @@ void NonMaximumSuppression::operator() (const std::vector<dlib::rectangle> &src_
 	}
 }
 
-void NonMaximumSuppression::operator() (const std::vector<Rect> &src_rects, std::vector<Rect> &dst_rects) const {
-	for (auto r : src_rects) {
+void NonMaximumSuppression::operator() (const std::vector<Rect>& src_rects, std::vector<Rect>& dst_rects) const {
+	for (const auto& r : src_rects) {
 		if (this->overlaps_any_rect(dst_rects, r)) {
 			continue;
 		}
@@ -31,9 +31,9 @@ void NonMaximumSuppression::operator() (const std::vector<Rect> &src_rects, std:
 	}
 }
 
-bool NonMaximumSuppression::overlaps_any_rect(const std::vector<dlib::rectangle> &rects, const dlib::rectangle &rect) const {
+bool NonMaximumSuppression::overlaps_any_rect(const std::vector<dlib::rectangle>& rects, const dlib::rectangle& rect) const {
 	test_box_overlap tester(this->threshold);
-	for (auto r : rects) {
+	for (const auto& r : rects) {
 		if (r != rect && tester(r, rect)) {
 			return true;
 		}
@@ -41,9 +41,9 @@ bool NonMaximumSuppression::overlaps_any_rect(const std::vector<dlib::rectangle>
 	return false;
 }
 
-bool NonMaximumSuppression::overlaps_any_rect(const std::vector<Rect> &rects, const Rect &rect) const {
+bool NonMaximumSuppression::overlaps_any_rect(const std::vector<Rect>& rects, const Rect& rect) const {
 	SimilarRects sr(this->threshold);
-	for (auto r : rects) {
+	for (const auto& r : rects) {
 		if (r != rect && sr(r, rect)) {
 			return true;
 		}

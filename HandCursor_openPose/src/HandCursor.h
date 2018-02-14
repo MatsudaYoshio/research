@@ -22,7 +22,6 @@
 /* OpenCV */
 #include <opencv2/opencv.hpp>
 
-#include "SlidingWindows.h"
 #include "NonMaximumSuppression.h"
 #include "UEyeVideoCapture.h"
 #include "FrameRateCounter.h"
@@ -54,16 +53,12 @@ private:
 	using user_data_type = struct {
 		dlib::rectangle hand;
 		dlib::point cursor_point, face_point;
-		int face_size;
+		double face_size;
 		int cursor_color_id;
 		ofColor cursor_color;
 		dlib::point transformed_face_point, transformed_cursor_point;
 		std::vector<std::pair<int, dlib::rectangle>> track_hand_dets;
 	};
-	/* 乱数 */
-	static std::random_device rd;
-	static std::mt19937 mt;
-	static std::uniform_int_distribution<int> random_color;
 
 	/* 定数 */
 	static constexpr int resize_size{ 80 };
@@ -72,9 +67,11 @@ private:
 	static constexpr double default_face_size{ 60 };
 	static constexpr double face_hand_distance{ 300 };
 	static constexpr double face_error{ 100 };
-	static constexpr double windows_range_rate_top = { 2.0 }, windows_range_rate_bottom{ 0.5 }, windows_range_rate_left{ 1.5 }, windows_range_rate_right{ 1.5 };
+	static constexpr double windows_range_rate_top{ 2.0 }, windows_range_rate_bottom{ 0.5 }, windows_range_rate_left{ 1.5 }, windows_range_rate_right{ 1.5 };
+	static constexpr double sliding_window_step_rate{ 0.2 };
+	static constexpr int cursor_color_num{ 8 };
 	static const char* model_path;
-	static const ofColor cursor_color_list[];
+	static const std::array<ofColor, cursor_color_num> cursor_colors;
 	static const cv::Scalar CV_RED;
 	static const cv::Scalar CV_BLUE;
 	static const cv::Scalar CV_ORANGE;
@@ -82,8 +79,8 @@ private:
 	dlib::decision_function<kernel_type> df; // 決定境界の関数
 	std::vector<dlib::rectangle> hand_dets_tmp, hand_dets;
 	dlib::array2d<unsigned char> roi;
-	std::vector<std::vector<dlib::rectangle>> sliding_windows;
-	std::vector<bool> color_state;
+	std::array<std::vector<dlib::rectangle>, 3> sliding_windows;
+	std::array<bool, cursor_color_num> cursor_color_state;
 
 	bool stop_flag{ false };
 
@@ -92,32 +89,33 @@ private:
 
 	cv::Mat view_frame;
 
-	SlidingWindows sw;
 	NonMaximumSuppression nms{ overlap_ratio };
 	UEyeVideoCapture cap;
 	FrameRateCounter frc;
 
 	/* 画像データのバッファ */
-	RingBuffer<cv::Mat> mat_org_image_buffer; // Mat型画像のバッファ
-	RingBuffer<dlib::array2d<dlib::bgr_pixel>> org_image_buffer; // dlibのbgr型画像のバッファ
-	RingBuffer<dlib::array2d<unsigned char>> gs_image_buffer; // dlibのグレースケール画像のバッファ
+	RingBuffer<cv::Mat> mat_org_image_buffer{ 256 }; // Mat型画像のバッファ
+	RingBuffer<dlib::array2d<dlib::bgr_pixel>> org_image_buffer{ 256 }; // dlibのbgr型画像のバッファ
+	RingBuffer<dlib::array2d<unsigned char>> gs_image_buffer{ 256 }; // dlibのグレースケール画像のバッファ
 
 	//cv::VideoWriter writer;
 
 	BodyPartExtractor body_part_extractor;
 
-	double estimate_face_size(int personal_id);
-	int decide_user_id(int personal_id);
-	bool hand_detect(int personal_id, int face_size);
+	double estimate_face_size(int personal_id) const;
+	int decide_user_id(int personal_id) const;
+	bool hand_detect(int personal_id, double face_size);
 	void hand_detect(const std::vector<dlib::rectangle>& sliding_windows, long long int user_id);
-	void start_track(int personal_id, int face_size);
-	void renew_user_data(int personal_id, int face_size, long long int user_id);
+	void start_track(int personal_id, double face_size);
+	void renew_user_data(int personal_id, double face_size, long long int user_id);
 	void get_frame();
 	void tracking(dlib::correlation_tracker& ct, long long int user_id);
+	void generate_sliding_windows(std::vector<dlib::rectangle>& windows, int window_size, int step, int min_width, int max_width, int min_height, int max_height);
+	std::vector<dlib::rectangle> generate_sliding_windows(int window_size, int step, int min_width, int max_width, int min_height, int max_height);
 	bool is_hand(dlib::array2d<unsigned char>& img);
-	void fhog_to_feature_vector(X_type& feature_vector, const fhog_type& fhog);
-	void transform_point(const dlib::point& src_point, dlib::point& dst_point);
-	void inverse_transform_point(const dlib::point& src_point, dlib::point& dst_point);
+	void fhog_to_feature_vector(X_type& feature_vector, const fhog_type& fhog) const;
+	void transform_point(const dlib::point& src_point, dlib::point& dst_point) const;
+	void inverse_transform_point(const dlib::point& src_point, dlib::point& dst_point) const;
 	void show_detect_window();
 public:
 	op::Array<float> pose_key_points;

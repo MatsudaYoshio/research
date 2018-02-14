@@ -10,18 +10,18 @@ void HandCursorApp::update() {
 }
 
 void HandCursorApp::draw() {
-	//try {
-	//	for (auto& ud : this->hc.user_data) {
-	//		ofNoFill();
-	//		ofSetLineWidth(60);
-	//		ofSetColor(ofColor::white);
-	//		ofDrawCircle(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y(), 60);
-	//		ofFill();
-	//		ofSetColor(ud.second.cursor_color);
-	//		ofDrawCircle(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y(), 55);
-	//	}
-	//}
-	//catch (std::out_of_range&) {}
+	try {
+		for (auto& ud : this->hc.user_data) {
+			ofNoFill();
+			ofSetLineWidth(60);
+			ofSetColor(ofColor::white);
+			ofDrawCircle(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y(), 60);
+			ofFill();
+			ofSetColor(ud.second.cursor_color);
+			ofDrawCircle(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y(), 55);
+		}
+	}
+	catch (std::out_of_range&) {}
 }
 
 void HandCursorApp::exit() {
