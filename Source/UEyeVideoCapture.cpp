@@ -11,7 +11,7 @@
 using namespace std;
 using namespace cv;
 
-UEyeVideoCapture::UEyeVideoCapture() :hCam(0) {
+UEyeVideoCapture::UEyeVideoCapture() {
 	if (is_InitCamera(&this->hCam, NULL) != IS_SUCCESS) {
 		cerr << "Fail to initialize the camera" << endl;
 		return;
@@ -56,8 +56,8 @@ UEyeVideoCapture::UEyeVideoCapture() :hCam(0) {
 		return;
 	}
 
-	double enable = 1;
-	double disable = 0;
+	double enable{ 1 };
+	double disable{ 0 };
 
 	if (is_SetAutoParameter(this->hCam, IS_SET_ENABLE_AUTO_GAIN, &enable, 0) == IS_NO_SUCCESS) {
 		cerr << "Fail to set auto parameter : gain" << endl;
@@ -82,9 +82,8 @@ UEyeVideoCapture::UEyeVideoCapture() :hCam(0) {
 
 Mat UEyeVideoCapture::get_image() {
 	if (is_FreezeVideo(this->hCam, IS_WAIT) == IS_SUCCESS) {
-		void *pMemVoid;
-		is_GetImageMem(this->hCam, &pMemVoid);
-		return Mat(this->img_height, this->img_width, CV_8UC3, pMemVoid);
+		is_GetImageMem(this->hCam, &this->pMemVoid);
+		return Mat(this->img_height, this->img_width, CV_8UC3, this->pMemVoid);
 	}
 }
 
