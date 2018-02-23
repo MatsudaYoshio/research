@@ -33,6 +33,10 @@ void GeneticAlgorithm::setup(HandCursor* hc) {
 	this->elite_fitness = DBL_MIN;
 
 	this->selected_users_num = 0;
+
+	this->ofs.open("raw_fitness.csv");
+	//this->ofs2.open("block_size.csv");
+	this->ofs3.open("scaled_fitness.csv");
 }
 
 void GeneticAlgorithm::operator()(set<long long int>& selected_users_id, set<long long int>& all_users_id) {
@@ -41,11 +45,13 @@ void GeneticAlgorithm::operator()(set<long long int>& selected_users_id, set<lon
 		return;
 	}
 	this->initialize(selected_users_id, all_users_id);
-	for (int i = 0; i < 100; ++i) {
-		//this->crossover();
-		this->mutation();
-		this->calculate_fitness();
-		this->selection();
+	if (this->selected_users_num > 1) {
+		for (int i = 0; i < 300; ++i) {
+			//this->crossover();
+			this->mutation();
+			this->calculate_fitness();
+			this->selection();
+		}
 	}
 }
 
@@ -67,8 +73,9 @@ void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<lon
 	}
 
 	/* 各ブロックのビット数を決める */
-	this->block_bits_size = 1;
-	while (pow(2, this->block_bits_size++) > 2 * this->selected_users_num) {} // ユーザ数と同じ分だけユーザでない状態を表せるようなビット数にする
+	this->block_bits_size = log2(this->selected_users_num) + 1; // ユーザ数と同じ分だけユーザでない状態を表せるようなビット数にする
+	// this->block_bits_size = 1;
+	// while (pow(2, this->block_bits_size++) > 2 * this->selected_users_num) {}
 
 	this->genetic_length = this->block_size*this->block_bits_size; // 遺伝子長を決める
 
@@ -216,51 +223,52 @@ void GeneticAlgorithm::crossover() {
 
 void GeneticAlgorithm::mutation() {
 	//uniform_int_distribution<int> random_mutation_method(1, 3);
-	set<int> active_block;
-	set<int> active_bit;
-	vector<int> v;
-	if (this->user_block.empty()) {
-		return;
-	}
-	for (const auto& user : this->user_block) {
-		for (const auto& block : user.second) {
-			active_block.emplace(block);
-		}
-	}
+	//set<int> active_block;
+	//set<int> active_bit;
+	//vector<int> v;
+	//if (this->user_block.empty()) {
+	//	return;
+	//}
+	//for (const auto& user : this->user_block) {
+	//	for (const auto& block : user.second) {
+	//		active_block.emplace(block);
+	//	}
+	//}
 
-	set<int> active_block_tmp = active_block;
-	int nx, ny;
-	for (const auto& b : active_block_tmp) {
-		for (int i = 0; i < 8; ++i) {
-			nx = this->block2grid_table[b].first + this->dx[i];
-			ny = this->block2grid_table[b].second + this->dy[i];
-			if (nx < 0 || nx >= this->form_w || ny < 0 || ny >= this->form_h) {
-				continue;
-			}
-			for (int j = 0; j < this->block_bits_size; ++j) {
-				active_bit.emplace(this->grid2block_table[nx][ny] + j);
-			}
-			active_block.emplace(this->grid2block_table[nx][ny]);
-		}
-	}
+	//set<int> active_block_tmp = active_block;
+	//int nx, ny;
+	//for (const auto& b : active_block_tmp) {
+	//	for (int i = 0; i < 8; ++i) {
+	//		nx = this->block2grid_table[b].first + this->dx[i];
+	//		ny = this->block2grid_table[b].second + this->dy[i];
+	//		if (nx < 0 || nx >= this->form_w || ny < 0 || ny >= this->form_h) {
+	//			continue;
+	//		}
+	//		for (int j = 0; j < this->block_bits_size; ++j) {
+	//			active_bit.emplace(this->grid2block_table[nx][ny] + j);
+	//		}
+	//		active_block.emplace(this->grid2block_table[nx][ny]);
+	//	}
+	//}
 
-	int x = 0;
-	v.resize(active_bit.size());
-	for (const auto& b : active_bit) {
-		v[x++] = b;
-	}
+	//int x = 0;
+	//v.resize(active_bit.size());
+	//for (const auto& b : active_bit) {
+	//	v[x++] = b;
+	//}
 
 	uniform_int_distribution<int> random_bit(0, this->genetic_length - 1);
-	uniform_int_distribution<int> random_active_bit(0, v.size() - 1);
+	//uniform_int_distribution<int> random_active_bit(0, v.size() - 1);
 	for (int i = 0; i < this->population_size; ++i) {
 		/* 突然変異率に基づいて突然変異するかどうかを決める */
 		if (this->random_0to1(this->mt) < this->mutation_probability) {
-			int b = random_bit(this->mt);
-			//int b = random_active_bit(this->mt);
-			//if (active_block.find(b / this->block_bits_size) != end(active_block)) {
-			this->population[i][b].flip();
-			//}
-
+			for (int j = 0; j < 10; ++j) {
+				int b = random_bit(this->mt);
+				//int b = random_active_bit(this->mt);
+				//if (active_block.find(b / this->block_bits_size) != end(active_block)) {
+				this->population[i][b].flip();
+				//}
+			}
 			///* 突然変異手法をランダムに選ぶ */
 			//switch (random_mutation_method(this->mt)) {
 			//case 1:
@@ -302,6 +310,7 @@ void GeneticAlgorithm::calculate_fitness() {
 	this->block_assignments.resize(this->population_size_tmp);
 
 	this->user_block.clear();
+	this->user_block.resize(this->population_size_tmp);
 
 	for (int i = 0; i < this->population_size_tmp; ++i) {
 		/* 各ブロックに割り当てられたユーザidを求める */
@@ -317,7 +326,7 @@ void GeneticAlgorithm::calculate_fitness() {
 				}
 				if (flag) {
 					this->block_assignments[i][j] = user_id;
-					this->user_block[user_id].emplace(j); // 各ユーザがもつブロックを求める
+					this->user_block[i][user_id].emplace(j); // 各ユーザがもつブロックを求める
 					break;
 				}
 			}
@@ -327,11 +336,21 @@ void GeneticAlgorithm::calculate_fitness() {
 
 		/* 各ユーザの領域面積で最小なものを最大化する */
 		int min_area = INT_MAX;
-		for (const auto& user : this->user_block) {
+		for (const auto& user : this->user_block[i]) {
 			min_area = min(min_area, static_cast<int>(user.second.size()));
 		}
 
 		this->fitness[i] += min_area*this->grid_h*this->grid_w;
+
+		if (this->selected_users_num > 1) {
+			if (i != 0) {
+				this->ofs << ",";
+				//this->ofs2 << ",";
+			}
+			this->ofs << this->fitness[i];
+			//this->ofs2 << min_area;
+		}
+		
 
 		//ofs << min_area*GRID_H*GRID_W << endl;
 
@@ -379,6 +398,10 @@ void GeneticAlgorithm::calculate_fitness() {
 		//	}
 		//}
 	}
+	if (this->selected_users_num > 1) {
+		this->ofs << endl;
+		//this->ofs2 << endl;
+	}
 }
 
 void GeneticAlgorithm::selection() {
@@ -404,11 +427,11 @@ void GeneticAlgorithm::selection() {
 	const double fitness_max = *max_element(begin(this->fitness), end(this->fitness)); // 適応度の最大値
 	const double fitness_min = *min_element(begin(this->fitness), end(this->fitness)); // 適応度の最小値
 
-	/*puts("start");
-	for (int i = 0; i < this->fitness.size(); ++i) {
-		cout << this->fitness[i] << " ";
-	}
-	cout << endl;*/
+	//puts("start");
+	//for (int i = 0; i < this->fitness.size(); ++i) {
+	//	cout << this->fitness[i] << " ";
+	//}
+	//cout << endl;
 
 	/** ルーレット方式で選択 **/
 
@@ -434,7 +457,7 @@ void GeneticAlgorithm::selection() {
 	fitness_sum = accumulate(begin(this->fitness), end(this->fitness), 0.0);
 	uniform_real_distribution<double> random_fitness(0.0, fitness_sum);
 	vector<int> v(this->population_size_tmp);
-	iota(begin(v), end(v), 0);
+	std::iota(begin(v), end(v), 0);
 	double r, s;
 	for (int i = 0; i < this->population_size; ++i) {
 		shuffle(begin(v), end(v), this->mt);
@@ -449,7 +472,15 @@ void GeneticAlgorithm::selection() {
 		}
 	}
 
-	//for (int i = 0; i < this->fitness.size(); ++i) {
+	if (this->selected_users_num > 1) {
+		this->ofs3 << this->fitness[0];
+		for (int i = 1; i < this->population_size; ++i) {
+			this->ofs3 << "," << this->fitness[i];
+		}
+		this->ofs3 << endl;
+	}
+
+	//for (int i = 0; i < 5; ++i) {
 	//	cout << this->fitness[i] << " ";
 	//}
 	//cout << endl;

@@ -10,7 +10,7 @@ class GeneticAlgorithm {
 private:
 	using genome_type = vector<bool>;
 
-	static constexpr int population_size{ 20 }; // 集団サイズ(選択淘汰された後は必ずこの数)
+	static constexpr int population_size{ 1000 }; // 集団サイズ(選択淘汰された後は必ずこの数)
 	static constexpr double crossover_probability{ 0 }; // 交叉確率(交叉が発生する確率)
 	static constexpr int crossover_pair_number{ 8 }; // 交叉を適応するペア数
 	static constexpr double mutation_probability{ 1.0 }; // 突然変異率(突然変異が発生する確率)
@@ -19,8 +19,8 @@ private:
 	static constexpr int dx[] = { 1, 0, -1, 0, 1, -1, -1, 1 };
 	static constexpr int dy[] = { 0, -1, 0, 1, -1, -1, 1, 1 };
 
-	static constexpr int grid_w{ 240 };
-	static constexpr int grid_h{ 120 };
+	static constexpr int grid_w{ 480 };
+	static constexpr int grid_h{ 216 };
 	static constexpr int form_w{ param::DISPLAY_W / grid_w };
 	static constexpr int form_h{ param::DISPLAY_H / grid_h };
 	static constexpr int block_size{ form_w*form_h };
@@ -63,9 +63,11 @@ private:
 	int selected_users_num; // ユーザ数
 	unordered_map<int, int> user_id_index; // ユーザIDに対するインデックス
 	int population_size_tmp; // 交叉や突然変異によって増加した一時的な集団サイズ
-	unordered_map<int, set<int>> user_block; // 各ユーザがもつブロック
+	vector<unordered_map<long long int, set<int>>> user_block; // 各ユーザがもつブロック
 
 	array<int, block_size> elite_block_assignment;
+
+	ofstream ofs, ofs2, ofs3;
 
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:

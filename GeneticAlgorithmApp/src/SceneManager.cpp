@@ -138,7 +138,7 @@ void SceneManager::pointed(pair<int, long long int>& id) {
 
 void SceneManager::make_sub_window(pair<int, long long int>& id) {
 	this->selected_users.emplace(id.second);
-	this->main_scene.user_id_list.erase(id.second);
+	//this->main_scene.user_id_list.erase(id.second);
 
 	/*SubWindow sub_window;
 	switch (id.first) {
