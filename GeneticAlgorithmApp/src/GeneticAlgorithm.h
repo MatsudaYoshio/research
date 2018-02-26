@@ -3,14 +3,18 @@
 #define ___Class_GeneticAlgorithm
 
 #include <random>
+#include <dlib/threads.h>
+#include <windows.h>
+#include <ppl.h>
 #include "AppParameters.h"
 #include "HandCursor.h"
+#include "TimerBase.h"
 
 class GeneticAlgorithm {
 private:
 	using genome_type = vector<bool>;
 
-	static constexpr int population_size{ 1000 }; // 集団サイズ(選択淘汰された後は必ずこの数)
+	static constexpr int population_size{ 100 }; // 集団サイズ(選択淘汰された後は必ずこの数)
 	static constexpr double crossover_probability{ 0 }; // 交叉確率(交叉が発生する確率)
 	static constexpr int crossover_pair_number{ 8 }; // 交叉を適応するペア数
 	static constexpr double mutation_probability{ 1.0 }; // 突然変異率(突然変異が発生する確率)
@@ -68,6 +72,7 @@ private:
 	array<int, block_size> elite_block_assignment;
 
 	ofstream ofs, ofs2, ofs3;
+	TimerBase tb;
 
 	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
