@@ -3,8 +3,6 @@
 #define ___Class_GeneticAlgorithm
 
 #include <random>
-#include <dlib/threads.h>
-#include <windows.h>
 #include <ppl.h>
 #include "AppParameters.h"
 #include "HandCursor.h"
@@ -18,6 +16,7 @@ private:
 	static constexpr double crossover_probability{ 0 }; // 交叉確率(交叉が発生する確率)
 	static constexpr int crossover_pair_number{ 8 }; // 交叉を適応するペア数
 	static constexpr double mutation_probability{ 1.0 }; // 突然変異率(突然変異が発生する確率)
+	static constexpr double fitness_multiple{ 2.0 }; // スケーリング時のパラメータ(最良の個体が次世代に残す個体数の期待値を表し、集団数が50～100ならば1.2～2.0ぐらいがいい)
 
 	/* 近傍探索用の方向ベクトル(インデックスを0～3まで使えば4近傍、全部使えば8近傍) */
 	static constexpr int dx[] = { 1, 0, -1, 0, 1, -1, -1, 1 };
@@ -43,19 +42,17 @@ private:
 
 	array<array<ofRectangle, form_h>, form_w> grid_rects; // 格子矩形
 	vector<genome_type> initial_individuals; // 初期集団の個体候補
-	genome_type base_individual;
 
 	vector<genome_type> population; // 集団
 	vector<double> fitness; // 適応度
-	genome_type elite_individual; // エリート個体
-	double elite_fitness;
+	genome_type elite_individual; // エリート個体(プログラム起動時から現在までの最適な個体)
+	double elite_fitness; // エリート個体の適応度
 
-	/* 初期化 */
-	void initialize(set<long long int>& selected_users_id, set<long long int>& all_users_id);
-
+	void initialize(set<long long int>& selected_users_id, set<long long int>& all_users_id); // 初期化
 	void crossover(); // 交叉
 	void mutation(); // 突然変異
 	void calculate_fitness(); // 適応度の計算
+	void scaling(); // 適応度のスケーリング
 	void selection(); // 選択淘汰
 
 	int block_bits_size; // 各ブロックのビット数
@@ -68,8 +65,9 @@ private:
 	unordered_map<int, int> user_id_index; // ユーザIDに対するインデックス
 	int population_size_tmp; // 交叉や突然変異によって増加した一時的な集団サイズ
 	vector<unordered_map<long long int, set<int>>> user_block; // 各ユーザがもつブロック
-
-	array<int, block_size> elite_block_assignment;
+	array<int, block_size> elite_block_assignment; // エリート個体のブロック割り当て
+	double fitness_sum; // 現在の集団の適応度の総和
+	int best_fitness_index; // 現在の集団での最適個体のインデックス
 
 	ofstream ofs, ofs2, ofs3;
 	TimerBase tb;

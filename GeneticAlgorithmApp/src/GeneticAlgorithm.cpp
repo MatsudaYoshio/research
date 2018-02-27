@@ -3,6 +3,7 @@
 
 using namespace std;
 using namespace param;
+using namespace concurrency;
 
 random_device GeneticAlgorithm::rd;
 mt19937 GeneticAlgorithm::mt(GeneticAlgorithm::rd());
@@ -44,7 +45,7 @@ void GeneticAlgorithm::operator()(set<long long int>& selected_users_id, set<lon
 		this->selected_users_num = 0;
 		return;
 	}
-	this->tb.Start();
+	//this->tb.Start();
 	this->initialize(selected_users_id, all_users_id);
 	//if (this->selected_users_num > 1) {
 	this->tb.Start();
@@ -52,6 +53,7 @@ void GeneticAlgorithm::operator()(set<long long int>& selected_users_id, set<lon
 		//this->crossover();
 		this->mutation();
 		this->calculate_fitness();
+		this->scaling();
 		this->selection();
 	}
 	cout << "GA time : " << this->tb.GetMs() << endl;
@@ -77,8 +79,6 @@ void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<lon
 
 	/* 各ブロックのビット数を決める */
 	this->block_bits_size = log2(this->selected_users_num) + 1; // ユーザ数と同じ分だけユーザでない状態を表せるようなビット数にする
-	// this->block_bits_size = 1;
-	// while (pow(2, this->block_bits_size++) > 2 * this->selected_users_num) {}
 
 	this->genetic_length = this->block_size*this->block_bits_size; // 遺伝子長を決める
 
@@ -92,11 +92,15 @@ void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<lon
 
 	/* 各ユーザの顔の位置を中心に適当な領域を設ける */
 	uniform_int_distribution<int> random_size(1, this->form_w / 4);
-	int start_block, rect_size;
-	double dist_tmp, min_dist;
-	for (i = 0; i < this->population_size; ++i) {
+
+
+	parallel_for(0, this->population_size, [&](int i) {
 		this->population[i].resize(this->genetic_length);
 		fill(begin(this->population[i]), end(this->population[i]), true);
+
+		int start_block;
+		double dist_tmp, min_dist;
+
 		for (const auto& user : this->selected_users_id) {
 			min_dist = DBL_MAX;
 			try {
@@ -112,7 +116,7 @@ void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<lon
 				continue;
 			}
 
-			rect_size = random_size(this->mt);
+			int rect_size{ random_size(this->mt) };
 			for (int x = max(0, this->block2grid_table[start_block].first - rect_size); x < min(this->form_w, this->block2grid_table[start_block].first + rect_size); ++x) {
 				for (int y = max(0, this->block2grid_table[start_block].second - rect_size); y < min(this->form_h, this->block2grid_table[start_block].second + rect_size); ++y) {
 					for (int j = 0; j < this->block_bits_size; ++j) {
@@ -121,11 +125,11 @@ void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<lon
 				}
 			}
 		}
-	}
+	});
 
-	if (flag && !this->elite_individual.empty()) {
-		this->population[0] = this->elite_individual;
-	}
+	//if (flag && !this->elite_individual.empty()) {
+	//	this->population[0] = this->elite_individual;
+	//}
 }
 
 void GeneticAlgorithm::crossover() {
@@ -314,97 +318,91 @@ void GeneticAlgorithm::calculate_fitness() {
 	this->user_block.clear();
 	this->user_block.resize(this->population_size_tmp);
 
-	//for (int i = 0; i < this->population_size_tmp; ++i) {
-	//	/* 各ブロックに割り当てられたユーザidを求める */
-	//	for (int j = 0; j < this->block_size; ++j) {
-	//		this->block_assignments[i][j] = this->NOT_USER;
-	//		for (const auto& user_id : this->selected_users_id) {
-	//			bool flag = true;
-	//			for (int k = 0; k < this->block_bits_size; ++k) {
-	//				if (((this->user_id_index[user_id] >> k) & 1) != this->population[i][j*this->block_bits_size + k]) {
-	//					flag = false;
+	//#pragma omp parallel for
+	//	for (int i = 0; i < this->population_size_tmp; ++i) {
+	//		/* 各ブロックに割り当てられたユーザidを求める */
+	//		for (int j = 0; j < this->block_size; ++j) {
+	//			this->block_assignments[i][j] = this->NOT_USER;
+	//			for (const auto& user_id : this->selected_users_id) {
+	//				bool flag = true;
+	//				for (int k = 0; k < this->block_bits_size; ++k) {
+	//					if (((this->user_id_index[user_id] >> k) & 1) != this->population[i][j*this->block_bits_size + k]) {
+	//						flag = false;
+	//						break;
+	//					}
+	//				}
+	//				if (flag) {
+	//					this->block_assignments[i][j] = user_id;
+	//					this->user_block[i][user_id].emplace(j); // 各ユーザがもつブロックを求める
 	//					break;
 	//				}
 	//			}
-	//			if (flag) {
-	//				this->block_assignments[i][j] = user_id;
-	//				this->user_block[i][user_id].emplace(j); // 各ユーザがもつブロックを求める
-	//				break;
+	//		}
+	//
+	//		/*** 面積 ***/
+	//		/* 各ユーザの領域面積で最小なものを最大化する */
+	//		int min_area = INT_MAX;
+	//		for (const auto& user : this->user_block[i]) {
+	//			min_area = min(min_area, static_cast<int>(user.second.size()));
+	//		}
+	//		min_area *= this->grid_h*this->grid_w;
+	//
+	//		/* 領域の重心 */
+	//		unordered_map<int, ofPoint> center_points(this->selected_users_num); // 各ユーザの重心
+	//		for (const auto& user : this->user_block[i]) {
+	//			center_points.emplace(make_pair(user.first, ofPoint(0, 0)));
+	//			for (const auto& block : user.second) {
+	//				center_points[user.first].x += this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().x;
+	//				center_points[user.first].y += this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().y;
+	//			}
+	//			center_points[user.first].x /= user.second.size();
+	//			center_points[user.first].y /= user.second.size();
+	//		}
+	//
+	//		double distance{ 0 };
+	//
+	//		/* 領域の重心から顔との距離を求める */
+	//		for (const auto& user : this->user_block[i]) {
+	//			try {
+	//				distance -= this->euclid_distance(center_points[user.first].x, center_points[user.first].y, this->hc->user_data.at(user.first).transformed_face_point.x(), this->hc->user_data.at(user.first).transformed_face_point.y());
+	//			}
+	//			catch (std::out_of_range&) {
+	//				continue;
 	//			}
 	//		}
+	//
+	//		//if (this->selected_users_num > 1) {
+	//		//	if (i != 0) {
+	//		//		this->ofs << ",";
+	//		//		//this->ofs2 << ",";
+	//		//	}
+	//		//	this->ofs << this->fitness[i];
+	//		//	//this->ofs2 << min_area;
+	//		//}
+	//
+	//		///* 他のユーザのカーソルからの距離を求める */
+	//		//for (const auto& main_user : this->user_block) {
+	//		//	for (const auto& other_user : this->all_users_id) {
+	//		//		if (main_user.first == other_user) {
+	//		//			continue;
+	//		//		}
+	//		//		try {
+	//		//			for (const auto& block : main_user.second) {
+	//		//				this->fitness[i] += 1000 * this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, CAMERA_W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y);
+	//		//			}
+	//		//		}
+	//		//		catch (std::out_of_range&) {}
+	//		//	}
+	//		//}
+	//
+	//		this->fitness[i] += 1 * min_area + 1000 * distance;
 	//	}
+		//if (this->selected_users_num > 1) {
+		//	this->ofs << endl;
+		//	//this->ofs2 << endl;
+		//}
 
-	//	/*** 面積 ***/
-
-	//	/* 各ユーザの領域面積で最小なものを最大化する */
-	//	int min_area = INT_MAX;
-	//	for (const auto& user : this->user_block[i]) {
-	//		min_area = min(min_area, static_cast<int>(user.second.size()));
-	//	}
-
-	//	this->fitness[i] += min_area*this->grid_h*this->grid_w;
-
-	//	//ofs << min_area*GRID_H*GRID_W << endl;
-
-	//	//if (min_area <= BLOCK_SIZE / 4) {
-	//	//	this->fitness[i] += 1000000 * exp(-pow(min_area - BLOCK_SIZE / 4, 2));
-	//	//}
-	//	//else {
-	//	//	this->fitness[i] += 1000 * (BLOCK_SIZE / 4 - min_area);
-	//	//}
-
-	//	/* 領域の重心 */
-	//	unordered_map<int, ofPoint> center_points(this->selected_users_num); // 各ユーザの重心
-	//	for (const auto& user : this->user_block[i]) {
-	//		center_points.emplace(make_pair(user.first, ofPoint(0, 0)));
-	//		for (const auto& block : user.second) {
-	//			center_points[user.first].x += this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().x;
-	//			center_points[user.first].y += this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().y;
-	//		}
-	//		center_points[user.first].x /= user.second.size();
-	//		center_points[user.first].y /= user.second.size();
-	//	}
-
-	//	/* 領域の重心から顔との距離を求める */
-	//	for (const auto& user : this->user_block[i]) {
-	//		try {
-	//			this->fitness[i] -= 1000 * this->euclid_distance(center_points[user.first].x, center_points[user.first].y, this->hc->user_data.at(user.first).transformed_face_point.x(), this->hc->user_data.at(user.first).transformed_face_point.y());
-	//		}
-	//		catch (std::out_of_range&) {
-	//			continue;
-	//		}
-	//	}
-
-	//	if (this->selected_users_num > 1) {
-	//		if (i != 0) {
-	//			this->ofs << ",";
-	//			//this->ofs2 << ",";
-	//		}
-	//		this->ofs << this->fitness[i];
-	//		//this->ofs2 << min_area;
-	//	}
-
-	//	///* 他のユーザのカーソルからの距離を求める */
-	//	//for (const auto& main_user : this->user_block) {
-	//	//	for (const auto& other_user : this->all_users_id) {
-	//	//		if (main_user.first == other_user) {
-	//	//			continue;
-	//	//		}
-	//	//		try {
-	//	//			for (const auto& block : main_user.second) {
-	//	//				this->fitness[i] += 1000 * this->euclid_distance(center_points[main_user.first].x, center_points[main_user.first].y, CAMERA_W - hc->track_data.at(other_user).current_pointer.x, hc->track_data.at(other_user).current_pointer.y);
-	//	//			}
-	//	//		}
-	//	//		catch (std::out_of_range&) {}
-	//	//	}
-	//	//}
-	//}
-	//if (this->selected_users_num > 1) {
-	//	this->ofs << endl;
-	//	//this->ofs2 << endl;
-	//}
-
-	concurrency::parallel_for(0, this->population_size_tmp, [&](int i) {
+	parallel_for(0, this->population_size_tmp, [&](int i) {
 		/* 各ブロックに割り当てられたユーザidを求める */
 		for (int j = 0; j < this->block_size; ++j) {
 			this->block_assignments[i][j] = this->NOT_USER;
@@ -424,18 +422,16 @@ void GeneticAlgorithm::calculate_fitness() {
 			}
 		}
 
-		/*** 面積 ***/
-
 		/* 各ユーザの領域面積で最小なものを最大化する */
-		int min_area = INT_MAX;
+		int min_area{ INT_MAX };
 		for (const auto& user : this->user_block[i]) {
 			min_area = min(min_area, static_cast<int>(user.second.size()));
 		}
+		min_area *= this->grid_h*this->grid_w;
 
-		this->fitness[i] += min_area*this->grid_h*this->grid_w;
-
-		/* 領域の重心 */
+		/* 領域の重心から顔との距離を求める */
 		unordered_map<int, ofPoint> center_points(this->selected_users_num); // 各ユーザの重心
+		double distance{ 0 };
 		for (const auto& user : this->user_block[i]) {
 			center_points.emplace(make_pair(user.first, ofPoint(0, 0)));
 			for (const auto& block : user.second) {
@@ -444,76 +440,62 @@ void GeneticAlgorithm::calculate_fitness() {
 			}
 			center_points[user.first].x /= user.second.size();
 			center_points[user.first].y /= user.second.size();
-		}
 
-		/* 領域の重心から顔との距離を求める */
-		for (const auto& user : this->user_block[i]) {
 			try {
-				this->fitness[i] -= 1000 * this->euclid_distance(center_points[user.first].x, center_points[user.first].y, this->hc->user_data.at(user.first).transformed_face_point.x(), this->hc->user_data.at(user.first).transformed_face_point.y());
+				distance -= this->euclid_distance(center_points[user.first].x, center_points[user.first].y, this->hc->user_data.at(user.first).transformed_face_point.x(), this->hc->user_data.at(user.first).transformed_face_point.y());
 			}
 			catch (std::out_of_range&) {
 				continue;
 			}
 		}
+
+		this->fitness[i] += 1 * min_area + 1000 * distance;
+	});
+}
+
+void GeneticAlgorithm::scaling() {
+	/* Goldberg(Genetic Algorithms in Search, Optimization, and Machine Learning)
+	 線形スケーリング */
+
+	/* スケーリングのためのパラメータの計算 */
+	this->fitness_sum = accumulate(cbegin(this->fitness), cend(this->fitness), 0.0);
+	const auto fitness_mean{ this->fitness_sum / this->population_size_tmp }; // 平均適応度
+	const auto fitness_minmax{ minmax_element(cbegin(this->fitness), cend(this->fitness)) }; // 最大適応度と最小適応度のペア
+	this->best_fitness_index = distance(cbegin(this->fitness), fitness_minmax.second);
+	double a, b;
+	if (*fitness_minmax.first > (this->fitness_multiple*fitness_mean - *fitness_minmax.second) / (this->fitness_multiple - 1.0)) {
+		a = ((this->fitness_multiple - 1.0)*fitness_mean) / (*fitness_minmax.second - fitness_mean);
+		b = (fitness_mean*(*fitness_minmax.second - this->fitness_multiple*fitness_mean)) / (*fitness_minmax.second - fitness_mean);
+	}
+	else {
+		a = fitness_mean / (fitness_mean - *fitness_minmax.first);
+		b = (-*fitness_minmax.first*fitness_mean) / (fitness_mean - *fitness_minmax.first);
+	}
+
+	parallel_for_each(begin(this->fitness), end(this->fitness), [&](auto& f) {
+		f = a*f + b;
 	});
 }
 
 void GeneticAlgorithm::selection() {
-	//double fitness_sum = accumulate(begin(this->fitness), end(this->fitness), 0.0);
-	//ofs << fitness_sum / this->fitness.size() << endl;
-
 	vector<genome_type> new_population(this->population_size);
 
 	/* エリート主義(最適個体を確保) */
-	double best_fitness_index = max_element(begin(this->fitness), end(this->fitness)) - begin(this->fitness);
-	//cout << this->fitness[best_fitness_index] << " " << this->elite_fitness << endl;
+	new_population[0] = this->population[this->best_fitness_index];
 
-	if (this->fitness[best_fitness_index] > this->elite_fitness) {
-		this->elite_fitness = this->fitness[best_fitness_index];
-		this->elite_individual = this->population[best_fitness_index];
-		this->elite_block_assignment = this->block_assignments[best_fitness_index];
+	if (this->fitness[this->best_fitness_index] > this->elite_fitness) { // エリート個体よりも最適であれば
+		/* エリート個体を更新 */
+		this->elite_fitness = this->fitness[this->best_fitness_index];
+		this->elite_individual = this->population[this->best_fitness_index];
+		this->elite_block_assignment = this->block_assignments[this->best_fitness_index];
 	}
-
-	//this->elite_index = max_element(begin(this->fitness), end(this->fitness)) - begin(this->fitness);
-	//this->elite_individual = new_population[0] = this->population[this->elite_index];
-	//this->elite_block_assignment = this->block_assignments[this->elite_index];
-
-	const double fitness_max = *max_element(begin(this->fitness), end(this->fitness)); // 適応度の最大値
-	const double fitness_min = *min_element(begin(this->fitness), end(this->fitness)); // 適応度の最小値
-
-	//puts("start");
-	//for (int i = 0; i < this->fitness.size(); ++i) {
-	//	cout << this->fitness[i] << " ";
-	//}
-	//cout << endl;
 
 	/** ルーレット方式で選択 **/
-
-	/* 適応度のスケーリング(適応度の数値に負の値が含まれるため) */
-	if (fitness_max != fitness_min) {
-		/* 1～10000にスケーリング */
-		const double scaled_fitness_max = 10000;
-		const double scaled_fitness_min = 1;
-		const double a = (scaled_fitness_max - scaled_fitness_min) / (fitness_max - fitness_min);
-		const double b = scaled_fitness_min - a*fitness_min;
-		for (auto& f : this->fitness) {
-			f = a*f + b;
-		}
-	}
-	else {
-		if (fitness_min < 0) {
-			for (auto& f : this->fitness) {
-				f += -fitness_min + 10;
-			}
-		}
-	}
-
-	double fitness_sum = accumulate(begin(this->fitness), end(this->fitness), 0.0);
-	uniform_real_distribution<double> random_fitness(0.0, fitness_sum);
+	uniform_real_distribution<double> random_fitness(0.0, this->fitness_sum);
 	vector<int> v(this->population_size_tmp);
 	std::iota(begin(v), end(v), 0);
 	double r, s;
-	for (int i = 0; i < this->population_size; ++i) {
+	for (int i = 1; i < this->population_size; ++i) {
 		shuffle(begin(v), end(v), this->mt);
 		s = 0.0;
 		r = random_fitness(this->mt);
@@ -525,19 +507,6 @@ void GeneticAlgorithm::selection() {
 			}
 		}
 	}
-
-	if (this->selected_users_num > 1) {
-		this->ofs3 << this->fitness[0];
-		for (int i = 1; i < this->population_size; ++i) {
-			this->ofs3 << "," << this->fitness[i];
-		}
-		this->ofs3 << endl;
-	}
-
-	//for (int i = 0; i < 5; ++i) {
-	//	cout << this->fitness[i] << " ";
-	//}
-	//cout << endl;
 
 	this->population = new_population;
 }
