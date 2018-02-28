@@ -17,6 +17,7 @@ private:
 	static constexpr int crossover_pair_number{ 8 }; // 交叉を適応するペア数
 	static constexpr double mutation_probability{ 1.0 }; // 突然変異率(突然変異が発生する確率)
 	static constexpr double fitness_multiple{ 2.0 }; // スケーリング時のパラメータ(最良の個体が次世代に残す個体数の期待値を表し、集団数が50～100ならば1.2～2.0ぐらいがいい)
+	static constexpr int max_iteration{ 300 };
 
 	/* 近傍探索用の方向ベクトル(インデックスを0～3まで使えば4近傍、全部使えば8近傍) */
 	static constexpr int dx[] = { 1, 0, -1, 0, 1, -1, -1, 1 };
@@ -62,17 +63,16 @@ private:
 	vector<array<int, block_size>> block_assignments; // 各ブロックに対するユーザの割り当て
 	set<long long int> selected_users_id, all_users_id; // ユーザIDリスト
 	int selected_users_num; // ユーザ数
-	unordered_map<int, int> user_id_index; // ユーザIDに対するインデックス
+	unordered_map<int, int> user_id2user_index; // ユーザIDに対するインデックス
 	int population_size_tmp; // 交叉や突然変異によって増加した一時的な集団サイズ
 	vector<unordered_map<long long int, set<int>>> user_block; // 各ユーザがもつブロック
 	array<int, block_size> elite_block_assignment; // エリート個体のブロック割り当て
 	double fitness_sum; // 現在の集団の適応度の総和
 	int best_fitness_index; // 現在の集団での最適個体のインデックス
+	vector<vector<bool>> user_bits; // ユーザインデックスに対するビット
 
 	ofstream ofs, ofs2, ofs3;
 	TimerBase tb;
-
-	double euclid_distance(const double &x1, const double &y1, const double &x2, const double &y2) const; // ユークリッド距離
 public:
 	static constexpr int NOT_USER{ INT_MIN };
 
