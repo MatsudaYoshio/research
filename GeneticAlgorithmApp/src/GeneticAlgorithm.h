@@ -45,9 +45,10 @@ private:
 	vector<genome_type> initial_individuals; // 初期集団の個体候補
 
 	vector<genome_type> population; // 集団
+	vector<genome_type> population_new; // 選択淘汰によって新たにできる集団
 	vector<double> fitness; // 適応度
 	genome_type elite_individual; // エリート個体(プログラム起動時から現在までの最適な個体)
-	double elite_fitness; // エリート個体の適応度
+	double elite_fitness{ DBL_MIN }; // エリート個体の適応度
 
 	void initialize(set<long long int>& selected_users_id, set<long long int>& all_users_id); // 初期化
 	void crossover(); // 交叉
@@ -63,7 +64,7 @@ private:
 	vector<array<int, block_size>> block_assignments; // 各ブロックに対するユーザの割り当て
 	set<long long int> selected_users_id, all_users_id; // ユーザIDリスト
 	int selected_users_num; // ユーザ数
-	unordered_map<int, int> user_id2user_index; // ユーザIDに対するインデックス
+	unordered_map<int, int> user_id2user_index; // ユーザIDからユーザインデックスへの変換表
 	int population_size_tmp; // 交叉や突然変異によって増加した一時的な集団サイズ
 	vector<unordered_map<long long int, set<int>>> user_block; // 各ユーザがもつブロック
 	array<int, block_size> elite_block_assignment; // エリート個体のブロック割り当て
@@ -78,7 +79,6 @@ public:
 
 	void setup(HandCursor* hc);
 	void draw() const;
-	void draw(const array<int, block_size>& block_assignment) const;
 	void operator()(set<long long int>& selected_users_id, set<long long int>& all_users_id);
 };
 

@@ -32,10 +32,29 @@ HandCursor::HandCursor() {
 	this->user_data[-1].cursor_color = ofColor::mediumPurple;
 	this->user_data[-1].cursor_color_id = 1;
 	this->cursor_color_state[1] = true;
-	//this->user_data[-1].face_point = center(dlib::rectangle(HALF_DISPLAY_W * 3 / 4 + 300, HALF_DISPLAY_H / 2 - 300, 300, 300));
 	this->user_data[-1].face_point.x() = 550;
 	this->user_data[-1].face_point.y() = 650;
 	this->transform_point(this->user_data[-1].face_point, this->user_data[-1].transformed_face_point);
+
+	//this->user_data[-2].cursor_point.x() = 1200;
+	//this->user_data[-2].cursor_point.y() = 450;
+	//this->transform_point(this->user_data[-2].cursor_point, this->user_data[-2].transformed_cursor_point);
+	//this->user_data[-2].cursor_color = ofColor::cyan;
+	//this->user_data[-2].cursor_color_id = 2;
+	//this->cursor_color_state[2] = true;
+	//this->user_data[-2].face_point.x() = 1200;
+	//this->user_data[-2].face_point.y() = 450;
+	//this->transform_point(this->user_data[-2].face_point, this->user_data[-2].transformed_face_point);
+
+	this->user_data[-3].cursor_point.x() = 1350;
+	this->user_data[-3].cursor_point.y() = 600;
+	this->transform_point(this->user_data[-3].cursor_point, this->user_data[-3].transformed_cursor_point);
+	this->user_data[-3].cursor_color = ofColor::red;
+	this->user_data[-3].cursor_color_id = 4;
+	this->cursor_color_state[3] = true;
+	this->user_data[-3].face_point.x() = 1350;
+	this->user_data[-3].face_point.y() = 600;
+	this->transform_point(this->user_data[-3].face_point, this->user_data[-3].transformed_face_point);
 
 	/* “®‰æŽB‰e */
 	//this->writer.open("hand_tracking_openPose6.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 35, Size(CAMERA_W, CAMERA_H), true);

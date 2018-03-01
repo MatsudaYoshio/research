@@ -29,11 +29,8 @@ void GeneticAlgorithm::setup(HandCursor* hc) {
 
 	/* 集団を管理する変数のサイズとメモリを調整 */
 	this->population.resize(this->population_size);
+	this->population_new.resize(this->population_size);
 	this->population.reserve(this->population_size + 2 * this->crossover_pair_number); // 交叉によって増加しうる分だけ集団サイズのメモリを確保
-
-	this->elite_fitness = DBL_MIN;
-
-	this->selected_users_num = 0;
 
 	this->ofs.open("raw_fitness.csv");
 	//this->ofs2.open("block_size.csv");
@@ -48,60 +45,54 @@ void GeneticAlgorithm::operator()(set<long long int>& selected_users_id, set<lon
 	//this->tb.Start();
 	this->initialize(selected_users_id, all_users_id);
 	//if (this->selected_users_num > 1) {
-	//this->tb.Start();
+	this->tb.Start();
 	for (int i = 0; i < this->max_iteration; ++i) {
 		//this->crossover();
 		this->mutation();
 		this->calculate_fitness();
 
-		for (int j = 0; j < this->population_size_tmp; ++j) {
-			if (this->selected_users_num > 1) {
-				if (j != 0) {
-					this->ofs << ",";
-				}
-				this->ofs << this->fitness[j];
-			}
-		}
-		if (this->selected_users_num > 1) {
-			this->ofs << endl;
-		}
+		//for (int j = 0; j < this->population_size_tmp; ++j) {
+		//	if (this->selected_users_num > 1) {
+		//		if (j != 0) {
+		//			this->ofs << ",";
+		//		}
+		//		this->ofs << this->fitness[j];
+		//	}
+		//}
+		//if (this->selected_users_num > 1) {
+		//	this->ofs << endl;
+		//}
 
 		this->scaling();
 
-		for (int j = 0; j < this->population_size_tmp; ++j) {
-			if (this->selected_users_num > 1) {
-				if (j != 0) {
-					this->ofs3 << ",";
-				}
-				this->ofs3 << this->fitness[j];
-			}
-		}
-		if (this->selected_users_num > 1) {
-			this->ofs3 << endl;
-		}
+		//for (int j = 0; j < this->population_size_tmp; ++j) {
+		//	if (this->selected_users_num > 1) {
+		//		if (j != 0) {
+		//			this->ofs3 << ",";
+		//		}
+		//		this->ofs3 << this->fitness[j];
+		//	}
+		//}
+		//if (this->selected_users_num > 1) {
+		//	this->ofs3 << endl;
+		//}
 
 		this->selection();
 	}
-	//cout << "GA time : " << this->tb.GetMs() << endl;
+	cout << "GA time : " << this->tb.GetMs() << endl;
 	//}
 }
 
 void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<long long int>& all_users_id) {
 	this->all_users_id = all_users_id;
 	this->selected_users_id = selected_users_id;
-	bool flag = true;
-	if (this->selected_users_num != this->selected_users_id.size()) {
-		flag = false;
-		this->selected_users_num = this->selected_users_id.size();
-		this->elite_fitness = DBL_MIN;
-	}
+	this->selected_users_num = this->selected_users_id.size();
+	this->elite_fitness = DBL_MIN;
 
 	/* ユーザIDに対してインデックスを割り当てる(0から順に) */
 	int i = 0;
 	this->user_id2user_index.clear();
-	//this->user_index2user_id.resize(this->selected_users_num);
 	for (const auto& user_id : this->selected_users_id) {
-		//this->user_index2user_id[i] = user_id;
 		this->user_id2user_index.emplace(make_pair(user_id, i++));
 	}
 
@@ -152,10 +143,6 @@ void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<lon
 			}
 		}
 	});
-
-	//if (flag && !this->elite_individual.empty()) {
-	//	this->population[0] = this->elite_individual;
-	//}
 }
 
 void GeneticAlgorithm::crossover() {
@@ -497,13 +484,19 @@ void GeneticAlgorithm::scaling() {
 	parallel_for_each(begin(this->fitness), end(this->fitness), [&](auto& f) {
 		f = a*f + b;
 	});
+
+	/* もし適応度の最小値が負ならば、全体にその分を足して正の値に調整 */
+	const auto fitness_min{ *min_element(cbegin(this->fitness), cend(this->fitness)) };
+	if (fitness_min < 0) {
+		parallel_for_each(begin(this->fitness), end(this->fitness), [&](auto& f) {
+			f -= fitness_min;
+		});
+	}
 }
 
 void GeneticAlgorithm::selection() {
-	vector<genome_type> new_population(this->population_size);
-
 	/* エリート主義(最適個体を確保) */
-	new_population[0] = this->population[this->best_fitness_index];
+	this->population_new[0] = this->population[this->best_fitness_index];
 
 	if (this->fitness[this->best_fitness_index] > this->elite_fitness) { // エリート個体よりも最適であれば
 		/* エリート個体を更新 */
@@ -523,21 +516,21 @@ void GeneticAlgorithm::selection() {
 		for (int j = 0; j < this->population_size_tmp; ++j) {
 			s += this->fitness[v[j]];
 			if (s >= r) {
-				new_population[i] = this->population[v[j]];
+				this->population_new[i] = this->population[v[j]];
 				break;
 			}
 		}
 	});
 
-	this->population = new_population;
+	this->population = this->population_new;
 }
 
-void GeneticAlgorithm::draw(const array<int, block_size>& block_assignment) const {
+void GeneticAlgorithm::draw() const {
 	ofFill();
 	for (int i = 0; i < this->block_size; ++i) {
-		if (block_assignment[i] != this->NOT_USER) {
+		if (this->elite_block_assignment[i] != this->NOT_USER) {
 			try {
-				ofSetColor(this->hc->user_data.at(block_assignment[i]).cursor_color, 100);
+				ofSetColor(this->hc->user_data.at(this->elite_block_assignment[i]).cursor_color, 150);
 			}
 			catch (std::out_of_range&) {
 				continue;
@@ -546,8 +539,4 @@ void GeneticAlgorithm::draw(const array<int, block_size>& block_assignment) cons
 		}
 	}
 	ofNoFill();
-}
-
-void GeneticAlgorithm::draw() const {
-	this->draw(this->elite_block_assignment);
 }
