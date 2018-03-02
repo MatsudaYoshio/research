@@ -36,15 +36,15 @@ HandCursor::HandCursor() {
 	this->user_data[-1].face_point.y() = 650;
 	this->transform_point(this->user_data[-1].face_point, this->user_data[-1].transformed_face_point);
 
-	//this->user_data[-2].cursor_point.x() = 1200;
-	//this->user_data[-2].cursor_point.y() = 450;
-	//this->transform_point(this->user_data[-2].cursor_point, this->user_data[-2].transformed_cursor_point);
-	//this->user_data[-2].cursor_color = ofColor::cyan;
-	//this->user_data[-2].cursor_color_id = 2;
-	//this->cursor_color_state[2] = true;
-	//this->user_data[-2].face_point.x() = 1200;
-	//this->user_data[-2].face_point.y() = 450;
-	//this->transform_point(this->user_data[-2].face_point, this->user_data[-2].transformed_face_point);
+	this->user_data[-2].cursor_point.x() = 1200;
+	this->user_data[-2].cursor_point.y() = 450;
+	this->transform_point(this->user_data[-2].cursor_point, this->user_data[-2].transformed_cursor_point);
+	this->user_data[-2].cursor_color = ofColor::cyan;
+	this->user_data[-2].cursor_color_id = 2;
+	this->cursor_color_state[2] = true;
+	this->user_data[-2].face_point.x() = 1200;
+	this->user_data[-2].face_point.y() = 450;
+	this->transform_point(this->user_data[-2].face_point, this->user_data[-2].transformed_face_point);
 
 	this->user_data[-3].cursor_point.x() = 1350;
 	this->user_data[-3].cursor_point.y() = 600;
