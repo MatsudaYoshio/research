@@ -10,7 +10,7 @@ mt19937 GeneticAlgorithm::mt(GeneticAlgorithm::rd());
 uniform_int_distribution<int> GeneticAlgorithm::random_0or1(0, 1);
 uniform_int_distribution<int> GeneticAlgorithm::random_indivisual(0, GeneticAlgorithm::population_size - 1);
 uniform_int_distribution<int> GeneticAlgorithm::random_crossover_method(1, 5);
-uniform_int_distribution<int> GeneticAlgorithm::random_mutation_method(1, 2);
+uniform_int_distribution<int> GeneticAlgorithm::random_mutation_method(1, 1);
 uniform_int_distribution<int> GeneticAlgorithm::random_block(0, GeneticAlgorithm::block_size);
 uniform_real_distribution<double> GeneticAlgorithm::random_0to1(0.0, 1.0);
 
@@ -88,6 +88,7 @@ void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<lon
 	this->selected_users_id = selected_users_id;
 	this->selected_users_num = this->selected_users_id.size();
 	this->elite_fitness = DBL_MIN;
+	fill(begin(this->elite_block_assignment), end(this->elite_block_assignment), this->NOT_USER);
 
 	/* ユーザIDに対してインデックスを割り当てる(0から順に) */
 	int i = 0;
@@ -280,6 +281,10 @@ void GeneticAlgorithm::calculate_fitness() {
 	this->user_block.resize(this->population_size_tmp);
 
 	parallel_for(0, this->population_size_tmp, [&](int i) {
+		for (const auto& user_id : this->selected_users_id) {
+			this->user_block[i][user_id] = set<int>{};
+		}
+
 		/* 各ブロックに割り当てられたユーザidを求める */
 		for (int j = 0; j < this->block_size; ++j) {
 			this->block_assignments[i][j] = this->NOT_USER;
@@ -302,13 +307,45 @@ void GeneticAlgorithm::calculate_fitness() {
 		}
 		min_area *= this->grid_h*this->grid_w;
 
+		/* 周囲長 */
+		auto perimeter_mean{ 0.0 };
+		int nx, ny;
+		for (const auto& user : this->user_block[i]) {
+			try {
+				for (const auto& block : user.second) {
+					for (int j = 0; j < 2; ++j) {
+						nx = this->block2grid_table[block].first + this->dx[j];
+						ny = this->block2grid_table[block].first + this->dy[j];
+						if (nx < 0 || nx >= this->form_w || ny < 0 || ny >= this->form_h) {
+							continue;
+						}
+						if (user.first != this->block_assignments[i][this->grid2block_table[nx][ny]]) {
+							perimeter_mean += this->grid_h;
+						}
+					}
+					for (int j = 2; j < 4; ++j) {
+						nx = this->block2grid_table[block].first + this->dx[j];
+						ny = this->block2grid_table[block].first + this->dy[j];
+						if (nx < 0 || nx >= this->form_w || ny < 0 || ny >= this->form_h) {
+							continue;
+						}
+						if (user.first != this->block_assignments[i][this->grid2block_table[nx][ny]]) {
+							perimeter_mean += this->grid_w;
+						}
+					}
+				}
+			}
+			catch (std::out_of_range) {}
+		}
+		perimeter_mean /= selected_users_num;
+
 		/* 各ブロックと顔との距離の総和を求める */
 		auto distance_sum{ 0.0 };
 		auto block_sum{ 0 };
 		for (const auto& user : this->user_block[i]) {
 			try {
 				for (const auto& block : user.second) {
-					distance_sum -= ofDist(this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().x, this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().y, this->hc->user_data.at(user.first).transformed_face_point.x(), this->hc->user_data.at(user.first).transformed_face_point.y());
+					distance_sum -= ofDistSquared(this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().x, this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().y, this->hc->user_data.at(user.first).transformed_face_point.x(), this->hc->user_data.at(user.first).transformed_face_point.y());
 					++block_sum;
 				}
 			}
@@ -337,7 +374,8 @@ void GeneticAlgorithm::calculate_fitness() {
 		//	}
 		//}
 
-		this->fitness[i] += 1 * min_area + 1400 * distance_sum;
+		this->fitness[i] += 1 * min_area + 2*distance_sum - 1.5*perimeter_mean;
+		//this->fitness[i] += 1000*min_area / -distance_sum;
 
 		///* 連結数 */
 		//int x, y, nx, ny;
@@ -382,11 +420,25 @@ void GeneticAlgorithm::scaling() {
 	/* Goldberg(Genetic Algorithms in Search, Optimization, and Machine Learning)
 	 線形スケーリング */
 
-	 /* スケーリングのためのパラメータの計算 */
+	 // /* スケーリングのためのパラメータの計算 */
+	 //this->fitness_sum = accumulate(cbegin(this->fitness), cend(this->fitness), 0.0);
+	 //const auto fitness_mean{ this->fitness_sum / this->population_size_tmp }; // 平均適応度
+	 //const auto fitness_minmax{ minmax_element(cbegin(this->fitness), cend(this->fitness)) }; // 最大適応度と最小適応度のペア
+	 //this->best_fitness_index = distance(cbegin(this->fitness), fitness_minmax.second);
+
+	 /* もし適応度の最小値が負ならば、全体にその分を足して正の値に調整 */
+	const auto fitness_min{ *min_element(cbegin(this->fitness), cend(this->fitness)) };
+	if (fitness_min < 0) {
+		parallel_for_each(begin(this->fitness), end(this->fitness), [&](auto& f) {
+			f -= fitness_min;
+		});
+	}
+
+	/* スケーリングのためのパラメータの計算 */
 	this->fitness_sum = accumulate(cbegin(this->fitness), cend(this->fitness), 0.0);
 	const auto fitness_mean{ this->fitness_sum / this->population_size_tmp }; // 平均適応度
 	const auto fitness_minmax{ minmax_element(cbegin(this->fitness), cend(this->fitness)) }; // 最大適応度と最小適応度のペア
-	this->best_fitness_index = distance(cbegin(this->fitness), fitness_minmax.second);
+
 	double a, b;
 	if (*fitness_minmax.first > (this->fitness_multiple*fitness_mean - *fitness_minmax.second) / (this->fitness_multiple - 1.0)) {
 		a = ((this->fitness_multiple - 1.0)*fitness_mean) / (*fitness_minmax.second - fitness_mean);
@@ -400,19 +452,18 @@ void GeneticAlgorithm::scaling() {
 	parallel_for_each(begin(this->fitness), end(this->fitness), [&](auto& f) {
 		f = a*f + b;
 	});
-
-	/* もし適応度の最小値が負ならば、全体にその分を足して正の値に調整 */
-	const auto fitness_min{ *min_element(cbegin(this->fitness), cend(this->fitness)) };
-	if (fitness_min < 0) {
-		parallel_for_each(begin(this->fitness), end(this->fitness), [&](auto& f) {
-			f -= fitness_min;
-		});
-	}
 }
 
 void GeneticAlgorithm::selection() {
 	/* エリート主義(最適個体を確保) */
+	this->best_fitness_index = distance(cbegin(this->fitness), max_element(cbegin(this->fitness), cend(this->fitness)));
 	this->population_new[0] = this->population[this->best_fitness_index];
+
+	//cout << "start !" << endl;
+	//for (const auto& f : this->fitness) {
+	//	cout << f << endl;
+	//}
+	//cout << "best : " << this->best_fitness_index << endl;
 
 	if (this->fitness[this->best_fitness_index] > this->elite_fitness) { // エリート個体よりも最適であれば
 		/* エリート個体を更新 */
@@ -446,7 +497,7 @@ void GeneticAlgorithm::draw() const {
 	for (int i = 0; i < this->block_size; ++i) {
 		if (this->elite_block_assignment[i] != this->NOT_USER) {
 			try {
-				ofSetColor(this->hc->user_data.at(this->elite_block_assignment[i]).cursor_color);
+				ofSetColor(this->hc->user_data.at(this->elite_block_assignment[i]).cursor_color, 140);
 			}
 			catch (std::out_of_range&) {
 				continue;

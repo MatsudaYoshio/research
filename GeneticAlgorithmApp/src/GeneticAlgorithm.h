@@ -12,16 +12,16 @@ class GeneticAlgorithm {
 private:
 	using genome_type = vector<bool>;
 
-	static constexpr int population_size{ 100 }; // 集団サイズ(選択淘汰された後は必ずこの数)
+	static constexpr int population_size{ 500 }; // 集団サイズ(選択淘汰された後は必ずこの数)
 	static constexpr double crossover_probability{ 0 }; // 交叉確率(交叉が発生する確率)
 	static constexpr int crossover_pair_number{ 8 }; // 交叉を適応するペア数
 	static constexpr double mutation_probability{ 1.0 }; // 突然変異率(突然変異が発生する確率)
-	static constexpr double fitness_multiple{ 2.0 }; // スケーリング時のパラメータ(最良の個体が次世代に残す個体数の期待値を表し、集団数が50～100ならば1.2～2.0ぐらいがいい)
-	static constexpr int max_iteration{ 400 };
+	static constexpr double fitness_multiple{ 9.0 }; // スケーリング時のパラメータ(最良の個体が次世代に残す個体数の期待値を表し、集団数が50～100ならば1.2～2.0ぐらいがいい)
+	static constexpr int max_iteration{ 500 };
 
 	/* 近傍探索用の方向ベクトル(インデックスを0～3まで使えば4近傍、全部使えば8近傍) */
-	static constexpr int dx[] = { 1, 0, -1, 0, 1, -1, -1, 1 };
-	static constexpr int dy[] = { 0, -1, 0, 1, -1, -1, 1, 1 };
+	static constexpr int dx[] = { 1, -1, 0, 0, 1, -1, -1, 1 };
+	static constexpr int dy[] = { 0, 0, -1, 1, -1, -1, 1, 1 };
 
 	static constexpr int grid_w{ 480 };
 	static constexpr int grid_h{ 216 };
