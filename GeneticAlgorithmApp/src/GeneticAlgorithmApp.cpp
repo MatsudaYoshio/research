@@ -17,5 +17,6 @@ void GeneticAlgorithmApp::draw() {
 }
 
 void GeneticAlgorithmApp::exit() {
+	this->sm.exit();
 	this->hc.exit();
 }

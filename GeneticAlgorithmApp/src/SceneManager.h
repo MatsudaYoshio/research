@@ -40,10 +40,14 @@ private:
 	queue<long long int> delete_scene_list;
 	unique_ptr<BaseScene> sub_window_scene;
 	set<long long int> selected_users;
+
+	bool stop_flag{ false };
+	void optimize();
 public:
 	void setup(HandCursor* hc);
 	void update();
 	void draw();
+	void exit();
 	void pointed(pair<int, long long int>& id);
 	void make_sub_window(pair<int, long long int>& id);
 	void delete_sub_window(long long int& scene_id);

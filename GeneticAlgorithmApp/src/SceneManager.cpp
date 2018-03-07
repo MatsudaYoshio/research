@@ -50,6 +50,9 @@ void SceneManager::setup(HandCursor* hc) {
 	this->hc = hc;
 
 	this->ga.setup(this->hc);
+
+	thread optimize_thread(&SceneManager::optimize, this);
+	optimize_thread.detach();
 }
 
 void SceneManager::update() {
@@ -107,7 +110,7 @@ void SceneManager::update() {
 		}
 	}
 
-	this->ga(this->selected_users, this->main_scene.user_id_list);
+	//this->ga(this->selected_users, this->main_scene.user_id_list);
 
 	/*for (auto &ss : this->sub_windows) {
 		ss.second.update();
@@ -130,6 +133,10 @@ void SceneManager::draw() {
 	//for (auto &ss : this->sub_windows) {
 	//	ss.second.draw();
 	//}
+}
+
+void SceneManager::exit() {
+	this->stop_flag = true;
 }
 
 void SceneManager::pointed(pair<int, long long int>& id) {
@@ -183,6 +190,12 @@ void SceneManager::delete_sub_window(long long int& scene_id) {
 	}
 
 	this->delete_scene_list.push(scene_id);
+}
+
+void SceneManager::optimize() {
+	while (!this->stop_flag) {
+		this->ga(this->selected_users, this->main_scene.user_id_list);
+	}
 }
 
 SceneManager::~SceneManager() {
