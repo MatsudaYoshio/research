@@ -56,31 +56,31 @@ void SceneManager::setup(HandCursor* hc) {
 }
 
 void SceneManager::update() {
-//	if (!this->transform_thread_flag && !this->sub_windows.empty() && !this->active_scene_id_list.empty()) {
-//		for (const auto& s : this->sub_windows) {
-//			if (s.second.track_index != SubWindow::TRACK_READY) {
-//				goto THROUGH_OPT;
-//			}
-//		}
-//
-//		this->rects_tmp.clear();
-//
-//		for (const auto& s : this->sub_windows) {
-//			this->rects_tmp.insert(make_pair(s.first, s.second.get_rect()));
-//		}
-//
-//		this->active_scene_id_list_tmp = this->active_scene_id_list;
-//
-//		this->old_rects = this->rects_tmp;
-//
-//		this->sa(this->rects_tmp, this->best_rects);
-//
-//		void(SceneManager::*funcp)(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) = &SceneManager::transform;
-//		thread th(funcp, this, this->old_rects, this->best_rects);
-//		th.detach();
-//	}
-//THROUGH_OPT:
-	/* 新しく検出したカーソルがあればメインシーンのユーザidリストに追加する */
+	//	if (!this->transform_thread_flag && !this->sub_windows.empty() && !this->active_scene_id_list.empty()) {
+	//		for (const auto& s : this->sub_windows) {
+	//			if (s.second.track_index != SubWindow::TRACK_READY) {
+	//				goto THROUGH_OPT;
+	//			}
+	//		}
+	//
+	//		this->rects_tmp.clear();
+	//
+	//		for (const auto& s : this->sub_windows) {
+	//			this->rects_tmp.insert(make_pair(s.first, s.second.get_rect()));
+	//		}
+	//
+	//		this->active_scene_id_list_tmp = this->active_scene_id_list;
+	//
+	//		this->old_rects = this->rects_tmp;
+	//
+	//		this->sa(this->rects_tmp, this->best_rects);
+	//
+	//		void(SceneManager::*funcp)(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) = &SceneManager::transform;
+	//		thread th(funcp, this, this->old_rects, this->best_rects);
+	//		th.detach();
+	//	}
+	//THROUGH_OPT:
+		/* 新しく検出したカーソルがあればメインシーンのユーザidリストに追加する */
 	for (const auto& t : this->hc->user_data) {
 		if (this->cursor_log.find(t.first) == end(this->cursor_log)) {
 			this->cursor_log.emplace(t.first);
@@ -109,6 +109,11 @@ void SceneManager::update() {
 			++id;
 		}
 	}
+
+	//if (!this->optimize_flag) {
+	//	thread optimize_thread(&SceneManager::optimize, this);
+	//	optimize_thread.detach();
+	//}
 
 	//this->ga(this->selected_users, this->main_scene.user_id_list);
 
@@ -194,7 +199,11 @@ void SceneManager::delete_sub_window(long long int& scene_id) {
 
 void SceneManager::optimize() {
 	while (!this->stop_flag) {
-		this->ga(this->selected_users, this->main_scene.user_id_list);
+		//this->optimize_flag = true;
+		if (!this->selected_users.empty() && !this->main_scene.user_id_list.empty()) {
+			this->ga(this->selected_users, this->main_scene.user_id_list);
+		}
+		//this->optimize_flag = false;
 	}
 }
 

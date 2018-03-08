@@ -37,20 +37,27 @@ void GeneticAlgorithm::setup(HandCursor* hc) {
 	//this->ofs3.open("scaled_fitness.csv");
 }
 
-void GeneticAlgorithm::operator()(set<long long int>& selected_users_id, set<long long int>& all_users_id) {
-	if (selected_users_id.empty()) {
+void GeneticAlgorithm::operator()(set<long long int> selected_users_id, set<long long int> all_users_id) {
+	this->selected_users_id = selected_users_id;
+	this->all_users_id = all_users_id;
+
+	if (this->selected_users_id.empty()) {
 		this->selected_users_num = 0;
 		return;
 	}
 	//this->tb.Start();
-	this->initialize(selected_users_id, all_users_id);
+	//puts("!");
+	this->initialize();
+	//puts("!!");
 	//if (this->selected_users_num > 1) {
 	//this->tb.Start();
 	for (int i = 0; i < this->max_iteration; ++i) {
 		//this->crossover();
+		//puts("!!!");
 		this->mutation();
+		//puts("start calculating");
 		this->calculate_fitness();
-
+		//puts("!!!!!");
 		//for (int j = 0; j < this->population_size_tmp; ++j) {
 		//	if (this->selected_users_num > 1) {
 		//		if (j != 0) {
@@ -64,7 +71,7 @@ void GeneticAlgorithm::operator()(set<long long int>& selected_users_id, set<lon
 		//}
 
 		this->scaling();
-
+		//puts("!!!!!!!");
 		//for (int j = 0; j < this->population_size_tmp; ++j) {
 		//	if (this->selected_users_num > 1) {
 		//		if (j != 0) {
@@ -78,14 +85,13 @@ void GeneticAlgorithm::operator()(set<long long int>& selected_users_id, set<lon
 		//}
 
 		this->selection();
+		//puts("!!!!!!!!!");
 	}
 	//cout << "GA time : " << this->tb.GetMs() << endl;
 	//}
 }
 
-void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<long long int>& all_users_id) {
-	this->all_users_id = all_users_id;
-	this->selected_users_id = selected_users_id;
+void GeneticAlgorithm::initialize() {
 	this->selected_users_num = this->selected_users_id.size();
 	this->elite_fitness = DBL_MIN;
 	fill(begin(this->elite_block_assignment), end(this->elite_block_assignment), this->NOT_USER);
@@ -110,7 +116,7 @@ void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<lon
 		}
 	}
 
-	/* 各ユーザの顔の位置を中心に適当な領域を設ける */
+	/* 各ユーザのカーソルの位置を中心に適当な領域を設ける */
 	uniform_int_distribution<int> random_size(1, this->form_w / 4);
 	parallel_for(0, this->population_size, [&](int i) {
 		this->population[i].resize(this->genetic_length);
@@ -123,7 +129,7 @@ void GeneticAlgorithm::initialize(set<long long int>& selected_users_id, set<lon
 			min_dist = DBL_MAX;
 			try {
 				for (int b = 0; b < this->block_size; ++b) {
-					dist_tmp = ofDist(this->hc->user_data.at(user).transformed_face_point.x(), this->hc->user_data.at(user).transformed_face_point.y(), this->grid_rects[this->block2grid_table[b].first][this->block2grid_table[b].second].getCenter().x, this->grid_rects[this->block2grid_table[b].first][this->block2grid_table[b].second].getCenter().y);
+					dist_tmp = ofDist(this->hc->user_data.at(user).transformed_cursor_point.x(), this->hc->user_data.at(user).transformed_cursor_point.y(), this->grid_rects[this->block2grid_table[b].first][this->block2grid_table[b].second].getCenter().x, this->grid_rects[this->block2grid_table[b].first][this->block2grid_table[b].second].getCenter().y);
 					if (dist_tmp < min_dist) {
 						min_dist = dist_tmp;
 						start_block = b;
@@ -279,8 +285,7 @@ void GeneticAlgorithm::calculate_fitness() {
 
 	this->user_block.clear();
 	this->user_block.resize(this->population_size_tmp);
-
-	parallel_for(0, this->population_size_tmp, [&](int i) {
+	for (int i = 0; i < this->population_size_tmp; ++i) {
 		for (const auto& user_id : this->selected_users_id) {
 			this->user_block[i][user_id] = set<int>{};
 		}
@@ -338,9 +343,9 @@ void GeneticAlgorithm::calculate_fitness() {
 					}
 				}
 
-				/* 各ブロックと顔との距離の総和の平均を求める */
+				/* 各ブロックとカーソルとの距離の総和の平均を求める */
 				for (const auto& block : user.second) {
-					distance_mean += ofDistSquared(this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().x, this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().y, this->hc->user_data.at(user.first).transformed_face_point.x(), this->hc->user_data.at(user.first).transformed_face_point.y());
+					distance_mean += ofDistSquared(this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().x, this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().y, this->hc->user_data.at(user.first).transformed_cursor_point.x(), this->hc->user_data.at(user.first).transformed_cursor_point.y());
 					++block_sum;
 				}
 			}
@@ -376,7 +381,7 @@ void GeneticAlgorithm::calculate_fitness() {
 		connectivity_mean /= this->selected_users_num;
 
 		this->fitness[i] += min_area - 2 * distance_mean - 1.5*perimeter_mean - 40000 * connectivity_mean;
-	});
+	}
 }
 
 void GeneticAlgorithm::scaling() {
@@ -449,11 +454,11 @@ void GeneticAlgorithm::draw() const {
 		if (this->elite_block_assignment[i] != this->NOT_USER) {
 			try {
 				ofSetColor(this->hc->user_data.at(this->elite_block_assignment[i]).cursor_color, 140);
+				ofDrawRectangle(this->grid_rects[this->block2grid_table[i].first][this->block2grid_table[i].second]);
 			}
 			catch (std::out_of_range&) {
 				continue;
 			}
-			ofDrawRectangle(this->grid_rects[this->block2grid_table[i].first][this->block2grid_table[i].second]);
 		}
 	}
 	ofNoFill();

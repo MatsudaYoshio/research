@@ -41,6 +41,7 @@ private:
 	unique_ptr<BaseScene> sub_window_scene;
 	set<long long int> selected_users;
 
+	//bool optimize_flag{ false };
 	bool stop_flag{ false };
 	void optimize();
 public:

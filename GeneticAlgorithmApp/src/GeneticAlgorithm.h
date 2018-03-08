@@ -50,7 +50,7 @@ private:
 	genome_type elite_individual; // エリート個体(プログラム起動時から現在までの最適な個体)
 	double elite_fitness{ DBL_MIN }; // エリート個体の適応度
 
-	void initialize(set<long long int>& selected_users_id, set<long long int>& all_users_id); // 初期化
+	void initialize(); // 初期化
 	void crossover(); // 交叉
 	void mutation(); // 突然変異
 	void calculate_fitness(); // 適応度の計算
@@ -67,7 +67,7 @@ private:
 	unordered_map<int, int> user_id2user_index; // ユーザIDからユーザインデックスへの変換表
 	int population_size_tmp; // 交叉や突然変異によって増加した一時的な集団サイズ
 	vector<unordered_map<long long int, set<int>>> user_block; // 各ユーザがもつブロック
-	array<int, block_size> elite_block_assignment; // エリート個体のブロック割り当て
+	array<int, block_size> elite_block_assignment{}; // エリート個体のブロック割り当て
 	double fitness_sum; // 現在の集団の適応度の総和
 	int best_fitness_index; // 現在の集団での最適個体のインデックス
 	vector<vector<bool>> user_bits; // ユーザインデックスに対するビット
@@ -75,11 +75,11 @@ private:
 	ofstream ofs, ofs2, ofs3;
 	TimerBase tb;
 public:
-	static constexpr int NOT_USER{ INT_MIN };
+	static constexpr int NOT_USER{ 0 };
 
 	void setup(HandCursor* hc);
 	void draw() const;
-	void operator()(set<long long int>& selected_users_id, set<long long int>& all_users_id);
+	void operator()(set<long long int> selected_users_id, set<long long int> all_users_id);
 };
 
 #endif
