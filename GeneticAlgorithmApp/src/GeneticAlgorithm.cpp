@@ -8,8 +8,6 @@ using namespace concurrency;
 random_device GeneticAlgorithm::rd;
 mt19937 GeneticAlgorithm::mt(GeneticAlgorithm::rd());
 uniform_int_distribution<int> GeneticAlgorithm::random_0or1(0, 1);
-uniform_int_distribution<int> GeneticAlgorithm::random_indivisual(0, GeneticAlgorithm::population_size - 1);
-uniform_int_distribution<int> GeneticAlgorithm::random_crossover_method(1, 5);
 uniform_int_distribution<int> GeneticAlgorithm::random_mutation_method(1, 1);
 uniform_int_distribution<int> GeneticAlgorithm::random_block(0, GeneticAlgorithm::block_size);
 uniform_real_distribution<double> GeneticAlgorithm::random_0to1(0.0, 1.0);
@@ -27,10 +25,9 @@ void GeneticAlgorithm::setup(HandCursor* hc) {
 		}
 	}
 
-	/* 集団を管理する変数のサイズとメモリを調整 */
-	this->population.resize(this->population_size);
-	this->population_new.resize(this->population_size);
-	this->population.reserve(this->population_size + 2 * this->crossover_pair_number); // 交叉によって増加しうる分だけ集団サイズのメモリを確保
+	///* 集団を管理する変数のサイズとメモリを調整 */
+	//this->population.resize(this->population_size);
+	//this->population_new.resize(this->population_size);
 
 	//this->ofs.open("raw_fitness.csv");
 	//this->ofs2.open("block_size.csv");
@@ -50,7 +47,7 @@ void GeneticAlgorithm::operator()(set<long long int> selected_users_id, set<long
 	this->initialize();
 	//puts("!!");
 	//if (this->selected_users_num > 1) {
-	//this->tb.Start();
+	this->tb.Start();
 	for (int i = 0; i < this->max_iteration; ++i) {
 		//this->crossover();
 		//puts("!!!");
@@ -87,7 +84,7 @@ void GeneticAlgorithm::operator()(set<long long int> selected_users_id, set<long
 		this->selection();
 		//puts("!!!!!!!!!");
 	}
-	//cout << "GA time : " << this->tb.GetMs() << endl;
+	cout << "GA time : " << this->tb.GetMs() << endl;
 	//}
 }
 
@@ -152,140 +149,20 @@ void GeneticAlgorithm::initialize() {
 	});
 }
 
-void GeneticAlgorithm::crossover() {
-	for (int i = 0; i < this->crossover_pair_number; ++i) {
-		if (this->random_0to1(this->mt) < this->crossover_probability) { // 交叉確率に基づいて交叉するかどうかを決める
-			/* 異なる二つの個体(親)を選ぶ */
-			pair<int, int> parents_index(this->random_indivisual(this->mt), this->random_indivisual(this->mt));
-			while (parents_index.first == parents_index.second) {
-				parents_index.second = this->random_indivisual(this->mt);
-			}
-
-			/* 交叉手法をランダムに選ぶ */
-			switch (this->random_crossover_method(this->mt)) {
-			case 1:
-			{
-				/* 一点交叉 */
-				uniform_int_distribution<int> random_crossover_block(1, this->block_size - 2);
-				const int crossover_block = random_crossover_block(this->mt);
-				pair<genome_type, genome_type> children(this->population[parents_index.first], this->population[parents_index.second]);
-				for (int j = 0; j < crossover_block*this->block_bits_size; ++j) {
-					children.first[j] = this->population[parents_index.second][j];
-					children.second[j] = this->population[parents_index.first][j];
-				}
-				this->population.emplace_back(children.first);
-				this->population.emplace_back(children.second);
-			}
-			break;
-			case 2:
-			{
-				/* 二点交叉 */
-				uniform_int_distribution<int> random_crossover_block(1, this->block_size - 2);
-				pair<int, int> crossover_blocks(random_crossover_block(this->mt), random_crossover_block(this->mt));
-				while (crossover_blocks.first == crossover_blocks.second) {
-					crossover_blocks.second = random_crossover_block(this->mt);
-				}
-				pair<genome_type, genome_type> children(this->population[parents_index.first], this->population[parents_index.second]);
-				for (int j = crossover_blocks.first*this->block_bits_size; j < crossover_blocks.second*this->block_bits_size; ++j) {
-					children.first[j] = this->population[parents_index.second][j];
-					children.second[j] = this->population[parents_index.first][j];
-				}
-				this->population.emplace_back(children.first);
-				this->population.emplace_back(children.second);
-			}
-			break;
-			case 3:
-			{
-				/* 一様交叉 */
-				genome_type mask(this->block_size);
-				for (int j = 0; j < this->block_size; ++j) {
-					mask[j] = this->random_0or1(this->mt);
-				}
-				pair<genome_type, genome_type> children(this->population[parents_index.first], this->population[parents_index.second]);
-				for (int j = 0; j < this->block_size; ++j) {
-					if (mask[j]) {
-						for (int k = 0; k < this->block_bits_size; ++k) {
-							children.first[j*this->block_bits_size + k] = this->population[parents_index.second][j*this->block_bits_size + k];
-							children.second[j*this->block_bits_size + k] = this->population[parents_index.first][j*this->block_bits_size + k];
-						}
-					}
-				}
-				this->population.emplace_back(children.first);
-				this->population.emplace_back(children.second);
-			}
-			break;
-			case 4:
-			{
-				/* 直線交叉(水平) */
-				uniform_int_distribution<int> random_line(1, this->form_h - 1);
-				int line = random_line(this->mt);
-				pair<genome_type, genome_type> children(this->population[parents_index.first], this->population[parents_index.second]);
-				for (int j = 0; j < line*this->form_w*this->block_bits_size; ++j) {
-					children.first[j] = this->population[parents_index.second][j];
-					children.second[j] = this->population[parents_index.first][j];
-				}
-				this->population.emplace_back(children.first);
-				this->population.emplace_back(children.second);
-			}
-			break;
-			case 5:
-			{
-				/* 直線交叉(垂直) */
-				uniform_int_distribution<int> random_line(1, this->form_w - 1);
-				int line = random_line(this->mt);
-				pair<genome_type, genome_type> children(this->population[parents_index.first], this->population[parents_index.second]);
-				for (int y = 0; y < this->form_h; ++y) {
-					for (int j = this->grid2block_table[0][y] * this->block_bits_size; j < (this->grid2block_table[0][y] + line) * this->block_bits_size; ++j) {
-						children.first[j] = this->population[parents_index.second][j];
-						children.second[j] = this->population[parents_index.first][j];
-					}
-				}
-				this->population.emplace_back(children.first);
-				this->population.emplace_back(children.second);
-			}
-			}
-		}
-	}
-}
-
 void GeneticAlgorithm::mutation() {
 	uniform_int_distribution<int> random_bit(0, this->genetic_length - 1);
 	for (int i = 0; i < this->population_size; ++i) {
 		/* 突然変異率に基づいて突然変異するかどうかを決める */
 		if (this->random_0to1(this->mt) < this->mutation_probability) {
-			/* 突然変異手法をランダムに選ぶ */
-			switch (random_mutation_method(this->mt)) {
-			case 1:
-				/* あるビットを反転 */
-				if (this->random_0to1(this->mt) < this->mutation_probability) {
-					this->population[i][random_bit(this->mt)].flip();
-				}
-				break;
-			case 2:
-			{
-				/* 二つのブロックのビットを交換する */
-				pair<int, int> blocks{ this->random_block(this->mt),this->random_block(this->mt) };
-				for (int j = 0; j < this->block_bits_size; ++j) {
-					swap(this->population[i][blocks.first*this->block_bits_size + j], this->population[i][blocks.second*this->block_bits_size + j]);
-				}
-			}
-			break;
-			}
+			this->population[i][random_bit(this->mt)].flip(); // あるビットを反転
 		}
 	}
 }
 
 void GeneticAlgorithm::calculate_fitness() {
-	this->population_size_tmp = this->population.size();
-
-	this->fitness.resize(this->population_size_tmp);
 	fill(begin(this->fitness), end(this->fitness), 0.0);
 
-	this->block_assignments.resize(this->population_size_tmp);
-
-	this->user_block.clear();
-	this->user_block.resize(this->population_size_tmp);
-	for (int i = 0; i < this->population_size_tmp; ++i) {
+	parallel_for(0, this->population_size, [&](int i) {
 		for (const auto& user_id : this->selected_users_id) {
 			this->user_block[i][user_id] = set<int>{};
 		}
@@ -306,7 +183,7 @@ void GeneticAlgorithm::calculate_fitness() {
 		}
 
 		/* 各ユーザの領域面積で最小なものの面積を求める */
-		int min_area{ INT_MAX };
+		auto min_area{ INT_MAX };
 		for (const auto& user : this->user_block[i]) {
 			min_area = min(min_area, static_cast<int>(user.second.size()));
 		}
@@ -341,10 +218,9 @@ void GeneticAlgorithm::calculate_fitness() {
 							perimeter_mean += this->grid_w;
 						}
 					}
-				}
+					//}
 
-				/* 各ブロックとカーソルとの距離の総和の平均を求める */
-				for (const auto& block : user.second) {
+					/* 各ブロックとカーソルとの距離の総和の平均を求める */
 					distance_mean += ofDistSquared(this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().x, this->grid_rects[this->block2grid_table[block].first][this->block2grid_table[block].second].getCenter().y, this->hc->user_data.at(user.first).transformed_cursor_point.x(), this->hc->user_data.at(user.first).transformed_cursor_point.y());
 					++block_sum;
 				}
@@ -381,7 +257,7 @@ void GeneticAlgorithm::calculate_fitness() {
 		connectivity_mean /= this->selected_users_num;
 
 		this->fitness[i] += min_area - 2 * distance_mean - 1.5*perimeter_mean - 40000 * connectivity_mean;
-	}
+	});
 }
 
 void GeneticAlgorithm::scaling() {
@@ -398,7 +274,7 @@ void GeneticAlgorithm::scaling() {
 
 	/* スケーリングのためのパラメータの計算 */
 	this->fitness_sum = accumulate(cbegin(this->fitness), cend(this->fitness), 0.0);
-	const auto fitness_mean{ this->fitness_sum / this->population_size_tmp }; // 平均適応度
+	const auto fitness_mean{ this->fitness_sum / this->population_size }; // 平均適応度
 	const auto fitness_minmax{ minmax_element(cbegin(this->fitness), cend(this->fitness)) }; // 最大適応度と最小適応度のペア
 
 	double a, b;
@@ -428,24 +304,14 @@ void GeneticAlgorithm::selection() {
 		this->elite_block_assignment = this->block_assignments[this->best_fitness_index];
 	}
 
-	/** ルーレット方式で選択 **/
-	uniform_real_distribution<double> random_fitness(0.0, this->fitness_sum);
-	parallel_for(1, this->population_size, [&](int i) {
-		vector<int> v(this->population_size_tmp);
-		std::iota(begin(v), end(v), 0);
-		shuffle(begin(v), end(v), this->mt);
-		double s{ 0.0 };
-		double r{ random_fitness(this->mt) };
-		for (int j = 0; j < this->population_size_tmp; ++j) {
-			s += this->fitness[v[j]];
-			if (s >= r) {
-				this->population_new[i] = this->population[v[j]];
-				break;
-			}
-		}
-	});
+	/* ルーレット方式で選択 */
+	this->fitness[this->best_fitness_index] = 0;
+	discrete_distribution<int> random_fitness(begin(this->fitness), end(this->fitness));
+	for (int i = 0; i < this->population_size; ++i) {
+		this->population_new[i] = this->population[random_fitness(this->mt)];
+	}
 
-	this->population = this->population_new;
+	this->population = move(this->population_new);
 }
 
 void GeneticAlgorithm::draw() const {

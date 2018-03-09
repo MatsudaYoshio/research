@@ -199,11 +199,9 @@ void SceneManager::delete_sub_window(long long int& scene_id) {
 
 void SceneManager::optimize() {
 	while (!this->stop_flag) {
-		//this->optimize_flag = true;
 		if (!this->selected_users.empty() && !this->main_scene.user_id_list.empty()) {
 			this->ga(this->selected_users, this->main_scene.user_id_list);
 		}
-		//this->optimize_flag = false;
 	}
 }
 
