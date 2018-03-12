@@ -29,7 +29,7 @@ void GeneticAlgorithm::setup(HandCursor* hc) {
 	//this->population.resize(this->population_size);
 	//this->population_new.resize(this->population_size);
 
-	//this->ofs.open("raw_fitness.csv");
+	this->ofs.open("raw_fitness.csv");
 	//this->ofs2.open("block_size.csv");
 	//this->ofs3.open("scaled_fitness.csv");
 }
@@ -55,17 +55,17 @@ void GeneticAlgorithm::operator()(set<long long int> selected_users_id, set<long
 		//puts("start calculating");
 		this->calculate_fitness();
 		//puts("!!!!!");
-		//for (int j = 0; j < this->population_size_tmp; ++j) {
-		//	if (this->selected_users_num > 1) {
-		//		if (j != 0) {
-		//			this->ofs << ",";
-		//		}
-		//		this->ofs << this->fitness[j];
-		//	}
-		//}
-		//if (this->selected_users_num > 1) {
-		//	this->ofs << endl;
-		//}
+		for (int j = 0; j < this->population_size; ++j) {
+			if (this->selected_users_num > 1) {
+				if (j != 0) {
+					this->ofs << ",";
+				}
+				this->ofs << this->fitness[j];
+			}
+		}
+		if (this->selected_users_num > 1) {
+			this->ofs << endl;
+		}
 
 		this->scaling();
 		//puts("!!!!!!!");
@@ -119,27 +119,43 @@ void GeneticAlgorithm::initialize() {
 		this->population[i].resize(this->genetic_length);
 		fill(begin(this->population[i]), end(this->population[i]), true);
 
-		int start_block;
-		double dist_tmp, min_dist;
-
+		int left, right, middle, start_block_x, start_block_y;
 		for (const auto& user : this->selected_users_id) {
-			min_dist = DBL_MAX;
+			/* 二分探索でユーザのカーソルに最近傍なブロックを探索し、それを初期化のためのスタートブロックとする */
 			try {
-				for (int b = 0; b < this->block_size; ++b) {
-					dist_tmp = ofDist(this->hc->user_data.at(user).transformed_cursor_point.x(), this->hc->user_data.at(user).transformed_cursor_point.y(), this->grid_rects[this->block2grid_table[b].first][this->block2grid_table[b].second].getCenter().x, this->grid_rects[this->block2grid_table[b].first][this->block2grid_table[b].second].getCenter().y);
-					if (dist_tmp < min_dist) {
-						min_dist = dist_tmp;
-						start_block = b;
+				left = 0;
+				right = this->form_w;
+				while (right - left != 1) {
+					middle = (left + right) / 2;
+					if (this->hc->user_data.at(user).transformed_cursor_point.x() > this->grid_rects[middle - 1][0].getRight()) {
+						left = middle;
+					}
+					else {
+						right = middle;
 					}
 				}
+				start_block_x = left;
+
+				left = 0;
+				right = this->form_h;
+				while (right - left != 1) {
+					middle = (left + right) / 2;
+					if (this->hc->user_data.at(user).transformed_cursor_point.y() > this->grid_rects[0][middle - 1].getBottom()) {
+						left = middle;
+					}
+					else {
+						right = middle;
+					}
+				}
+				start_block_y = left;
 			}
 			catch (std::out_of_range&) {
 				continue;
 			}
 
 			int rect_size{ random_size(this->mt) };
-			for (int x = max(0, this->block2grid_table[start_block].first - rect_size); x < min(this->form_w, this->block2grid_table[start_block].first + rect_size); ++x) {
-				for (int y = max(0, this->block2grid_table[start_block].second - rect_size); y < min(this->form_h, this->block2grid_table[start_block].second + rect_size); ++y) {
+			for (int x = max(0, start_block_x - rect_size); x < min(this->form_w, start_block_x + rect_size); ++x) {
+				for (int y = max(0, start_block_y - rect_size); y < min(this->form_h, start_block_y + rect_size); ++y) {
 					for (int j = 0; j < this->block_bits_size; ++j) {
 						this->population[i][j + this->grid2block_table[x][y] * this->block_bits_size] = this->user_bits[this->user_id2user_index[user]][j];
 					}

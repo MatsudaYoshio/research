@@ -59,7 +59,6 @@ private:
 	set<long long int> selected_users_id, all_users_id; // ユーザIDリスト
 	int selected_users_num; // ユーザ数
 	unordered_map<int, int> user_id2user_index; // ユーザIDからユーザインデックスへの変換表
-	//int population_size_tmp; // 交叉や突然変異によって増加した一時的な集団サイズ
 	array<unordered_map<long long int, set<int>>, population_size> user_block; // 各ユーザがもつブロック
 	array<int, block_size> elite_block_assignment{}; // エリート個体のブロック割り当て
 	double fitness_sum; // 現在の集団の適応度の総和
