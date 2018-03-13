@@ -57,7 +57,7 @@ private:
 	array<pair<int, int>, block_size> block2grid_table; // ブロックから座標への変換表 
 	array<array<int, block_size>, population_size> block_assignments; // 各ブロックに対するユーザの割り当て
 	set<long long int> selected_users_id, all_users_id; // ユーザIDリスト
-	int selected_users_num; // ユーザ数
+	//int selected_users_num; // ユーザ数
 	unordered_map<int, int> user_id2user_index; // ユーザIDからユーザインデックスへの変換表
 	array<unordered_map<long long int, set<int>>, population_size> user_block; // 各ユーザがもつブロック
 	array<int, block_size> elite_block_assignment{}; // エリート個体のブロック割り当て
@@ -65,6 +65,7 @@ private:
 	int best_fitness_index; // 現在の集団での最適個体のインデックス
 	vector<vector<bool>> user_bits; // ユーザインデックスに対するビット
 
+	int users_num;
 	ofstream ofs, ofs2, ofs3;
 	TimerBase tb;
 public:

@@ -29,25 +29,25 @@ void GeneticAlgorithm::setup(HandCursor* hc) {
 	//this->population.resize(this->population_size);
 	//this->population_new.resize(this->population_size);
 
-	this->ofs.open("raw_fitness.csv");
+	//this->ofs.open("raw_fitness.csv");
 	//this->ofs2.open("block_size.csv");
 	//this->ofs3.open("scaled_fitness.csv");
 }
 
 void GeneticAlgorithm::operator()(set<long long int> selected_users_id, set<long long int> all_users_id) {
-	this->selected_users_id = selected_users_id;
-	this->all_users_id = all_users_id;
+	this->selected_users_id = move(selected_users_id);
+	this->all_users_id = move(all_users_id);
 
-	if (this->selected_users_id.empty()) {
-		this->selected_users_num = 0;
-		return;
-	}
+	//if (this->selected_users_id.empty()) {
+	//	this->selected_users_num = 0;
+	//	return;
+	//}
 	//this->tb.Start();
 	//puts("!");
 	this->initialize();
 	//puts("!!");
 	//if (this->selected_users_num > 1) {
-	this->tb.Start();
+	//this->tb.Start();
 	for (int i = 0; i < this->max_iteration; ++i) {
 		//this->crossover();
 		//puts("!!!");
@@ -55,17 +55,17 @@ void GeneticAlgorithm::operator()(set<long long int> selected_users_id, set<long
 		//puts("start calculating");
 		this->calculate_fitness();
 		//puts("!!!!!");
-		for (int j = 0; j < this->population_size; ++j) {
-			if (this->selected_users_num > 1) {
-				if (j != 0) {
-					this->ofs << ",";
-				}
-				this->ofs << this->fitness[j];
-			}
-		}
-		if (this->selected_users_num > 1) {
-			this->ofs << endl;
-		}
+		//for (int j = 0; j < this->population_size; ++j) {
+		//	if (this->selected_users_num > 1) {
+		//		if (j != 0) {
+		//			this->ofs << ",";
+		//		}
+		//		this->ofs << this->fitness[j];
+		//	}
+		//}
+		//if (this->selected_users_num > 1) {
+		//	this->ofs << endl;
+		//}
 
 		this->scaling();
 		//puts("!!!!!!!");
@@ -84,29 +84,33 @@ void GeneticAlgorithm::operator()(set<long long int> selected_users_id, set<long
 		this->selection();
 		//puts("!!!!!!!!!");
 	}
-	cout << "GA time : " << this->tb.GetMs() << endl;
+	//cout << "GA time : " << this->tb.GetMs() << endl;
 	//}
 }
 
 void GeneticAlgorithm::initialize() {
-	this->selected_users_num = this->selected_users_id.size();
+	//this->selected_users_num = this->selected_users_id.size();
+	this->users_num = this->all_users_id.size();
 	this->elite_fitness = DBL_MIN;
 	fill(begin(this->elite_block_assignment), end(this->elite_block_assignment), this->NOT_USER);
 
 	/* ユーザIDに対してインデックスを割り当てる(0から順に) */
 	int i = 0;
 	this->user_id2user_index.clear();
-	for (const auto& user_id : this->selected_users_id) {
+	//for (const auto& user_id : this->selected_users_id) {
+	for (const auto& user_id : this->all_users_id) {
 		this->user_id2user_index.emplace(make_pair(user_id, i++));
 	}
 
 	/* 各ブロックのビット数を決める */
-	this->block_bits_size = log2(this->selected_users_num) + 1; // ユーザ数と同じ分だけユーザでない状態を表せるようなビット数にする
+	//this->block_bits_size = log2(this->selected_users_num) + 1; // ユーザ数と同じ分だけユーザでない状態を表せるようなビット数にする
+	this->block_bits_size = log2(this->users_num) + 1;
 
 	this->genetic_length = this->block_size*this->block_bits_size; // 遺伝子長を決める
 
 	/* ユーザIDに割り当てられたインデックスのビット配列を作成 */
-	this->user_bits = vector<vector<bool>>(this->selected_users_num, vector<bool>(this->block_bits_size));
+	//this->user_bits = vector<vector<bool>>(this->selected_users_num, vector<bool>(this->block_bits_size));
+	this->user_bits = vector<vector<bool>>(this->users_num, vector<bool>(this->block_bits_size));
 	for (int j = 0; j < i; ++j) {
 		for (int k = 0; k < this->block_bits_size; ++k) {
 			this->user_bits[j][k] = (j >> k) & 1;
@@ -120,7 +124,8 @@ void GeneticAlgorithm::initialize() {
 		fill(begin(this->population[i]), end(this->population[i]), true);
 
 		int left, right, middle, start_block_x, start_block_y;
-		for (const auto& user : this->selected_users_id) {
+		//for (const auto& user : this->selected_users_id) {
+		for (const auto& user : this->all_users_id) {
 			/* 二分探索でユーザのカーソルに最近傍なブロックを探索し、それを初期化のためのスタートブロックとする */
 			try {
 				left = 0;
@@ -186,13 +191,17 @@ void GeneticAlgorithm::calculate_fitness() {
 		/* 各ブロックに割り当てられたユーザidを求める */
 		for (int j = 0; j < this->block_size; ++j) {
 			this->block_assignments[i][j] = this->NOT_USER;
-			for (const auto& user_id : this->selected_users_id) {
+			//for (const auto& user_id : this->selected_users_id) {
+			for (const auto& user_id : this->all_users_id) {
 				for (int k = 0; k < this->block_bits_size; ++k) {
 					if (this->user_bits[this->user_id2user_index[user_id]][k] != this->population[i][j*this->block_bits_size + k]) {
 						goto NOT_MATCH;
 					}
 				}
-				this->block_assignments[i][j] = user_id;
+				if (this->selected_users_id.find(user_id) != end(this->selected_users_id)) {
+					this->block_assignments[i][j] = user_id;
+				}
+				//this->block_assignments[i][j] = user_id;
 				this->user_block[i][user_id].emplace(j); // 各ユーザがもつブロックを求める
 			NOT_MATCH:;
 			}
@@ -268,9 +277,11 @@ void GeneticAlgorithm::calculate_fitness() {
 			}
 		}
 
-		perimeter_mean /= this->selected_users_num;
+		//perimeter_mean /= this->selected_users_num;
+		perimeter_mean /= this->users_num;
 		distance_mean /= block_sum;
-		connectivity_mean /= this->selected_users_num;
+		//connectivity_mean /= this->selected_users_num;
+		connectivity_mean /= this->users_num;
 
 		this->fitness[i] += min_area - 2 * distance_mean - 1.5*perimeter_mean - 40000 * connectivity_mean;
 	});
