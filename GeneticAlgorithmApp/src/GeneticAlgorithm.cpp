@@ -55,17 +55,17 @@ void GeneticAlgorithm::operator()(set<long long int> selected_users_id, set<long
 		//puts("start calculating");
 		this->calculate_fitness();
 		//puts("!!!!!");
-		//for (int j = 0; j < this->population_size; ++j) {
-		//	if (this->selected_users_num > 1) {
-		//		if (j != 0) {
-		//			this->ofs << ",";
-		//		}
-		//		this->ofs << this->fitness[j];
-		//	}
-		//}
-		//if (this->selected_users_num > 1) {
-		//	this->ofs << endl;
-		//}
+		/*for (int j = 0; j < this->population_size; ++j) {
+			if (this->selected_users_id.size() > 1) {
+				if (j != 0) {
+					this->ofs << ",";
+				}
+				this->ofs << this->fitness[j];
+			}
+		}
+		if (this->selected_users_id.size() > 1) {
+			this->ofs << endl;
+		}*/
 
 		this->scaling();
 		//puts("!!!!!!!");
