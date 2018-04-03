@@ -28,6 +28,12 @@ namespace param {
 
 	constexpr int FRAME_SIZE{ 20 }; // サブウィンドウの枠の大きさ
 
+	constexpr int MENU_ITEM_NUM{ 4 };
+
+	const enum class MENU_ITEM_ID {
+		SIGHTSEEING, RESTAURANT, SHOPPING, HOTEL
+	};
+
 	const enum class CONTENT_ID {
 		KYOTO_TOWER, HIGASHIHONGANJI, SYOSEIEN, NISHIHONGANJI, RYUKOKU_MUSEUM, KYOTO_AQUARIUM
 	};

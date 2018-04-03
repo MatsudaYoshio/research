@@ -4,13 +4,14 @@
 
 #include "AppParameters.h"
 #include "MenuItem.h"
+#include "HandCursor.h"
 
 class MenuBar {
 private:
-	static constexpr int item_num{ 4 };
-	array<MenuItem, item_num> items;
+	HandCursor* hc;
+	array<MenuItem, param::MENU_ITEM_NUM> items;
 public:
-	void setup();
+	void setup(HandCursor* const hc);
 	void update();
 	void draw();
 };
