@@ -5,6 +5,7 @@ using namespace param;
 void MapApp::setup() {
 	ofHideCursor(); // カーソル非表示
 	ofEnableAlphaBlending(); // アルファチャンネルを使用可能にする
+	ofSetCircleResolution(256);
 	
 	this->sm.setup(&this->hc);
 }

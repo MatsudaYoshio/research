@@ -11,10 +11,17 @@ void SceneManager::update() {
 	this->mb.update();
 }
 
-void SceneManager::draw() {
+void SceneManager::draw() const {
 	ofSetColor(ofColor::white);
 	this->map_image.draw(0, 0, DISPLAY_W, DISPLAY_H); // マップの表示
+
 	this->mb.draw(); // メニューバーの表示
+
+	ofFill();
+	ofSetColor(ofColor::red);
+	float r = 45;
+	ofDrawCircle(500, 500, r);
+	ofDrawTriangle(500-r*0.35, 500+r*0.35, 500+r*0.35, 500+r*0.35, 500, 500+r*2);
 
 	/* 手カーソルの描画 */
 	for (const auto& ud : this->hc->user_data) {

@@ -11,10 +11,11 @@ private:
 	HandCursor* hc;
 	MenuBar mb;
 	const ofImage map_image{ "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/kyoto_bg.png" };
+	array<bool, param::MENU_ITEM_NUM> pin_flag;
 public:
 	void setup(HandCursor* const hc);
 	void update();
-	void draw();
+	void draw() const;
 };
 
 #endif
