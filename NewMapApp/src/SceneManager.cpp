@@ -4,7 +4,16 @@ using namespace param;
 
 void SceneManager::setup(HandCursor* const hc) {
 	this->hc = hc;
+
 	this->mb.setup(hc);
+	ofAddListener(this->mb.add_pin_event, this, &SceneManager::add_pin);
+
+	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
+		this->pins[i].resize(MENU_ITEM_CONTENTS[i].size());
+		for (int j = 0; j < this->pins[i].size(); ++j) {
+			this->pins[i][j].setup(MENU_ITEM_CONTENTS[i][j]);
+		}
+	}
 }
 
 void SceneManager::update() {
@@ -17,11 +26,11 @@ void SceneManager::draw() const {
 
 	this->mb.draw(); // メニューバーの表示
 
-	ofFill();
-	ofSetColor(ofColor::red);
-	float r = 45;
-	ofDrawCircle(500, 500, r);
-	ofDrawTriangle(500-r*0.35, 500+r*0.35, 500+r*0.35, 500+r*0.35, 500, 500+r*2);
+	for (const auto& ps : pins) {
+		for (const auto& p : ps) {
+			p.draw();
+		}
+	}
 
 	/* 手カーソルの描画 */
 	for (const auto& ud : this->hc->user_data) {
@@ -33,4 +42,12 @@ void SceneManager::draw() const {
 		ofSetColor(ud.second.cursor_color);
 		ofDrawCircle(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y(), 55);
 	}
+}
+
+void SceneManager::add_pin(param::MENU_ITEM_ID& item_id) {
+	this->pin_flag[static_cast<int>(item_id)] = true;
+}
+
+SceneManager::~SceneManager() {
+	ofRemoveListener(this->mb.add_pin_event, this, &SceneManager::add_pin);
 }

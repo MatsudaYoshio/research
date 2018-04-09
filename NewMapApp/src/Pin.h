@@ -7,9 +7,17 @@
 
 class Pin {
 private:
-	param::MENU_ITEM_ID item_id;
+	static constexpr double size_ratio{ 0.35 };
+	static constexpr double radius{ 45 };
+	static constexpr int font_size{ 40 };
+
+	int pin_number;
+	param::CONTENT_ID content_id;
+	int x, y, tx1, ty1, tx2, ty2, tx3, ty3, font_x, font_y;
+	ofTrueTypeFont font;
+	ofColor color;
 public:
-	Pin(param::MENU_ITEM_ID item_id);
+	void setup(param::CONTENT_ID content_id);
 	void update();
 	void draw() const;
 };

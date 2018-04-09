@@ -29,6 +29,7 @@ namespace param {
 	constexpr int FRAME_SIZE{ 20 }; // サブウィンドウの枠の大きさ
 
 	constexpr int MENU_ITEM_NUM{ 4 };
+	constexpr int CONTENT_NUM{ 6 };
 
 	const enum class MENU_ITEM_ID {
 		SIGHTSEEING, RESTAURANT, SHOPPING, HOTEL
@@ -45,6 +46,21 @@ namespace param {
 		vector<CONTENT_ID>{},
 		vector<CONTENT_ID>{},
 		vector<CONTENT_ID>{}
+	};
+
+	using content_data_type = struct {
+		int x, y;
+		int number;
+		MENU_ITEM_ID menu_item_id;
+	};
+
+	const array<content_data_type, CONTENT_NUM> CONTENT_DATA{
+		content_data_type{ 100, 300, 1, MENU_ITEM_ID::SIGHTSEEING },
+		content_data_type{ 500, 500, 2, MENU_ITEM_ID::SIGHTSEEING },
+		content_data_type{ 1200, 400, 3, MENU_ITEM_ID::SIGHTSEEING },
+		content_data_type{ 1500, 1000, 4, MENU_ITEM_ID::SIGHTSEEING },
+		content_data_type{ 1290, 500, 5, MENU_ITEM_ID::SIGHTSEEING },
+		content_data_type{ 400, 1600, 6, MENU_ITEM_ID::SIGHTSEEING }
 	};
 
 	const enum class LANGUAGE_ID {
