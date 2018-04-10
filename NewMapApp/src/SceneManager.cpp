@@ -14,23 +14,30 @@ void SceneManager::setup(HandCursor* const hc) {
 			this->pins[i][j].setup(MENU_ITEM_CONTENTS[i][j]);
 		}
 	}
+
+	this->ab.setup(&this->menu_item_flag);
 }
 
 void SceneManager::update() {
 	this->mb.update();
+	this->ab.update();
 }
 
-void SceneManager::draw() const {
+void SceneManager::draw() {
 	ofSetColor(ofColor::white);
 	this->map_image.draw(0, 0, DISPLAY_W, DISPLAY_H); // マップの表示
 
 	this->mb.draw(); // メニューバーの表示
 
-	for (const auto& ps : pins) {
-		for (const auto& p : ps) {
-			p.draw();
+	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
+		if (this->menu_item_flag[i]) {
+			for (const auto& p : this->pins[i]) {
+				p.draw();
+			}
 		}
 	}
+
+	this->ab.draw();
 
 	/* 手カーソルの描画 */
 	for (const auto& ud : this->hc->user_data) {
@@ -45,7 +52,7 @@ void SceneManager::draw() const {
 }
 
 void SceneManager::add_pin(param::MENU_ITEM_ID& item_id) {
-	this->pin_flag[static_cast<int>(item_id)] = true;
+	this->menu_item_flag[static_cast<int>(item_id)] = true;
 }
 
 SceneManager::~SceneManager() {

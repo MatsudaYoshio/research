@@ -30,6 +30,6 @@ void Pin::draw() const {
 	ofDrawCircle(this->x, this->y, this->radius);
 	ofDrawTriangle(this->tx1, this->ty1, this->tx2, this->ty2, this->tx3, this->ty3);
 
-	ofSetColor(ofColor::white);
+	ofSetColor(ofColor::black);
 	this->font.drawString(to_string(this->pin_number), this->font_x, this->font_y);
 }

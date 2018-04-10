@@ -55,12 +55,12 @@ namespace param {
 	};
 
 	const array<content_data_type, CONTENT_NUM> CONTENT_DATA{
-		content_data_type{ 100, 300, 1, MENU_ITEM_ID::SIGHTSEEING },
-		content_data_type{ 500, 500, 2, MENU_ITEM_ID::SIGHTSEEING },
-		content_data_type{ 1200, 400, 3, MENU_ITEM_ID::SIGHTSEEING },
-		content_data_type{ 1500, 1000, 4, MENU_ITEM_ID::SIGHTSEEING },
-		content_data_type{ 1290, 500, 5, MENU_ITEM_ID::SIGHTSEEING },
-		content_data_type{ 400, 1600, 6, MENU_ITEM_ID::SIGHTSEEING }
+		content_data_type{ 1614, 1026, 1, MENU_ITEM_ID::SIGHTSEEING },
+		content_data_type{ 1570, 784, 2, MENU_ITEM_ID::SIGHTSEEING },
+		content_data_type{ 1814, 791, 3, MENU_ITEM_ID::SIGHTSEEING },
+		content_data_type{ 1197, 798, 4, MENU_ITEM_ID::SIGHTSEEING },
+		content_data_type{ 1312, 810, 5, MENU_ITEM_ID::SIGHTSEEING },
+		content_data_type{ 1012, 1025, 6, MENU_ITEM_ID::SIGHTSEEING }
 	};
 
 	const enum class LANGUAGE_ID {
