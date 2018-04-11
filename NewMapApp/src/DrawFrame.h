@@ -10,6 +10,7 @@ private:
 	int size;
 	ofPath path;
 public:
+	void setup(const ofColor& color, int size, const ofRectangle& frame_rect);
 	void setup(const ofColor& color, int size);
 	void update(ofRectangle& frame_rect);
 	void draw();

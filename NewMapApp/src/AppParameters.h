@@ -52,15 +52,16 @@ namespace param {
 		int x, y;
 		int number;
 		MENU_ITEM_ID menu_item_id;
+		string image_path;
 	};
 
 	const array<content_data_type, CONTENT_NUM> CONTENT_DATA{
-		content_data_type{ 1614, 1026, 1, MENU_ITEM_ID::SIGHTSEEING },
-		content_data_type{ 1570, 784, 2, MENU_ITEM_ID::SIGHTSEEING },
-		content_data_type{ 1814, 791, 3, MENU_ITEM_ID::SIGHTSEEING },
-		content_data_type{ 1197, 798, 4, MENU_ITEM_ID::SIGHTSEEING },
-		content_data_type{ 1312, 810, 5, MENU_ITEM_ID::SIGHTSEEING },
-		content_data_type{ 1012, 1025, 6, MENU_ITEM_ID::SIGHTSEEING }
+		content_data_type{ 1614, 1026, 1, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/kyoto_tower.jpg" },
+		content_data_type{ 1570, 784, 2, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/higashihonganji.jpg" },
+		content_data_type{ 1814, 791, 3, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/syoseien_img.jpg" },
+		content_data_type{ 1197, 798, 4, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/nishihonganji.jpg" },
+		content_data_type{ 1312, 810, 5, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/ryukoku_museum.jpg" },
+		content_data_type{ 1012, 1025, 6, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/kyoto_aquarium.jpg" }
 	};
 
 	const enum class LANGUAGE_ID {

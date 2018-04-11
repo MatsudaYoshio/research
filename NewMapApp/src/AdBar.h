@@ -3,7 +3,6 @@
 #define ___Class_AdBar
 
 #include <random>
-#include <unordered_set>
 #include "AppParameters.h"
 #include "DrawFrame.h"
 #include "AdItem.h"
@@ -11,7 +10,7 @@
 class AdBar {
 private:
 	static constexpr int ad_item_num{ 4 };
-	static const array<pair<int, int>, ad_item_num> ad_position;
+	static const array<ofRectangle, ad_item_num> ad_position;
 	
 	const enum class STATE {
 		INACTIVE, ACTIVE
@@ -24,8 +23,9 @@ private:
 	DrawFrame df;
 	STATE state;
 	array<bool, param::MENU_ITEM_NUM>* menu_item_flag;
-	unordered_set<param::CONTENT_ID> ads_tmp;
+	vector<param::CONTENT_ID> content_id_list;
 	array<AdItem, ad_item_num> ads;
+	array<param::CONTENT_ID, ad_item_num> content_id_tmp;
 public:
 	void setup(array<bool, param::MENU_ITEM_NUM>* const menu_item_flag);
 	void update();

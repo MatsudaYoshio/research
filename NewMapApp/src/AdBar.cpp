@@ -2,7 +2,7 @@
 
 using namespace param;
 
-const array<pair<int, int>, AdBar::ad_item_num> AdBar::ad_position{ make_pair(100, 50), make_pair(500, 50), make_pair(900, 50), make_pair(1300, 50) };
+const array<ofRectangle, AdBar::ad_item_num> AdBar::ad_position{ ofRectangle(140, 50, 300, 300), ofRectangle(580, 50, 300, 300), ofRectangle(1020, 50, 300, 300), ofRectangle(1460, 50, 300, 300) };
 
 random_device AdBar::rd;
 mt19937 AdBar::mt(AdBar::rd());
@@ -10,57 +10,55 @@ mt19937 AdBar::mt(AdBar::rd());
 void AdBar::setup(array<bool, param::MENU_ITEM_NUM>* const menu_item_flag) {
 	this->state = STATE::INACTIVE;
 	this->menu_item_flag = menu_item_flag;
-	this->df.setup(ofColor::gold, 10);
 }
 
 void AdBar::update() {
 	switch (this->state) {
 	case STATE::INACTIVE:
+		if (none_of(begin(*this->menu_item_flag), end(*this->menu_item_flag), [](const auto& x) {return x; })) {
+			break;
+		}
+
 		for (int i = 0; i < MENU_ITEM_NUM; ++i) {
 			if ((*this->menu_item_flag)[i]) {
 				for (const auto& c : MENU_ITEM_CONTENTS[i]) {
-					this->ads_tmp.emplace(c);
+					this->content_id_list.emplace_back(c);
 				}
 			}
 		}
 
-		uniform_int_distribution<int> random_ad(0, this->ads_tmp.size() - 1);
+		{
+			uniform_int_distribution<int> random_ad(0, this->content_id_list.size() - 1);
+			auto x{ this->content_id_list[random_ad(this->mt)] };
+			this->content_id_tmp[0] = x;
+			this->ads[0].setup(this->ad_position[0], x);
 
-
-		break;
-	case STATE::ACTIVE:
-	}
-	this->ads_tmp.clear();
-	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
-		if ((*this->menu_item_flag)[i]) {
-			for (const auto& c : MENU_ITEM_CONTENTS[i]) {
-				this->ads_tmp.emplace(c);
+			for (int i = 1; i < MENU_ITEM_NUM; ++i) {
+				x = this->content_id_list[random_ad(this->mt)];
+				auto last{ begin(this->content_id_tmp) + i };
+				while (find(begin(this->content_id_tmp), last, x) != last) {
+					x = this->content_id_list[random_ad(this->mt)];
+				}
+				this->content_id_tmp[i] = x;
+				this->ads[i].setup(this->ad_position[i], x);
 			}
 		}
+
+		this->state = STATE::ACTIVE;
+		break;
+	case STATE::ACTIVE:
+		break;
 	}
-
-
-	//this->df.update(ofRectangle(0, 0, 300, 300));
 }
 
 void AdBar::draw() {
-	//ofFill();
-	//ofSetColor(ofColor::white, 130);
-	//ofDrawRectangle(0, 0, DISPLAY_W, 300);
-
-	//this->df.draw();
-
-
-	//ofImage img;
-	//ofSetColor(ofColor::white);
-	//img.load("C:/of_v0.9.8_vs_release/apps/myApps/KyotoMap/fig/kyoto_tower.jpg");
-	//img.draw(10, 10, 300 - 20, 300 - 20);
-
-	//ofSetColor(ofColor::gold);
-	//ofDrawCircle(50, 50, 35);
-
-	//ofTrueTypeFont font;
-	//font.loadFont("meiryob.ttc", 35);
-	//ofSetColor(ofColor::black);
-	//font.drawString("1", 33, 64);
+	switch (this->state) {
+	case STATE::INACTIVE:
+		break;
+	case STATE::ACTIVE:
+		for (int i = 0; i < this->ad_item_num; ++i) {
+			this->ads[i].draw();
+		}
+		break;
+	}
 }

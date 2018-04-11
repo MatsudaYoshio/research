@@ -7,11 +7,15 @@
 
 class AdItem {
 private:
+	static constexpr int frame_size{ 10 };
+
 	DrawFrame df;
-	int x, y;
+	ofRectangle position;
+	param::CONTENT_ID content_id;
+	ofImage image;
+	ofTrueTypeFont font;
 public:
-	void setup(int x, int y);
-	void update();
+	void setup(const ofRectangle& position, param::CONTENT_ID content_id);
 	void draw();
 };
 
