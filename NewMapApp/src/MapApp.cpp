@@ -16,6 +16,7 @@ void MapApp::update() {
 }
 
 void MapApp::draw() {
+	//cout << mouseX << " " << mouseY << endl;
 	this->sm.draw();
 }
 

@@ -2,23 +2,76 @@
 
 using namespace param;
 
-void AdItem::setup(const ofRectangle& position, param::CONTENT_ID content_id) {
+void AdItem::setup(const ofRectangle& position, CONTENT_ID content_id) {
 	this->position = position;
 	this->content_id = content_id;
 	this->image.load(CONTENT_DATA[static_cast<int>(content_id)].image_path);
 	this->font.loadFont("meiryob.ttc", 35);
 	this->df.setup(MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(content_id)].menu_item_id)], this->frame_size, position);
+	this->df_tmp.setup(MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(content_id)].menu_item_id)], this->frame_size, position);
 }
 
 void AdItem::draw() {
-	this->df.draw();
+	switch (this->state) {
+	case STATE::NORMAL:
+		this->df.draw();
 
-	ofSetColor(ofColor::white);
-	this->image.draw(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size, this->position.getWidth() - (this->frame_size << 1), this->position.getHeight() - (this->frame_size << 1));
+		ofSetColor(ofColor::white);
+		this->image.draw(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size, this->position.getWidth() - (this->frame_size << 1), this->position.getHeight() - (this->frame_size << 1));
 
-	ofSetColor(MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(content_id)].menu_item_id)]);
-	ofDrawCircle(this->position.getX() + 50, this->position.getY() + 50, 35);
+		ofSetColor(MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(content_id)].menu_item_id)]);
+		ofDrawCircle(this->position.getX() + 50, this->position.getY() + 50, 35);
 
-	ofSetColor(ofColor::black);
-	font.drawString(to_string(CONTENT_DATA[static_cast<int>(content_id)].number), this->position.getX() + 34, this->position.getY() + 65);
+		ofSetColor(ofColor::black);
+		font.drawString(to_string(CONTENT_DATA[static_cast<int>(content_id)].number), this->position.getX() + 34, this->position.getY() + 65);
+
+		break;
+	case STATE::CAHANGE:
+		if (this->alpha == ofColor::limit()) {
+			this->content_id = this->content_id_tmp;
+			this->df.change_color(MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(this->content_id)].menu_item_id)]);
+			this->image = move(this->image_tmp);
+			this->alpha = 0;
+			this->state = STATE::NORMAL;
+			this->draw();
+			break;
+		}
+
+		this->image_tmp.load(CONTENT_DATA[static_cast<int>(this->content_id_tmp)].image_path);
+		ofColor c1{ MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(this->content_id)].menu_item_id)] , ofColor::limit() - this->alpha };
+		ofColor c2{ MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(this->content_id_tmp)].menu_item_id)] , this->alpha };
+		this->df.change_color(c1);
+		this->df_tmp.change_color(c2);
+
+		this->df.draw();
+
+		ofSetColor(ofColor::white, ofColor::limit() - this->alpha);
+		this->image.draw(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size, this->position.getWidth() - (this->frame_size << 1), this->position.getHeight() - (this->frame_size << 1));
+
+		ofSetColor(c1);
+		ofDrawCircle(this->position.getX() + 50, this->position.getY() + 50, 35);
+
+		ofSetColor(ofColor::black, ofColor::limit() - this->alpha);
+		font.drawString(to_string(CONTENT_DATA[static_cast<int>(this->content_id)].number), this->position.getX() + 34, this->position.getY() + 65);
+
+		this->df_tmp.draw();
+
+		ofSetColor(ofColor::white, this->alpha);
+		this->image_tmp.draw(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size, this->position.getWidth() - (this->frame_size << 1), this->position.getHeight() - (this->frame_size << 1));
+
+		ofSetColor(c2);
+		ofDrawCircle(this->position.getX() + 50, this->position.getY() + 50, 35);
+
+		ofSetColor(ofColor::black, this->alpha);
+		font.drawString(to_string(CONTENT_DATA[static_cast<int>(this->content_id_tmp)].number), this->position.getX() + 34, this->position.getY() + 65);
+
+		++this->alpha;
+
+		break;
+	}
+}
+
+void AdItem::change(CONTENT_ID content_id) {
+	this->content_id_tmp = content_id;
+	this->state = STATE::CAHANGE;
 }

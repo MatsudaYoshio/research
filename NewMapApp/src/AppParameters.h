@@ -29,7 +29,7 @@ namespace param {
 	constexpr int FRAME_SIZE{ 20 }; // サブウィンドウの枠の大きさ
 
 	constexpr int MENU_ITEM_NUM{ 4 };
-	constexpr int CONTENT_NUM{ 6 };
+	constexpr int CONTENT_NUM{ 11 };
 
 	const enum class MENU_ITEM_ID {
 		SIGHTSEEING, RESTAURANT, SHOPPING, HOTEL
@@ -38,12 +38,12 @@ namespace param {
 	const array<ofColor, MENU_ITEM_NUM> MENU_ITEM_COLOR{ ofColor::gold, ofColor::lawnGreen, ofColor::pink, ofColor::skyBlue };
 
 	const enum class CONTENT_ID {
-		KYOTO_TOWER, HIGASHIHONGANJI, SYOSEIEN, NISHIHONGANJI, RYUKOKU_MUSEUM, KYOTO_AQUARIUM
+		KYOTO_TOWER, HIGASHIHONGANJI, SYOSEIEN, NISHIHONGANJI, KIYOMIZUDERA, KYOTO_AQUARIUM, EIJUAN, SODOH, FUNATSURU, HANAROKU, RANTEI
 	};
 
 	const array<vector<CONTENT_ID>, MENU_ITEM_NUM> MENU_ITEM_CONTENTS{
-		vector<CONTENT_ID>{ CONTENT_ID::KYOTO_TOWER, CONTENT_ID::HIGASHIHONGANJI, CONTENT_ID::SYOSEIEN, CONTENT_ID::NISHIHONGANJI, CONTENT_ID::RYUKOKU_MUSEUM, CONTENT_ID::KYOTO_AQUARIUM},
-		vector<CONTENT_ID>{},
+		vector<CONTENT_ID>{ CONTENT_ID::KYOTO_TOWER, CONTENT_ID::HIGASHIHONGANJI, CONTENT_ID::SYOSEIEN, CONTENT_ID::NISHIHONGANJI, CONTENT_ID::KIYOMIZUDERA, CONTENT_ID::KYOTO_AQUARIUM},
+		vector<CONTENT_ID>{CONTENT_ID::EIJUAN, CONTENT_ID::SODOH, CONTENT_ID::FUNATSURU, CONTENT_ID::HANAROKU, CONTENT_ID::RANTEI},
 		vector<CONTENT_ID>{},
 		vector<CONTENT_ID>{}
 	};
@@ -60,8 +60,13 @@ namespace param {
 		content_data_type{ 1570, 784, 2, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/higashihonganji.jpg" },
 		content_data_type{ 1814, 791, 3, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/syoseien_img.jpg" },
 		content_data_type{ 1197, 798, 4, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/nishihonganji.jpg" },
-		content_data_type{ 1312, 810, 5, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/ryukoku_museum.jpg" },
-		content_data_type{ 1012, 1025, 6, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/kyoto_aquarium.jpg" }
+		content_data_type{ 2937, 568, 5, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/kiyomizudera.jpg" },
+		content_data_type{ 1012, 1025, 6, MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/kyoto_aquarium.jpg" },
+		content_data_type{ 1386, 1070, 1, MENU_ITEM_ID::RESTAURANT, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/eijuan.jpg" },
+		content_data_type{ 2666, 320, 2, MENU_ITEM_ID::RESTAURANT, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/sodoh.png" },
+		content_data_type{ 2101, 287, 3, MENU_ITEM_ID::RESTAURANT, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/hunatsuru.jpg" },
+		content_data_type{ 1624, 634, 4, MENU_ITEM_ID::RESTAURANT, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/hanaroku.jpg" },
+		content_data_type{ 1741, 1117, 5, MENU_ITEM_ID::RESTAURANT, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/rantei.jpg" }
 	};
 
 	const enum class LANGUAGE_ID {
