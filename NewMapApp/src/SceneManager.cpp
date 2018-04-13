@@ -20,6 +20,25 @@ void SceneManager::setup(HandCursor* const hc) {
 
 void SceneManager::update() {
 	this->mb.update();
+
+	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
+		if (this->menu_item_flag[i]) {
+			for (auto&& p : this->pins[i]) {
+				for (const auto& ud : this->hc->user_data) {
+					if (p.is_inside(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y())) {
+						p.point();
+						goto CONTINUE_LOOP;
+						break;
+					}
+				}
+				p.reset_state();
+
+			CONTINUE_LOOP:
+				p.update();
+			}
+		}
+	}
+
 	this->ab.update();
 }
 
