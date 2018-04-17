@@ -16,7 +16,7 @@ private:
 
 	double alpha(double cutoff) const;
 public:
-	OneEuroFilter(double freq, double mincutoff = 1.0, double beta_ = 0.0, double dcutoff = 1.0);
+	explicit OneEuroFilter(double freq, double mincutoff = 1.0, double beta_ = 0.0, double dcutoff = 1.0);
 	double filter(double value);
 };
 

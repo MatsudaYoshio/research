@@ -63,7 +63,7 @@ void Pin::draw(const ofPoint& cp, const int r, const triangle_points& tp, const 
 }
 
 bool Pin::is_inside(const int x, const int y) {
-	return ofDist(x, y, this->cp.x, this->cp.y) <= this->radius + 80;
+	return ofDist(x, y, this->cp.x, this->cp.y) <= this->radius + 100;
 }
 
 void Pin::point() {

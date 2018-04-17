@@ -12,7 +12,7 @@ private:
 	void set_alpha(double alpha);
 	double filter(double value);
 public:
-	LowPassFilter(double alpha, double initval = 0.0);
+	explicit LowPassFilter(double alpha, double initval = 0.0);
 	double filter_with_alpha(double value, double alpha);
 	bool has_last_raw_value() const;
 	double get_last_raw_value() const;
