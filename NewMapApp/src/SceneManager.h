@@ -22,6 +22,7 @@ public:
 	void draw();
 
 	void add_pin(param::MENU_ITEM_ID& item_id);
+	void make_sub_window(param::CONTENT_ID& content_id);
 
 	~SceneManager();
 };

@@ -25,7 +25,7 @@ void Pin::setup(param::CONTENT_ID content_id) {
 
 void Pin::update() {
 	if (this->progress > this->progress_threshold) {
-		cout << "Selected!!" << endl;
+		ofNotifyEvent(this->make_sub_window_event, this->content_id);
 		this->state = STATE::NORMAL;
 	}
 

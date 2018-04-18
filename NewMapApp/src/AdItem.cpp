@@ -28,7 +28,7 @@ void AdItem::draw() {
 		break;
 	case STATE::CAHANGE:
 		if (this->alpha == ofColor::limit()) {
-			this->content_id = this->content_id_tmp;
+			this->content_id = move(this->content_id_tmp);
 			this->df.change_color(MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(this->content_id)].menu_item_id)]);
 			this->image = move(this->image_tmp);
 			this->alpha = 0;

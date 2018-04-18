@@ -12,6 +12,7 @@ void SceneManager::setup(HandCursor* const hc) {
 		this->pins[i].resize(MENU_ITEM_CONTENTS[i].size());
 		for (int j = 0; j < this->pins[i].size(); ++j) {
 			this->pins[i][j].setup(MENU_ITEM_CONTENTS[i][j]);
+			ofAddListener(this->pins[i][j].make_sub_window_event, this, &SceneManager::make_sub_window);
 		}
 	}
 
@@ -74,6 +75,16 @@ void SceneManager::add_pin(param::MENU_ITEM_ID& item_id) {
 	this->menu_item_flag[static_cast<int>(item_id)] = true;
 }
 
+void SceneManager::make_sub_window(param::CONTENT_ID& content_id) {
+	cout << "make sub window!!\n";
+}
+
 SceneManager::~SceneManager() {
 	ofRemoveListener(this->mb.add_pin_event, this, &SceneManager::add_pin);
+
+	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
+		for (auto&& p : this->pins[i]) {
+			ofRemoveListener(p.make_sub_window_event, this, &SceneManager::make_sub_window);
+		}
+	}
 }
