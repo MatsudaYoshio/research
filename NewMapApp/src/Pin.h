@@ -31,17 +31,18 @@ private:
 	ofColor color;
 	float alpha{ ofColor::limit() };
 	int progress{ 0 };
+	long long int user_id;
 
 	void draw(const ofPoint& cp, int r, const triangle_points& tp, const ofTrueTypeFont& f, const ofPoint& fp) const;
 public:
-	ofEvent<param::CONTENT_ID> make_sub_window_event;
+	ofEvent<pair<param::CONTENT_ID, long long int>> make_sub_window_event;
 
 	void setup(param::CONTENT_ID content_id);
 	void update();
 	void draw() const;
 
 	bool is_inside(int x, int y);
-	void point();
+	void point(long long int user_id);
 	void reset_state();
 };
 

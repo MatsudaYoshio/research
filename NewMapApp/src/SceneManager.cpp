@@ -27,9 +27,8 @@ void SceneManager::update() {
 			for (auto&& p : this->pins[i]) {
 				for (const auto& ud : this->hc->user_data) {
 					if (p.is_inside(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y())) {
-						p.point();
+						p.point(ud.first);
 						goto CONTINUE_LOOP;
-						break;
 					}
 				}
 				p.reset_state();
@@ -41,6 +40,10 @@ void SceneManager::update() {
 	}
 
 	this->ab.update();
+
+	for (auto&& w : this->sub_windows) {
+		w.update();
+	}
 }
 
 void SceneManager::draw() {
@@ -69,14 +72,18 @@ void SceneManager::draw() {
 		ofSetColor(ud.second.cursor_color);
 		ofDrawCircle(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y(), 55);
 	}
+
+	for (auto&& w : this->sub_windows) {
+		w.draw();
+	}
 }
 
 void SceneManager::add_pin(param::MENU_ITEM_ID& item_id) {
 	this->menu_item_flag[static_cast<int>(item_id)] = true;
 }
 
-void SceneManager::make_sub_window(param::CONTENT_ID& content_id) {
-	cout << "make sub window!!\n";
+void SceneManager::make_sub_window(pair<param::CONTENT_ID, long long int>& id) {
+	this->sub_windows.emplace_back(SubWindow{ id.first, id.second });
 }
 
 SceneManager::~SceneManager() {

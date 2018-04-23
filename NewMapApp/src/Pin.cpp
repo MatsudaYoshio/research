@@ -25,7 +25,8 @@ void Pin::setup(param::CONTENT_ID content_id) {
 
 void Pin::update() {
 	if (this->progress > this->progress_threshold) {
-		ofNotifyEvent(this->make_sub_window_event, this->content_id);
+		pair<CONTENT_ID, long long int> id(this->content_id, this->user_id);
+		ofNotifyEvent(this->make_sub_window_event, id);
 		this->state = STATE::NORMAL;
 	}
 
@@ -66,7 +67,8 @@ bool Pin::is_inside(const int x, const int y) {
 	return ofDist(x, y, this->cp.x, this->cp.y) <= this->radius + 100;
 }
 
-void Pin::point() {
+void Pin::point(const long long int user_id) {
+	this->user_id = user_id;
 	this->state = STATE::POINT;
 }
 

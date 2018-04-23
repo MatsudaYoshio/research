@@ -46,6 +46,7 @@ namespace param {
 		int number;
 		MENU_ITEM_ID menu_item_id;
 		string image_path;
+		string name;
 	};
 
 	extern const content_data_type CONTENT_DATA[];
