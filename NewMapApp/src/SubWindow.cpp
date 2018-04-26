@@ -32,6 +32,8 @@ void SubWindow::draw() {
 
 	gluLookAt(this->view_rect.getX(), this->view_rect.getY(), 0, this->view_rect.getX(), this->view_rect.getY(), -1, 0, 1, 0); // Ž‹“_ˆÚ“®
 
+	ofBackground(ofColor::white);
+
 	ofSetColor(ofColor::black);
 	this->font.drawString(CONTENT_DATA[static_cast<int>(content_id)].name, 0, 50 * this->view_rect.getHeight() / this->defalut_height);
 

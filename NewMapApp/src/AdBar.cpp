@@ -2,7 +2,7 @@
 
 using namespace param;
 
-const array<ofRectangle, AdBar::ad_item_num> AdBar::ad_position{ ofRectangle(140, 50, 300, 300), ofRectangle(580, 50, 300, 300), ofRectangle(1020, 50, 300, 300), ofRectangle(1460, 50, 300, 300) };
+const array<ofRectangle, AdBar::ad_item_num> AdBar::ad_position{ ofRectangle(30, 30, 420, 300), ofRectangle(510, 30, 420, 300), ofRectangle(990, 30, 420, 300), ofRectangle(1470, 30, 420, 300) };
 
 random_device AdBar::rd;
 mt19937 AdBar::mt(AdBar::rd());

@@ -17,13 +17,22 @@ void AdItem::draw() {
 		this->df.draw();
 
 		ofSetColor(ofColor::white);
-		this->image.draw(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size, this->position.getWidth() - (this->frame_size << 1), this->position.getHeight() - (this->frame_size << 1));
+		ofDrawRectangle(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size, this->position.getWidth() - (this->frame_size << 1), this->frame_size + 80);
 
-		ofSetColor(MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(content_id)].menu_item_id)]);
+		this->image.draw(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size + 80, this->position.getWidth() - (this->frame_size << 1), this->position.getHeight() - (this->frame_size << 1) - 80);
+
+		ofSetColor(MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(this->content_id)].menu_item_id)]);
 		ofDrawCircle(this->position.getX() + 50, this->position.getY() + 50, 35);
 
 		ofSetColor(ofColor::black);
-		font.drawString(to_string(CONTENT_DATA[static_cast<int>(content_id)].number), this->position.getX() + 34, this->position.getY() + 65);
+		font.drawString(to_string(CONTENT_DATA[static_cast<int>(this->content_id)].number), this->position.getX() + 34, this->position.getY() + 65);
+
+		if (CONTENT_DATA[static_cast<int>(this->content_id)].name.size() > 11) {
+			font.drawString(CONTENT_DATA[static_cast<int>(this->content_id)].name.substr(0, 9) + "...", this->position.getX() + 90, this->position.getY() + 65);
+		}
+		else {
+			font.drawString(CONTENT_DATA[static_cast<int>(this->content_id)].name, this->position.getX() + 90, this->position.getY() + 65);
+		}
 
 		break;
 	case STATE::CAHANGE:
@@ -46,7 +55,9 @@ void AdItem::draw() {
 		this->df.draw();
 
 		ofSetColor(ofColor::white, ofColor::limit() - this->alpha);
-		this->image.draw(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size, this->position.getWidth() - (this->frame_size << 1), this->position.getHeight() - (this->frame_size << 1));
+		ofDrawRectangle(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size, this->position.getWidth() - (this->frame_size << 1), this->frame_size + 80);
+
+		this->image.draw(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size + 80, this->position.getWidth() - (this->frame_size << 1), this->position.getHeight() - (this->frame_size << 1) - 80);
 
 		ofSetColor(c1);
 		ofDrawCircle(this->position.getX() + 50, this->position.getY() + 50, 35);
@@ -54,16 +65,32 @@ void AdItem::draw() {
 		ofSetColor(ofColor::black, ofColor::limit() - this->alpha);
 		font.drawString(to_string(CONTENT_DATA[static_cast<int>(this->content_id)].number), this->position.getX() + 34, this->position.getY() + 65);
 
+		if (CONTENT_DATA[static_cast<int>(this->content_id)].name.size() > 11) {
+			font.drawString(CONTENT_DATA[static_cast<int>(this->content_id)].name.substr(0, 9) + "...", this->position.getX() + 90, this->position.getY() + 65);
+		}
+		else {
+			font.drawString(CONTENT_DATA[static_cast<int>(this->content_id)].name, this->position.getX() + 90, this->position.getY() + 65);
+		}
+
 		this->df_tmp.draw();
 
 		ofSetColor(ofColor::white, this->alpha);
-		this->image_tmp.draw(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size, this->position.getWidth() - (this->frame_size << 1), this->position.getHeight() - (this->frame_size << 1));
+		ofDrawRectangle(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size, this->position.getWidth() - (this->frame_size << 1), this->frame_size + 80);
+
+		this->image_tmp.draw(this->position.getX() + this->frame_size, this->position.getY() + this->frame_size + 80, this->position.getWidth() - (this->frame_size << 1), this->position.getHeight() - (this->frame_size << 1) - 80);
 
 		ofSetColor(c2);
 		ofDrawCircle(this->position.getX() + 50, this->position.getY() + 50, 35);
 
 		ofSetColor(ofColor::black, this->alpha);
 		font.drawString(to_string(CONTENT_DATA[static_cast<int>(this->content_id_tmp)].number), this->position.getX() + 34, this->position.getY() + 65);
+
+		if (CONTENT_DATA[static_cast<int>(this->content_id_tmp)].name.size() > 11) {
+			font.drawString(CONTENT_DATA[static_cast<int>(this->content_id_tmp)].name.substr(0, 9) + "...", this->position.getX() + 90, this->position.getY() + 65);
+		}
+		else {
+			font.drawString(CONTENT_DATA[static_cast<int>(this->content_id_tmp)].name, this->position.getX() + 90, this->position.getY() + 65);
+		}
 
 		++this->alpha;
 
