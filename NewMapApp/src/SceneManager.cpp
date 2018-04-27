@@ -17,9 +17,35 @@ void SceneManager::setup(HandCursor* const hc) {
 	}
 
 	this->ab.setup(&this->menu_item_flag);
+
+	this->sa.setup(this->hc, &this->sub_windows);
 }
 
 void SceneManager::update() {
+	if (!this->transform_thread_flag && !this->sub_windows.empty()) {
+		if (any_of(begin(this->sub_windows), end(this->sub_windows), [](const auto& x) {return x.second.track_index != SubWindow::TRACK_READY; })) {
+			goto THROUGH_OPT;
+		}
+
+		this->rects_tmp.clear();
+
+		for (const auto& s : this->sub_windows) {
+			this->rects_tmp.emplace(s.first, s.second.get_rect());
+		}
+
+		this->sa(this->rects_tmp, this->best_rects);
+
+		this->old_rects = move(this->rects_tmp);
+
+		void(SceneManager::*funcp)(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) = &SceneManager::transform;
+		thread th(funcp, this, this->old_rects, this->best_rects);
+		th.detach();
+	}
+THROUGH_OPT:
+	for (auto&& w : this->sub_windows) {
+		w.second.update();
+	}
+
 	this->mb.update();
 
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
@@ -40,10 +66,6 @@ void SceneManager::update() {
 	}
 
 	this->ab.update();
-
-	for (auto&& w : this->sub_windows) {
-		w.update();
-	}
 }
 
 void SceneManager::draw() {
@@ -74,8 +96,41 @@ void SceneManager::draw() {
 	}
 
 	for (auto&& w : this->sub_windows) {
-		w.draw();
+		w.second.draw();
 	}
+}
+
+void SceneManager::transform(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) {
+	this->transform_thread_flag = true;
+
+	const double change_rate{ 1.0 / SubWindow::track_rects_num };
+
+	int x_sign, y_sign, w_sign, h_sign;
+	double x_change_val, y_change_val, w_change_val, h_change_val;
+
+	for (const auto& id : this->sub_windows) {
+		w_sign = (new_rects[id.first].width > old_rects[id.first].width) ? +1 : -1;
+		h_sign = (new_rects[id.first].height > old_rects[id.first].height) ? +1 : -1;
+		w_change_val = change_rate*abs(new_rects[id.first].width - old_rects[id.first].width)*w_sign;
+		h_change_val = change_rate*abs(new_rects[id.first].height - old_rects[id.first].height)*h_sign;
+		x_sign = (new_rects[id.first].x > old_rects[id.first].x) ? +1 : -1;
+		y_sign = (new_rects[id.first].y > old_rects[id.first].y) ? +1 : -1;
+		x_change_val = change_rate*abs(new_rects[id.first].x - old_rects[id.first].x)*x_sign;
+		y_change_val = change_rate*abs(new_rects[id.first].y - old_rects[id.first].y)*y_sign;
+		try {
+			for (int i = 0; i < SubWindow::track_rects_num; ++i) {
+				this->sub_windows.at(id.first).track_rects[i] = old_rects[id.first];
+				old_rects[id.first].setWidth(old_rects[id.first].width + w_change_val);
+				old_rects[id.first].setHeight(old_rects[id.first].height + h_change_val);
+				old_rects[id.first].setX(old_rects[id.first].x + x_change_val);
+				old_rects[id.first].setY(old_rects[id.first].y + y_change_val);
+			}
+			this->sub_windows.at(id.first).track_index = 0;
+		}
+		catch (std::out_of_range&) {}
+	}
+
+	this->transform_thread_flag = false;
 }
 
 void SceneManager::add_pin(param::MENU_ITEM_ID& item_id) {
@@ -83,7 +138,7 @@ void SceneManager::add_pin(param::MENU_ITEM_ID& item_id) {
 }
 
 void SceneManager::make_sub_window(pair<param::CONTENT_ID, long long int>& id) {
-	this->sub_windows.emplace_back(SubWindow{ id.first, id.second });
+	this->sub_windows.emplace(static_cast<int>(id.first), SubWindow{ id.first, id.second });
 }
 
 SceneManager::~SceneManager() {

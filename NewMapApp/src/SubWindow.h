@@ -9,9 +9,9 @@
 
 class SubWindow {
 private:
-	static constexpr int frame_size{ 20 };
-	static constexpr int defalut_width{ 400 };
+	static constexpr int frame_size{ 10 };
 	static constexpr int defalut_height{ 400 };
+	static constexpr int defalut_width{ static_cast<int>(defalut_height * 1.618) };
 
 	ofxSecondWindow window;
 	DrawFrame df;
@@ -33,9 +33,8 @@ public:
 	void draw();
 
 	//bool is_inside(const ofPoint& p) const;
-	//ofRectangle get_rect() const;
-	//void set_rect(const ofRectangle& rect);
-	//int get_user_id() const;
+	ofRectangle get_rect() const;
+	long long int get_user_id() const;
 
 	ofEvent<long long int> delete_sub_window_event;
 	void exit();

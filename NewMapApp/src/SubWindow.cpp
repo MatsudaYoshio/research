@@ -19,6 +19,15 @@ SubWindow::SubWindow(CONTENT_ID content_id, const long long int user_id) {
 }
 
 void SubWindow::update() {
+	if (this->track_index == this->track_rects_num) {
+		this->track_index = this->TRACK_READY;
+	}
+	else if (this->track_index != this->TRACK_READY) {
+		this->window.setWindowPosition(this->track_rects[this->track_index].getX(), this->track_rects[this->track_index].getY());
+		this->window.setWindowSize(this->track_rects[this->track_index].getWidth(), this->track_rects[this->track_index].getHeight());
+		++this->track_index;
+	}
+		
 	this->view_rect.setWidth(this->window.getWidth());
 	this->view_rect.setHeight(this->window.getHeight());
 
@@ -35,10 +44,10 @@ void SubWindow::draw() {
 	ofBackground(ofColor::white);
 
 	ofSetColor(ofColor::black);
-	this->font.drawString(CONTENT_DATA[static_cast<int>(content_id)].name, 0, 50 * this->view_rect.getHeight() / this->defalut_height);
+	this->font.drawString(CONTENT_DATA[static_cast<int>(content_id)].name, this->frame_size, this->frame_size + 40 * this->view_rect.getHeight() / this->defalut_height);
 
 	ofSetColor(ofColor::white);
-	this->image.draw(0, 0.1*this->view_rect.getHeight(), this->view_rect.getWidth(), this->view_rect.getHeight());
+	this->image.draw(this->frame_size, this->frame_size + 0.12*this->view_rect.getHeight(), this->view_rect.getWidth() - (this->frame_size >> 1), this->view_rect.getHeight() - (this->frame_size >> 1));
 
 	//ofBackground(ofColor::white);
 	//this->scene->draw(); // シーンの描画
@@ -46,6 +55,14 @@ void SubWindow::draw() {
 	this->df.draw(); // 枠の描画
 
 	this->window.end(); // サブウィンドウのの描画終了
+}
+
+ofRectangle SubWindow::get_rect() const {
+	return this->window.get_rect();
+}
+
+long long int SubWindow::get_user_id() const {
+	return this->user_id;
 }
 
 void SubWindow::exit() {
