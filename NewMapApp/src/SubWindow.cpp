@@ -16,6 +16,8 @@ SubWindow::SubWindow(CONTENT_ID content_id, const long long int user_id) {
 	this->track_index = this->TRACK_READY;
 
 	this->image.load(CONTENT_DATA[static_cast<int>(content_id)].image_path);
+
+	this->font.loadFont("meiryob.ttc", 30);
 }
 
 void SubWindow::update() {

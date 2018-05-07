@@ -73,13 +73,13 @@ bool SimulatedAnnealing::set_next_state() {
 	break;
 	case 2:
 	{
-		uniform_int_distribution<int> random_w(100, HALF_DISPLAY_W);
+		uniform_int_distribution<int> random_w(100, 600);
 		this->next_state[this->modify_window_num].setWidth(random_w(this->mt));
 	}
 	break;
 	case 3:
 	{
-		uniform_int_distribution<int> random_h(100, HALF_DISPLAY_H);
+		uniform_int_distribution<int> random_h(100, 600);
 		this->next_state[this->modify_window_num].setHeight(random_h(this->mt));
 	}
 	break;
@@ -142,5 +142,6 @@ void SimulatedAnnealing::calculate_cost() {
 
 	this->area_cost = -min_element(begin(this->next_state), end(this->next_state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
-	this->next_cost += 150 * this->area_cost + 10000 * this->overlap_cost + 1000 * this->shape_cost + 700 * this->distance_cost;
+	//this->next_cost += 150 * this->area_cost + 10000 * this->overlap_cost + 1000 * this->shape_cost + 700 * this->distance_cost;
+	this->next_cost += 150 * this->area_cost + 10000 * this->overlap_cost + 700 * this->distance_cost;
 }

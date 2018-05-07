@@ -22,11 +22,33 @@ void SceneManager::setup(HandCursor* const hc) {
 }
 
 void SceneManager::update() {
-	if (!this->transform_thread_flag && !this->sub_windows.empty()) {
-		if (any_of(begin(this->sub_windows), end(this->sub_windows), [](const auto& x) {return x.second.track_index != SubWindow::TRACK_READY; })) {
-			goto THROUGH_OPT;
-		}
+	bool optimize_flag{ false };
 
+	for (const auto& sw : this->sub_windows) {
+		for (const auto& ud : this->hc->user_data) {
+			if (sw.second.get_rect().intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x() - 1000, 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y() - 1000, 0, DISPLAY_H), ofClamp(1000, 0, DISPLAY_W), ofClamp(1000, 0, DISPLAY_H)))) {
+				optimize_flag = true;
+				goto BIG_BREAK;
+			}
+		}
+	}
+
+	for (const auto& sw1 : this->sub_windows) {
+		for (const auto& sw2 : this->sub_windows) {
+			if (sw1.first == sw2.first) {
+				continue;
+			}
+
+			if (sw1.second.get_rect().intersects(sw2.second.get_rect())) {
+				optimize_flag = true;
+				goto BIG_BREAK;
+			}
+		}
+	}
+
+BIG_BREAK:
+
+	if (optimize_flag && !this->transform_thread_flag && !this->sub_windows.empty() && all_of(begin(this->sub_windows), end(this->sub_windows), [](const auto& x) {return x.second.track_index == SubWindow::TRACK_READY; })) {
 		this->rects_tmp.clear();
 
 		for (const auto& s : this->sub_windows) {
@@ -41,7 +63,27 @@ void SceneManager::update() {
 		thread th(funcp, this, this->old_rects, this->best_rects);
 		th.detach();
 	}
-THROUGH_OPT:
+//
+//	if (!this->transform_thread_flag && !this->sub_windows.empty()) {
+//		if (any_of(begin(this->sub_windows), end(this->sub_windows), [](const auto& x) {return x.second.track_index != SubWindow::TRACK_READY; })) {
+//			goto THROUGH_OPT;
+//		}
+//
+//		this->rects_tmp.clear();
+//
+//		for (const auto& s : this->sub_windows) {
+//			this->rects_tmp.emplace(s.first, s.second.get_rect());
+//		}
+//
+//		this->sa(this->rects_tmp, this->best_rects);
+//
+//		this->old_rects = move(this->rects_tmp);
+//
+//		void(SceneManager::*funcp)(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) = &SceneManager::transform;
+//		thread th(funcp, this, this->old_rects, this->best_rects);
+//		th.detach();
+//	}
+//THROUGH_OPT:
 	for (auto&& w : this->sub_windows) {
 		w.second.update();
 	}
