@@ -17,6 +17,8 @@ const double param::RESOLUTION_RATIO_H{ param::DISPLAY_H / param::CAMERA_H };
 
 const int param::FRAME_SIZE{ 20 };
 
+const ofRectangle param::USER_CERTAIN_WINDOW{ 250, 250, 500, 500 };
+
 const ofColor param::MENU_ITEM_COLOR[]{ ofColor::gold, ofColor::lawnGreen, ofColor::pink, ofColor::skyBlue };
 
 const vector<param::CONTENT_ID> param::MENU_ITEM_CONTENTS[]{

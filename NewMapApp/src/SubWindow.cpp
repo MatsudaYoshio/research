@@ -49,7 +49,7 @@ void SubWindow::draw() {
 	this->font.drawString(CONTENT_DATA[static_cast<int>(content_id)].name, this->frame_size, this->frame_size + 40 * this->view_rect.getHeight() / this->defalut_height);
 
 	ofSetColor(ofColor::white);
-	this->image.draw(this->frame_size, this->frame_size + 0.12*this->view_rect.getHeight(), this->view_rect.getWidth() - (this->frame_size >> 1), this->view_rect.getHeight() - (this->frame_size >> 1));
+	this->image.draw(this->frame_size, this->frame_size + 0.12*this->view_rect.getHeight(), this->view_rect.getWidth() - (this->frame_size << 1), 0.88*this->view_rect.getHeight() - (this->frame_size << 1));
 
 	//ofBackground(ofColor::white);
 	//this->scene->draw(); // ƒV[ƒ“‚Ì•`‰æ

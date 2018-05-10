@@ -46,11 +46,15 @@
 #define LEFT_EAR_Y(i) {i,17,1}
 
 class HandCursor {
+public:
+	const enum class STATE { INACTIVE, ACTIVE };
 private:
 	using X_type = std::map<unsigned long, double>; // 特徴ベクトルの型
 	using kernel_type = dlib::sparse_linear_kernel<X_type>; // カーネルの型
 	using fhog_type = dlib::array2d<dlib::matrix<double, 31, 1 >>; // fhog特徴量の型
 	using user_data_type = struct {
+		STATE state;
+		long long int latest_update_frame;
 		dlib::rectangle hand;
 		dlib::point cursor_point, face_point;
 		double face_size;
@@ -70,6 +74,7 @@ private:
 	static constexpr double windows_range_rate_top{ 2.0 }, windows_range_rate_bottom{ 0.5 }, windows_range_rate_left{ 1.5 }, windows_range_rate_right{ 1.5 };
 	static constexpr double sliding_window_step_rate{ 0.2 };
 	static constexpr int cursor_color_num{ 8 };
+	static constexpr long long int new_user_id { 0 };
 	static const char* model_path;
 	static const std::array<ofColor, cursor_color_num> cursor_colors;
 	static const cv::Scalar CV_RED;
@@ -107,6 +112,7 @@ private:
 	bool hand_detect(int personal_id, double face_size);
 	void hand_detect(const std::vector<dlib::rectangle>& sliding_windows, long long int user_id);
 	void start_track(int personal_id, double face_size);
+	void resume_track(long long int user_id, int personal_id, double face_size);
 	void renew_user_data(int personal_id, double face_size, long long int user_id);
 	void get_frame();
 	void tracking(dlib::correlation_tracker& ct, long long int user_id);

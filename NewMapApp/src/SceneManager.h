@@ -23,6 +23,9 @@ private:
 	array<vector<Pin>, param::MENU_ITEM_NUM> pins;
 	unordered_map<long long int, SubWindow> sub_windows;
 	unordered_map<long long int, ofRectangle> rects_tmp, old_rects, best_rects;
+
+	bool is_intersect_window_pointer();
+	bool is_intersect_window_window();
 public:
 	void setup(HandCursor* const hc);
 	void update();

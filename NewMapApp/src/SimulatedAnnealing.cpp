@@ -73,13 +73,13 @@ bool SimulatedAnnealing::set_next_state() {
 	break;
 	case 2:
 	{
-		uniform_int_distribution<int> random_w(100, 600);
+		uniform_int_distribution<int> random_w(100, 1200);
 		this->next_state[this->modify_window_num].setWidth(random_w(this->mt));
 	}
 	break;
 	case 3:
 	{
-		uniform_int_distribution<int> random_h(100, 600);
+		uniform_int_distribution<int> random_h(100, 741);
 		this->next_state[this->modify_window_num].setHeight(random_h(this->mt));
 	}
 	break;
@@ -103,8 +103,7 @@ void SimulatedAnnealing::calculate_cost() {
 
 	for (const auto& s : this->next_state) {
 		for (const auto& ud : this->hc->user_data) {
-			//this->overlap_cost += s.second.getIntersection(ofRectangle(ofClamp(this->hc->user_data.at(id).transformed_cursor_point.x() - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(this->hc->user_data.at(id).transformed_cursor_point.y() - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H))).getArea();
-			if (s.second.intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x() - HALF_MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y() - HALF_MAX_SUB_WINDOW_H, 0, DISPLAY_H), ofClamp(MAX_SUB_WINDOW_W, 0, DISPLAY_W), ofClamp(MAX_SUB_WINDOW_H, 0, DISPLAY_H)))) {
+			if(s.second.intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x() - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y() - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))){
 				// もし矩形とカーソルの周辺矩形が重複していたら、コストを最大にしてコスト計算を終了
 				this->next_cost = 0.0;
 				return;
@@ -125,8 +124,8 @@ void SimulatedAnnealing::calculate_cost() {
 
 		this->next_cost -= s.second.getArea(); // 自分との重複面積分減らす
 
-		/* 円形度 */
-		this->shape_cost -= 4 * PI*s.second.getArea() / (s.second.getPerimeter()*s.second.getPerimeter());
+		///* 円形度 */
+		//this->shape_cost -= 4 * PI*s.second.getArea() / (s.second.getPerimeter()*s.second.getPerimeter());
 
 		/* 矩形と顔との距離 */
 		try {

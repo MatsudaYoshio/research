@@ -44,17 +44,18 @@ void HandCursor::update() {
 	//frc.NewFrame();
 	//printf("fps : %lf\n", frc.GetFrameRate());
 
+	for (const auto& ud : this->user_data) {
+		if (ud.second.state == STATE::INACTIVE && this->frame_count - ud.second.latest_update_frame > 60) {
+			this->user_data.erase(ud.first);
+		}
+	}
+
 	if ((this->frame_count % 30) == 0) {
 		this->body_part_extractor(this->pose_key_points, this->mat_org_image_buffer.get_read_position()); // openPoseによる骨格推定
 
 		const int people_num{ this->pose_key_points.getSize(0) }; // 検出された人数
 		for (int i = 0; i < people_num; ++i) {
-
-			if (this->pose_key_points[NOSE_X(i)] == 0.0 || this->pose_key_points[RIGHT_WRIST_X(i)] == 0.0) { // 顔か右手が検出されなければ
-				continue;
-			}
-
-			if (ofDist(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)], this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]) > this->face_hand_distance) { // 顔と右手の距離が一定以上だったら
+			if (this->pose_key_points[NOSE_X(i)] == 0.0) { // 顔が検出できなければ
 				continue;
 			}
 
@@ -62,16 +63,28 @@ void HandCursor::update() {
 
 			long long int user_id{ this->decide_user_id(i) }; // user_idを決定
 
-			if (user_id == 0) { // user_idが0(新たなユーザ)であれば
-				if (this->hand_detect(i, face_size)) { // 手が検出されれば
-					this->start_track(i, face_size); // 追跡開始
-				}
-				else {
-					continue;
+			if (this->pose_key_points[RIGHT_WRIST_X(i)] == 0.0) { // 右手が検出できなければ
+				if (user_id != this->new_user_id) { // 新たなユーザの顔じゃなければ
+					this->renew_user_data(i, face_size, user_id); // 顔の情報を更新
 				}
 			}
-			else {
-				this->renew_user_data(i, face_size, user_id); // ユーザの情報を更新
+			else { // 顔も右手も検出できた場合
+				if (ofDist(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)], this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]) > this->face_hand_distance) { // 顔と右手の距離が一定以上だったら
+					if (user_id != this->new_user_id) { // 新たなユーザじゃなければ
+						this->renew_user_data(i, face_size, user_id); // 既に追跡しているユーザの顔の情報を更新
+						continue;
+					}
+				}
+				else {
+					if (this->hand_detect(i, face_size)) { // 手が検出されれば
+						if (user_id != this->new_user_id && this->user_data[user_id].state == STATE::INACTIVE) { // 新たなユーザでないかつユーザがポインタを操作していない状態ならば
+							this->resume_track(user_id, i, face_size); // 手の追跡を再開する
+						}
+						else if (user_id == this->new_user_id) { // 新たなユーザならば
+							this->start_track(i, face_size); // 手の追跡をスタートする
+						}
+					}
+				}
 			}
 		}
 	}
@@ -111,7 +124,7 @@ double HandCursor::estimate_face_size(const int personal_id) const {
 }
 
 int HandCursor::decide_user_id(const int personal_id) const {
-	long long int user_id{ 0 };
+	long long int user_id{ this->new_user_id };
 	double best_d{ DBL_MAX };
 	for (const auto& ud : this->user_data) {
 		const double d{ ofDist(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)], ud.second.face_point.x(), ud.second.face_point.y()) };
@@ -168,7 +181,7 @@ void HandCursor::start_track(const int personal_id, const double face_size) {
 
 	this->cursor_color_state[cursor_color_id] = true; // 選んだカーソルの色を使用済みとする
 
-	this->user_data.emplace(this->user_id, user_data_type{this->hand_dets[0], center(this->hand_dets[0]), point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]), face_size, cursor_color_id, this->cursor_colors[cursor_color_id], }); // ユーザの情報をできるだけ詰める
+	this->user_data.emplace(this->user_id, user_data_type{ STATE::ACTIVE, this->frame_count, this->hand_dets[0], center(this->hand_dets[0]), point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]), face_size, cursor_color_id, this->cursor_colors[cursor_color_id], }); // ユーザの情報をできるだけ詰める
 
 	this->transform_point(this->user_data[this->user_id].face_point, this->user_data[this->user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
 	this->transform_point(this->user_data[this->user_id].cursor_point, this->user_data[this->user_id].transformed_cursor_point); // カーソルの座標を画面上の座標に変換
@@ -180,6 +193,28 @@ void HandCursor::start_track(const int personal_id, const double face_size) {
 	th.detach();
 }
 
+void HandCursor::resume_track(const long long int user_id, const int personal_id, const double face_size) {
+	/* ユーザの情報を更新 */
+	this->user_data[user_id].state = STATE::ACTIVE;
+	this->user_data[user_id].latest_update_frame = this->frame_count;
+	this->user_data[user_id].hand = move(this->hand_dets[0]);
+	this->user_data[user_id].cursor_point = point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]);
+	this->user_data[user_id].face_size = face_size;
+	this->user_data[user_id].cursor_color_id = distance(cbegin(this->cursor_color_state), find_if_not(cbegin(this->cursor_color_state), cend(this->cursor_color_state), [](auto x) {return x; })); // 未使用の色からカーソルの色を選ぶ
+	this->user_data[user_id].cursor_color = this->cursor_colors[this->user_data[user_id].cursor_color_id];
+
+	this->cursor_color_state[this->user_data[user_id].cursor_color_id] = true; // 選んだカーソルの色を使用済みとする
+
+	this->transform_point(this->user_data[user_id].face_point, this->user_data[user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
+	this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point); // カーソルの座標を画面上の座標に変換
+
+	/* 追跡を開始する */
+	correlation_tracker ct;
+	ct.start_track(this->org_image_buffer.get_read_position(), this->user_data[user_id].hand);
+	thread th(&HandCursor::tracking, this, ct, user_id);
+	th.detach();
+}
+
 void HandCursor::renew_user_data(const int personal_id, const double face_size, const long long int user_id) {
 	/* 顔の座標と大きさを更新する */
 	try {
@@ -187,6 +222,8 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 
 		this->user_data.at(user_id).face_point.x() = this->pose_key_points[NOSE_X(personal_id)];
 		this->user_data.at(user_id).face_point.y() = this->pose_key_points[NOSE_Y(personal_id)];
+
+		this->user_data.at(user_id).latest_update_frame = this->frame_count;
 	}
 	catch (std::out_of_range&) {}
 }
@@ -251,9 +288,11 @@ void HandCursor::tracking(correlation_tracker& ct, const long long int user_id) 
 
 		this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point);
 
+		this->user_data[user_id].latest_update_frame = this->frame_count;
+
 		if (this->user_data[user_id].track_hand_dets.empty() || this->stop_flag) { // 直近フレームで手が検出されなかったら追跡をやめる
 			this->cursor_color_state[this->user_data[user_id].cursor_color_id] = false;
-			this->user_data.erase(user_id);
+			this->user_data[user_id].state = STATE::INACTIVE;
 			break;
 		}
 	}

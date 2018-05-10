@@ -28,6 +28,8 @@ namespace param {
 
 	extern const int FRAME_SIZE; // サブウィンドウの枠の大きさ
 
+	extern const ofRectangle USER_CERTAIN_WINDOW;
+
 	constexpr int MENU_ITEM_NUM{ 4 };
 	constexpr int CONTENT_NUM{ 11 };
 
