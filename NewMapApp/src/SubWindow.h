@@ -4,8 +4,8 @@
 
 #include "ofMain.h"
 #include "ofxSecondWindow.h"
-#include "HandCursor.h"
 #include "DrawFrame.h"
+#include "AppParameters.h"
 
 class SubWindow {
 private:
@@ -32,11 +32,8 @@ public:
 	void update();
 	void draw();
 
-	//bool is_inside(const ofPoint& p) const;
 	ofRectangle get_rect() const;
 	long long int get_user_id() const;
-
-	ofEvent<long long int> delete_sub_window_event;
 	void exit();
 };
 

@@ -44,9 +44,13 @@ void HandCursor::update() {
 	//frc.NewFrame();
 	//printf("fps : %lf\n", frc.GetFrameRate());
 
-	for (const auto& ud : this->user_data) {
-		if (ud.second.state == STATE::INACTIVE && this->frame_count - ud.second.latest_update_frame > 60) {
-			this->user_data.erase(ud.first);
+	/* ポインタを表示していない状態かつ一定時間顔の情報が更新されていないユーザを削除する */
+	for (auto ite = begin(this->user_data); ite != end(this->user_data);) {
+		if (ite->second.state == STATE::INACTIVE && this->frame_count - ite->second.latest_update_frame > 60) {
+			ite = this->user_data.erase(ite);
+		}
+		else {
+			++ite;
 		}
 	}
 

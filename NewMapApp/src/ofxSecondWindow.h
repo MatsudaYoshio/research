@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 
 class ofxSecondWindow {
-    
 public:
     void setup(int xpos, int ypos, int width, int height, bool undecorated, const char *name = "sub window");
 	void setup(ofRectangle rect, bool undecorated, const char *name = "sub window");

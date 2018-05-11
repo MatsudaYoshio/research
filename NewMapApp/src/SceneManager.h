@@ -24,6 +24,7 @@ private:
 	unordered_map<long long int, SubWindow> sub_windows;
 	unordered_map<long long int, ofRectangle> rects_tmp, old_rects, best_rects;
 
+	void draw_cursor();
 	bool is_intersect_window_pointer();
 	bool is_intersect_window_window();
 public:

@@ -38,7 +38,18 @@ void SceneManager::update() {
 		th.detach();
 	}
 
-	// サブウィンドウの更新
+	/* サブウィンドウの更新 */
+	/* いなくなったユーザのサブウィンドウを削除 */
+	for (auto ite = begin(this->sub_windows); ite != end(this->sub_windows);) {
+		if (this->hc->user_data.find(ite->second.get_user_id()) == end(this->hc->user_data)) {
+			ite->second.exit();
+			ite = this->sub_windows.erase(ite);
+		}
+		else {
+			++ite;
+		}
+	}
+
 	for (auto&& w : this->sub_windows) {
 		w.second.update();
 	}
@@ -72,6 +83,7 @@ void SceneManager::draw() {
 
 	this->mb.draw(); // メニューバーの表示
 
+	/* ピンの描画 */
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
 		if (this->menu_item_flag[i]) {
 			for (const auto& p : this->pins[i]) {
@@ -80,19 +92,11 @@ void SceneManager::draw() {
 		}
 	}
 
-	this->ab.draw();
+	this->ab.draw(); // 広告バーの描画
 
-	/* 手カーソルの描画 */
-	for (const auto& ud : this->hc->user_data) {
-		ofNoFill();
-		ofSetLineWidth(60);
-		ofSetColor(ofColor::white);
-		ofDrawCircle(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y(), 60);
-		ofFill();
-		ofSetColor(ud.second.cursor_color);
-		ofDrawCircle(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y(), 55);
-	}
+	this->draw_cursor(); // 手カーソルの描画
 
+	// サブウィンドウの描画
 	for (auto&& w : this->sub_windows) {
 		w.second.draw();
 	}
@@ -136,7 +140,36 @@ void SceneManager::add_pin(param::MENU_ITEM_ID& item_id) {
 }
 
 void SceneManager::make_sub_window(pair<param::CONTENT_ID, long long int>& id) {
+	/* 既に同じコンテンツのサブウィンドウがあったら、新たにサブウィンドウを生成しない */
+	if (this->sub_windows.find(static_cast<int>(id.first)) != end(this->sub_windows)) {
+		return;
+	}
+
+	auto ite{ find_if(begin(this->sub_windows), end(this->sub_windows),
+		[this, id](const auto& x) {return x.second.get_user_id() == id.second; }
+	) };
+	if (ite != end(this->sub_windows)) { // そのユーザがすでにサブウィンドウを生成していたら
+		/* そのサブウィンドウを終了・削除する */
+		ite->second.exit();
+		this->sub_windows.erase(ite->first);
+	}
+
 	this->sub_windows.emplace(static_cast<int>(id.first), SubWindow{ id.first, id.second });
+}
+
+void SceneManager::draw_cursor() {
+	for (const auto& ud : this->hc->user_data) {
+		if (ud.second.state == HandCursor::STATE::INACTIVE) {
+			continue;
+		}
+
+		ofNoFill();
+		ofSetLineWidth(60);
+		ofSetColor(ofColor::white);
+		ofFill();
+		ofSetColor(ud.second.cursor_color);
+		ofDrawCircle(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y(), 55);
+	}
 }
 
 bool SceneManager::is_intersect_window_pointer() {

@@ -51,9 +51,6 @@ void SubWindow::draw() {
 	ofSetColor(ofColor::white);
 	this->image.draw(this->frame_size, this->frame_size + 0.12*this->view_rect.getHeight(), this->view_rect.getWidth() - (this->frame_size << 1), 0.88*this->view_rect.getHeight() - (this->frame_size << 1));
 
-	//ofBackground(ofColor::white);
-	//this->scene->draw(); // シーンの描画
-
 	this->df.draw(); // 枠の描画
 
 	this->window.end(); // サブウィンドウのの描画終了

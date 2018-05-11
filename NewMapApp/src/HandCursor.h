@@ -30,6 +30,7 @@
 #include "OneEuroFilter.h"
 #include "BodyPartExtractor.h"
 
+/* OpenPose‚ÌœŠi“_QÆ‚Ì‚½‚ß‚Ì’è‹` */
 #define NOSE_X(i) {i,0,0}
 #define NOSE_Y(i) {i,0,1}
 #define NECK_X(i) {i,1,0}
