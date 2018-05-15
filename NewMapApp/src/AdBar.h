@@ -23,14 +23,14 @@ private:
 
 	DrawFrame df;
 	STATE state;
-	array<bool, param::MENU_ITEM_NUM>* menu_item_flag;
+	array<long long int, param::MENU_ITEM_NUM>* menu_item_user_id;
 	vector<param::CONTENT_ID> content_id_list;
 	array<AdItem, ad_item_num> ads;
 	array<param::CONTENT_ID, ad_item_num> content_id_tmp;
 	array<int, ad_item_num> change_weight;
 	int time_count{ 0 };
 public:
-	void setup(array<bool, param::MENU_ITEM_NUM>* const menu_item_flag);
+	void setup(array<long long int, param::MENU_ITEM_NUM>* const menu_item_user_id);
 	void update();
 	void draw();
 };

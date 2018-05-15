@@ -16,6 +16,7 @@ private:
 	int progress_state{ 0 };
 	string item_name;
 	param::MENU_ITEM_ID item_id;
+	long long int user_id;
 	ofTexture texture;
 	ofRectangle item_rect, texture_rect;
 	ofTrueTypeFont font;
@@ -28,10 +29,11 @@ public:
 private:
 	STATE state{ STATE::INACTIVE };
 public:
-	ofEvent<param::MENU_ITEM_ID> select_event;
+	ofEvent<pair<param::MENU_ITEM_ID, long long int>> select_event;
 
 	void setup(const string& image_path, const ofRectangle& item_rect, const string& item_name, int font_x, int font_y, param::MENU_ITEM_ID item_id);
 	void update();
+	void update(long long int user_id);
 	void draw() const;
 	
 	bool is_inside(int x, int y) const;

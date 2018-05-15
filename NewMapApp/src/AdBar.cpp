@@ -7,22 +7,22 @@ const array<ofRectangle, AdBar::ad_item_num> AdBar::ad_position{ ofRectangle(30,
 random_device AdBar::rd;
 mt19937 AdBar::mt(AdBar::rd());
 
-void AdBar::setup(array<bool, param::MENU_ITEM_NUM>* const menu_item_flag) {
+void AdBar::setup(array<long long int, param::MENU_ITEM_NUM>* const menu_item_user_id) {
 	this->state = STATE::INACTIVE;
-	this->menu_item_flag = menu_item_flag;
+	this->menu_item_user_id = menu_item_user_id;
 }
 
 void AdBar::update() {
 	switch (this->state) {
 	case STATE::INACTIVE:
-		if (none_of(begin(*this->menu_item_flag), end(*this->menu_item_flag), [](const auto& x) {return x; })) {
+		if (all_of(begin(*this->menu_item_user_id), end(*this->menu_item_user_id), [](const auto& x) {return x == -1; })) {
 			break;
 		}
 
 		{
 			int n;
 			for (int i = 0; i < MENU_ITEM_NUM; ++i) {
-				if ((*this->menu_item_flag)[i]) {
+				if ((*this->menu_item_user_id)[i] != -1) {
 					this->content_id_list = MENU_ITEM_CONTENTS[i];
 					n = i + 1;
 					break;
@@ -30,7 +30,7 @@ void AdBar::update() {
 			}
 
 			for (int i = n; i < MENU_ITEM_NUM; ++i) {
-				if ((*this->menu_item_flag)[i]) {
+				if ((*this->menu_item_user_id)[i] != -1) {
 					copy(begin(MENU_ITEM_CONTENTS[i]), end(MENU_ITEM_CONTENTS[i]), back_inserter(this->content_id_list));
 				}
 			}
@@ -57,7 +57,7 @@ void AdBar::update() {
 	case STATE::ACTIVE:
 		int x;
 		for (int i = 0; i < MENU_ITEM_NUM; ++i) {
-			if ((*this->menu_item_flag)[i]) {
+			if ((*this->menu_item_user_id)[i] != -1) {
 				this->content_id_list = MENU_ITEM_CONTENTS[i];
 				x = i + 1;
 				break;
@@ -65,7 +65,7 @@ void AdBar::update() {
 		}
 
 		for (int i = x; i < MENU_ITEM_NUM; ++i) {
-			if ((*this->menu_item_flag)[i]) {
+			if ((*this->menu_item_user_id)[i] != -1) {
 				copy(begin(MENU_ITEM_CONTENTS[i]), end(MENU_ITEM_CONTENTS[i]), back_inserter(this->content_id_list));
 			}
 		}

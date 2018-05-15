@@ -16,7 +16,9 @@ void SceneManager::setup(HandCursor* const hc) {
 		}
 	}
 
-	this->ab.setup(&this->menu_item_flag);
+	fill(begin(this->menu_item_user_id), end(this->menu_item_user_id), -1);
+
+	this->ab.setup(&this->menu_item_user_id);
 
 	this->sa.setup(this->hc, &this->sub_windows);
 }
@@ -58,7 +60,7 @@ void SceneManager::update() {
 
 	// ピンの更新
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
-		if (this->menu_item_flag[i]) {
+		if (this->menu_item_user_id[i] != -1) {
 			for (auto&& p : this->pins[i]) {
 				for (const auto& ud : this->hc->user_data) {
 					if (p.is_inside(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y())) {
@@ -73,7 +75,6 @@ void SceneManager::update() {
 			}
 		}
 	}
-
 	this->ab.update(); // 広告バーの更新
 }
 
@@ -85,7 +86,7 @@ void SceneManager::draw() {
 
 	/* ピンの描画 */
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
-		if (this->menu_item_flag[i]) {
+		if (this->menu_item_user_id[i] != -1) {
 			for (const auto& p : this->pins[i]) {
 				p.draw();
 			}
@@ -135,8 +136,8 @@ void SceneManager::transform(unordered_map<long long int, ofRectangle>& old_rect
 	this->transform_thread_flag = false;
 }
 
-void SceneManager::add_pin(param::MENU_ITEM_ID& item_id) {
-	this->menu_item_flag[static_cast<int>(item_id)] = true;
+void SceneManager::add_pin(pair<param::MENU_ITEM_ID, long long int>& id) {
+	this->menu_item_user_id[static_cast<int>(id.first)] = id.second;
 }
 
 void SceneManager::make_sub_window(pair<param::CONTENT_ID, long long int>& id) {

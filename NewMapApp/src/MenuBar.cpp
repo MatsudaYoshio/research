@@ -22,13 +22,14 @@ void MenuBar::update() {
 		for (const auto& ud : this->hc->user_data) {
 			if (this->items[i].is_inside(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y())) {
 				this->items[i].set_state(MenuItem::STATE::POINT);
+				this->items[i].update(ud.first);
 				goto POINTED;
 			}
 		}
 
 		this->items[i].set_state(MenuItem::STATE::INACTIVE);
-	POINTED:;
 		this->items[i].update();
+	POINTED:;
 	}
 };
 
@@ -44,8 +45,8 @@ void MenuBar::draw() const {
 	}
 }
 
-void MenuBar::select_menu_item(param::MENU_ITEM_ID& item_id) {
-	ofNotifyEvent(this->add_pin_event, item_id);
+void MenuBar::select_menu_item(pair<param::MENU_ITEM_ID, long long int>& id) {
+	ofNotifyEvent(this->add_pin_event, id);
 }
 
 MenuBar::~MenuBar() {

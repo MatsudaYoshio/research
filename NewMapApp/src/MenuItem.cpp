@@ -19,7 +19,8 @@ void MenuItem::update() {
 	case STATE::POINT:
 		this->alpha = this->pointed_alpha;
 		if (this->progress_state == this->item_rect.width) {
-			ofNotifyEvent(this->select_event, this->item_id);
+			pair<param::MENU_ITEM_ID, long long int> id(this->item_id, this->user_id);
+			ofNotifyEvent(this->select_event, id);
 			this->progress_state = 0;
 		}
 		else {
@@ -33,16 +34,21 @@ void MenuItem::update() {
 	}
 }
 
+void MenuItem::update(const long long int user_id) {
+	this->user_id = user_id;
+	this->update();
+}
+
 void MenuItem::draw() const {
 	/* 項目の背景を描画 */
 	ofFill();
 	ofSetColor(MENU_ITEM_COLOR[static_cast<int>(this->item_id)], this->alpha);
 	ofDrawRectangle(this->item_rect);
-	
+
 	/* テクスチャの表示*/
 	ofSetColor(ofColor::white, this->alpha);
 	this->texture.draw(this->texture_rect);
-	
+
 	/* 項目名を表示 */
 	ofSetColor(ofColor::black, this->alpha);
 	this->font.drawString(this->item_name, this->font_x, this->font_y);
