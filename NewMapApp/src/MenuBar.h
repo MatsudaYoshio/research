@@ -2,7 +2,6 @@
 #ifndef ___Class_MenuBar
 #define ___Class_MenuBar
 
-#include "AppParameters.h"
 #include "MenuItem.h"
 #include "HandCursor.h"
 

@@ -2,8 +2,6 @@
 #ifndef ___Class_MapApp
 #define ___Class_MapApp
 
-#include "ofMain.h"
-#include "AppParameters.h"
 #include "HandCursor.h"
 #include "SceneManager.h"
 

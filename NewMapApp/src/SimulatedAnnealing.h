@@ -3,10 +3,8 @@
 #define ___Class_SimulatedAnnealing
 
 #include "math.h"
-#include "ofMain.h"
 #include "HandCursor.h"
 #include "SubWindow.h"
-#include "AppParameters.h"
 
 class SimulatedAnnealing {
 private:

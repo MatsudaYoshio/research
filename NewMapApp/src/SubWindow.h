@@ -2,10 +2,9 @@
 #ifndef ___Class_SubWindow
 #define ___Class_SubWindow
 
-#include "ofMain.h"
+#include "AppParameters.h"
 #include "ofxSecondWindow.h"
 #include "DrawFrame.h"
-#include "AppParameters.h"
 
 class SubWindow {
 private:

@@ -15,14 +15,14 @@ void AdBar::setup(array<long long int, param::MENU_ITEM_NUM>* const menu_item_us
 void AdBar::update() {
 	switch (this->state) {
 	case STATE::INACTIVE:
-		if (all_of(begin(*this->menu_item_user_id), end(*this->menu_item_user_id), [](const auto& x) {return x == -1; })) {
+		if (all_of(begin(*this->menu_item_user_id), end(*this->menu_item_user_id), [this](const auto& x) {return x == NOT_USER; })) {
 			break;
 		}
 
 		{
 			int n;
 			for (int i = 0; i < MENU_ITEM_NUM; ++i) {
-				if ((*this->menu_item_user_id)[i] != -1) {
+				if ((*this->menu_item_user_id)[i] != NOT_USER) {
 					this->content_id_list = MENU_ITEM_CONTENTS[i];
 					n = i + 1;
 					break;
@@ -57,7 +57,7 @@ void AdBar::update() {
 	case STATE::ACTIVE:
 		int x;
 		for (int i = 0; i < MENU_ITEM_NUM; ++i) {
-			if ((*this->menu_item_user_id)[i] != -1) {
+			if ((*this->menu_item_user_id)[i] != NOT_USER) {
 				this->content_id_list = MENU_ITEM_CONTENTS[i];
 				x = i + 1;
 				break;
@@ -65,7 +65,7 @@ void AdBar::update() {
 		}
 
 		for (int i = x; i < MENU_ITEM_NUM; ++i) {
-			if ((*this->menu_item_user_id)[i] != -1) {
+			if ((*this->menu_item_user_id)[i] != NOT_USER) {
 				copy(begin(MENU_ITEM_CONTENTS[i]), end(MENU_ITEM_CONTENTS[i]), back_inserter(this->content_id_list));
 			}
 		}

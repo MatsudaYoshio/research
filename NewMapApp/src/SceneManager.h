@@ -2,7 +2,6 @@
 #ifndef ___Class_SceneManager
 #define ___Class_SceneManager
 
-#include "AppParameters.h"
 #include "MenuBar.h"
 #include "AdBar.h"
 #include "HandCursor.h"

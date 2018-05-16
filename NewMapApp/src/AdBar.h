@@ -3,8 +3,6 @@
 #define ___Class_AdBar
 
 #include <random>
-#include "AppParameters.h"
-#include "DrawFrame.h"
 #include "AdItem.h"
 
 class AdBar {

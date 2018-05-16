@@ -2,7 +2,6 @@
 #ifndef ___Class_MenuItem
 #define ___Class_MenuItem
 
-#include "ofMain.h"
 #include "AppParameters.h"
 
 class MenuItem {

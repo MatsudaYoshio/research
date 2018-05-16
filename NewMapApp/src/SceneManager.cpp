@@ -16,7 +16,7 @@ void SceneManager::setup(HandCursor* const hc) {
 		}
 	}
 
-	fill(begin(this->menu_item_user_id), end(this->menu_item_user_id), -1);
+	fill_n(begin(this->menu_item_user_id), MENU_ITEM_NUM, NOT_USER);
 
 	this->ab.setup(&this->menu_item_user_id);
 
@@ -60,19 +60,23 @@ void SceneManager::update() {
 
 	// ピンの更新
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
-		if (this->menu_item_user_id[i] != -1) {
-			for (auto&& p : this->pins[i]) {
-				for (const auto& ud : this->hc->user_data) {
-					if (p.is_inside(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y())) {
-						p.point(ud.first);
-						goto CONTINUE_LOOP;
-					}
+		if (this->menu_item_user_id[i] == NOT_USER) {
+			continue;
+		}
+		for (auto&& p : this->pins[i]) {
+			for (const auto& ud : this->hc->user_data) {
+				if (ud.second.state == HandCursor::STATE::INACTIVE) {
+					continue;
 				}
-				p.reset_state();
-
-			CONTINUE_LOOP:
-				p.update();
+				if (p.is_inside(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y())) {
+					p.point(ud.first);
+					goto CONTINUE_LOOP;
+				}
 			}
+			p.reset_state();
+
+		CONTINUE_LOOP:
+			p.update();
 		}
 	}
 	this->ab.update(); // 広告バーの更新
@@ -86,10 +90,11 @@ void SceneManager::draw() {
 
 	/* ピンの描画 */
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
-		if (this->menu_item_user_id[i] != -1) {
-			for (const auto& p : this->pins[i]) {
-				p.draw();
-			}
+		if (this->menu_item_user_id[i] == NOT_USER) {
+			continue;
+		}
+		for (const auto& p : this->pins[i]) {
+			p.draw();
 		}
 	}
 
@@ -177,6 +182,9 @@ bool SceneManager::is_intersect_window_pointer() {
 	// サブウィンドウとポインタの周辺領域が重複するかどうかを調べる
 	for (const auto& sw : this->sub_windows) {
 		for (const auto& ud : this->hc->user_data) {
+			if (ud.second.state == HandCursor::STATE::INACTIVE) {
+				continue;
+			}
 			if (sw.second.get_rect().intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x() - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y() - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) {
 				return true;
 			}

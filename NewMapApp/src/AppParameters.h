@@ -30,6 +30,8 @@ namespace param {
 
 	extern const ofRectangle USER_CERTAIN_WINDOW;
 
+	extern const long long int NOT_USER;
+
 	constexpr int MENU_ITEM_NUM{ 4 };
 	constexpr int CONTENT_NUM{ 11 };
 

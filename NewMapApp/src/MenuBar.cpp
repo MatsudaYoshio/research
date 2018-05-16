@@ -20,6 +20,9 @@ void MenuBar::update() {
 	/* メニュー項目上にカーソルがあるかどうかをチェックしてメニュー項目の状態を変更する */
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
 		for (const auto& ud : this->hc->user_data) {
+			if (ud.second.state == HandCursor::STATE::INACTIVE) {
+				continue;
+			}
 			if (this->items[i].is_inside(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y())) {
 				this->items[i].set_state(MenuItem::STATE::POINT);
 				this->items[i].update(ud.first);
