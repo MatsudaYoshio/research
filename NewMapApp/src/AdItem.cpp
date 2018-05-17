@@ -6,7 +6,7 @@ void AdItem::setup(const ofRectangle& position, CONTENT_ID content_id) {
 	this->position = position;
 	this->content_id = content_id;
 	this->image.load(CONTENT_DATA[static_cast<int>(content_id)].image_path);
-	this->font.loadFont("meiryob.ttc", 35);
+	this->font.loadFont("meiryob.ttc", 34.5);
 	this->df.setup(MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(content_id)].menu_item_id)], this->frame_size, position);
 	this->df_tmp.setup(MENU_ITEM_COLOR[static_cast<int>(CONTENT_DATA[static_cast<int>(content_id)].menu_item_id)], this->frame_size, position);
 }

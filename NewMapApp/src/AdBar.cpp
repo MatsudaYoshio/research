@@ -30,7 +30,7 @@ void AdBar::update() {
 			}
 
 			for (int i = n; i < MENU_ITEM_NUM; ++i) {
-				if ((*this->menu_item_user_id)[i] != -1) {
+				if ((*this->menu_item_user_id)[i] != NOT_USER) {
 					copy(begin(MENU_ITEM_CONTENTS[i]), end(MENU_ITEM_CONTENTS[i]), back_inserter(this->content_id_list));
 				}
 			}
