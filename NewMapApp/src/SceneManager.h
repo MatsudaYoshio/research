@@ -11,6 +11,9 @@
 
 class SceneManager {
 private:
+	static constexpr int max_menu_item_life{ 100 };
+	static constexpr int min_menu_item_life{ 0 };
+
 	HandCursor* hc;
 	MenuBar mb;
 	AdBar ab;
@@ -19,6 +22,7 @@ private:
 	bool transform_thread_flag{ false };
 	const ofImage map_image{ "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/kyoto_bg.png" };
 	array<long long int, param::MENU_ITEM_NUM> menu_item_user_id;
+	array<int, param::MENU_ITEM_NUM> menu_item_life;
 	array<vector<Pin>, param::MENU_ITEM_NUM> pins;
 	unordered_map<long long int, SubWindow> sub_windows;
 	unordered_map<long long int, ofRectangle> rects_tmp, old_rects, best_rects;

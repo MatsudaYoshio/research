@@ -13,12 +13,13 @@ void AdBar::setup(array<long long int, param::MENU_ITEM_NUM>* const menu_item_us
 }
 
 void AdBar::update() {
+	if (all_of(begin(*this->menu_item_user_id), end(*this->menu_item_user_id), [this](const auto& x) {return x == NOT_USER; })) {
+		this->state = STATE::INACTIVE;
+		return;
+	}
+
 	switch (this->state) {
 	case STATE::INACTIVE:
-		if (all_of(begin(*this->menu_item_user_id), end(*this->menu_item_user_id), [this](const auto& x) {return x == NOT_USER; })) {
-			break;
-		}
-
 		{
 			int n;
 			for (int i = 0; i < MENU_ITEM_NUM; ++i) {

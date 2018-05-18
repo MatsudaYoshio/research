@@ -17,6 +17,7 @@ void SceneManager::setup(HandCursor* const hc) {
 	}
 
 	fill_n(begin(this->menu_item_user_id), MENU_ITEM_NUM, NOT_USER);
+	fill_n(begin(this->menu_item_life), MENU_ITEM_NUM, this->max_menu_item_life);
 
 	this->ab.setup(&this->menu_item_user_id);
 
@@ -56,6 +57,24 @@ void SceneManager::update() {
 		w.second.update();
 	}
 
+	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
+		if (this->menu_item_user_id[i] == NOT_USER) {
+			continue;
+		}
+
+		if (this->hc->user_data.find(this->menu_item_user_id[i]) != end(this->hc->user_data)) {
+			this->menu_item_life[i] = this->max_menu_item_life;
+		}
+		else {
+			--this->menu_item_life[i];
+		}
+
+		if (this->menu_item_life[i] == this->min_menu_item_life) {
+			this->menu_item_life[i] = this->max_menu_item_life;
+			this->menu_item_user_id[i] = NOT_USER;
+		}
+	}
+
 	this->mb.update(); // メニューバーの更新
 
 	// ピンの更新
@@ -79,6 +98,7 @@ void SceneManager::update() {
 			p.update();
 		}
 	}
+
 	this->ab.update(); // 広告バーの更新
 }
 
