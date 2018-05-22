@@ -1,28 +1,32 @@
 #include "AppParameters.h"
 
+/* ディスプレイ表示の解像度 */
 const int param::DISPLAY_W{ 3840 };
 const int param::DISPLAY_H{ 2160 };
 
+/* ディスプレイ表示の解像度の半分 */
 const int param::HALF_DISPLAY_W{ param::DISPLAY_W >> 1 };
 const int param::HALF_DISPLAY_H{ param::DISPLAY_H >> 1 };
 
+/* サブウィンドウの最大サイズ */
 const int param::MAX_SUB_WINDOW_W{ param::HALF_DISPLAY_W };
 const int param::MAX_SUB_WINDOW_H{ param::HALF_DISPLAY_H };
 
+/* サブウィンドウの最大サイズの半分 */
 const int param::HALF_MAX_SUB_WINDOW_W{ param::MAX_SUB_WINDOW_W >> 1 };
 const int param::HALF_MAX_SUB_WINDOW_H{ param::MAX_SUB_WINDOW_H >> 1 };
 
+/* カメラとディスプレイの解像度の比率 */
 const double param::RESOLUTION_RATIO_W{ param::DISPLAY_W / param::CAMERA_W };
 const double param::RESOLUTION_RATIO_H{ param::DISPLAY_H / param::CAMERA_H };
 
-const int param::FRAME_SIZE{ 20 };
+const ofRectangle param::USER_CERTAIN_WINDOW{ 250, 250, 500, 500 }; // ユーザのポインタの重複仮想領域の範囲
 
-const ofRectangle param::USER_CERTAIN_WINDOW{ 250, 250, 500, 500 };
+const long long int param::NOT_USER{ -1 }; // 無効のユーザID
 
-const long long int param::NOT_USER{ -1 };
+const ofColor param::MENU_ITEM_COLOR[]{ ofColor::gold, ofColor::lawnGreen, ofColor::pink, ofColor::skyBlue }; // メニュー項目の色
 
-const ofColor param::MENU_ITEM_COLOR[]{ ofColor::gold, ofColor::lawnGreen, ofColor::pink, ofColor::skyBlue };
-
+/* メニュー項目に含まれるコンテンツの内訳 */
 const vector<param::CONTENT_ID> param::MENU_ITEM_CONTENTS[]{
 	vector<param::CONTENT_ID>{ param::CONTENT_ID::KYOTO_TOWER, param::CONTENT_ID::HIGASHIHONGANJI, param::CONTENT_ID::SYOSEIEN, param::CONTENT_ID::NISHIHONGANJI, param::CONTENT_ID::KIYOMIZUDERA, param::CONTENT_ID::KYOTO_AQUARIUM},
 	vector<param::CONTENT_ID>{param::CONTENT_ID::EIJUAN, param::CONTENT_ID::SODOH, param::CONTENT_ID::FUNATSURU, param::CONTENT_ID::HANAROKU, param::CONTENT_ID::RANTEI},
@@ -30,6 +34,7 @@ const vector<param::CONTENT_ID> param::MENU_ITEM_CONTENTS[]{
 	vector<param::CONTENT_ID>{param::CONTENT_ID::ALMONT, param::CONTENT_ID::SAKURA_HONGANJI, param::CONTENT_ID::KYOSTAY_IROHA_TOJI, param::CONTENT_ID::HYATT_REGENCY, param::CONTENT_ID::FAMILY_VILLA_KEAGE}
 };
 
+/* コンテンツの情報 */
 const param::content_data_type param::CONTENT_DATA[]{
 	// y座標を大体90引きすることでピンの位置になる
 	param::content_data_type{ 1614, 1026, 1, param::MENU_ITEM_ID::SIGHTSEEING, "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/kyoto_tower.jpg", "Kyoto Tower" },

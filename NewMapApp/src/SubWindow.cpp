@@ -25,13 +25,13 @@ void SubWindow::update() {
 		this->track_index = this->TRACK_READY;
 	}
 	else if (this->track_index != this->TRACK_READY) {
-		this->window.setWindowPosition(this->track_rects[this->track_index].getX(), this->track_rects[this->track_index].getY());
-		this->window.setWindowSize(this->track_rects[this->track_index].getWidth(), this->track_rects[this->track_index].getHeight());
+		this->window.set_window_position(this->track_rects[this->track_index].getX(), this->track_rects[this->track_index].getY());
+		this->window.set_window_size(this->track_rects[this->track_index].getWidth(), this->track_rects[this->track_index].getHeight());
 		++this->track_index;
 	}
 		
-	this->view_rect.setWidth(this->window.getWidth());
-	this->view_rect.setHeight(this->window.getHeight());
+	this->view_rect.setWidth(this->window.get_width());
+	this->view_rect.setHeight(this->window.get_height());
 
 	this->font.loadFont("meiryob.ttc", 30 * this->view_rect.getHeight() / this->defalut_height);
 

@@ -3,29 +3,25 @@
 #include <GLFW/glfw3.h>
 
 class ofxSecondWindow {
-public:
-    void setup(int xpos, int ypos, int width, int height, bool undecorated, const char *name = "sub window");
-	void setup(ofRectangle rect, bool undecorated, const char *name = "sub window");
-    void begin();
-    void end();
-    void show();
-    void hide();
-	void close();
-    void toggleHidden();
-    
-    void setWindowPosition(int x, int y);
-    void setWindowSize(int width, int height);
-    
-	int getX() const;
-	int getY() const;
-	int getWidth() const;
-	int getHeight() const;
+private:
+	GLFWwindow *main_window, *aux_window;
+	bool hidden_flag{ true };
+	ofRectangle window_rect;
 
+public:
+	void setup(int x, int y, int w, int h, bool undecorated, const char *title = "sub window");
+	void setup(ofRectangle rect, bool undecorated, const char *title = "sub window");
+	void begin();
+	void end();
+	void show();
+	void hide();
+	void close();
+	void set_window_position(int x, int y);
+	void set_window_size(int w, int h);
+	int get_x() const;
+	int get_y() const;
+	int get_width() const;
+	int get_height() const;
 	bool is_inside(const ofPoint &p) const;
 	ofRectangle get_rect() const;
-
-private:
-    GLFWwindow *mainWindow, *auxWindow;
-    bool hidden;
-	ofRectangle rect;
 };
