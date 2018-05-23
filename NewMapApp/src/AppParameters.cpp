@@ -9,8 +9,8 @@ const int param::HALF_DISPLAY_W{ param::DISPLAY_W >> 1 };
 const int param::HALF_DISPLAY_H{ param::DISPLAY_H >> 1 };
 
 /* サブウィンドウの最大サイズ */
-const int param::MAX_SUB_WINDOW_W{ param::HALF_DISPLAY_W };
-const int param::MAX_SUB_WINDOW_H{ param::HALF_DISPLAY_H };
+const int param::MAX_SUB_WINDOW_W{ 3*param::HALF_DISPLAY_W/4 };
+const int param::MAX_SUB_WINDOW_H{ 3*param::HALF_DISPLAY_H/4 };
 
 /* サブウィンドウの最大サイズの半分 */
 const int param::HALF_MAX_SUB_WINDOW_W{ param::MAX_SUB_WINDOW_W >> 1 };

@@ -133,9 +133,9 @@ void SimulatedAnnealing::calculate_cost() {
 		/* ‹éŒ`‚ÆŠç‚Æ‚Ì‹——£ */
 		try {
 			for (const auto& td : this->hc->user_data) {
-				if (td.second.state == HandCursor::STATE::INACTIVE) {
-					continue;
-				}
+				//if (td.second.state == HandCursor::STATE::INACTIVE) {
+				//	continue;
+				//}
 				if (this->sub_windows->at(s.first).get_user_id() == td.first) {
 					this->distance_cost += ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x(), td.second.transformed_face_point.y());
 					continue;

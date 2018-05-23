@@ -46,7 +46,7 @@ void HandCursor::update() {
 
 	/* ポインタを表示していない状態かつ一定時間顔の情報が更新されていないユーザを削除する */
 	for (auto ite = begin(this->user_data); ite != end(this->user_data);) {
-		if (ite->second.state == STATE::INACTIVE && this->frame_count - ite->second.latest_update_frame > 60) {
+		if (ite->second.state == STATE::INACTIVE && this->frame_count - ite->second.latest_update_frame > 80) {
 			ite = this->user_data.erase(ite);
 		}
 		else {
@@ -223,10 +223,9 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 	/* 顔の座標と大きさを更新する */
 	try {
 		this->user_data.at(user_id).face_size = face_size;
-
 		this->user_data.at(user_id).face_point.x() = this->pose_key_points[NOSE_X(personal_id)];
 		this->user_data.at(user_id).face_point.y() = this->pose_key_points[NOSE_Y(personal_id)];
-
+		this->transform_point(this->user_data.at(user_id).face_point, this->user_data.at(user_id).transformed_face_point); // 顔の座標を画面上の座標に変換
 		this->user_data.at(user_id).latest_update_frame = this->frame_count;
 	}
 	catch (std::out_of_range&) {}

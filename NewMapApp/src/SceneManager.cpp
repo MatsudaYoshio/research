@@ -25,6 +25,46 @@ void SceneManager::setup(HandCursor* const hc) {
 }
 
 void SceneManager::update() {
+	if (!this->transform_thread_flag && this->hc->user_data.size() == 1 && !this->sub_windows.empty() && all_of(begin(this->sub_windows), end(this->sub_windows), [](const auto& x) {return x.second.track_index == SubWindow::TRACK_READY; })) {
+		ofRectangle best_rect(max(this->hc->user_data.begin()->second.transformed_face_point.x() - HALF_MAX_SUB_WINDOW_W, 0L), max(this->hc->user_data.begin()->second.transformed_face_point.y() - HALF_MAX_SUB_WINDOW_H, 0L), MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H);
+
+		if (this->hc->user_data.begin()->second.state == HandCursor::STATE::INACTIVE) {
+			this->old_rects.clear();
+			this->old_rects.emplace(this->sub_windows.begin()->first, this->sub_windows.begin()->second.get_rect());
+			this->best_rects.clear();
+			this->best_rects.emplace(this->sub_windows.begin()->first, best_rect);
+			void(SceneManager::*funcp)(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) = &SceneManager::transform;
+			thread th(funcp, this, this->old_rects, this->best_rects);
+			th.detach();
+		}
+		else {
+			if (best_rect.intersects(ofRectangle(ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.x() - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.y() - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) {
+				this->rects_tmp.clear();
+
+				this->rects_tmp.emplace(this->sub_windows.begin()->first, this->sub_windows.begin()->second.get_rect());
+
+				this->sa(this->rects_tmp, this->best_rects);
+
+				this->old_rects = move(this->rects_tmp);
+
+				void(SceneManager::*funcp)(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) = &SceneManager::transform;
+				thread th(funcp, this, this->old_rects, this->best_rects);
+				th.detach();
+			}
+			else {
+				this->old_rects.clear();
+				this->old_rects.emplace(this->sub_windows.begin()->first, this->sub_windows.begin()->second.get_rect());
+				this->best_rects.clear();
+				this->best_rects.emplace(this->sub_windows.begin()->first, best_rect);
+				void(SceneManager::*funcp)(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) = &SceneManager::transform;
+				thread th(funcp, this, this->old_rects, this->best_rects);
+				th.detach();
+
+				
+			}
+		}
+	}
+
 	if (!this->transform_thread_flag && (this->is_intersect_window_pointer() || this->is_intersect_window_window()) && all_of(begin(this->sub_windows), end(this->sub_windows), [](const auto& x) {return x.second.track_index == SubWindow::TRACK_READY; })) {
 		this->rects_tmp.clear();
 
