@@ -27,6 +27,9 @@ private:
 	unordered_map<long long int, SubWindow> sub_windows;
 	unordered_map<long long int, ofRectangle> rects_tmp, old_rects, best_rects;
 
+	void transform(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects);
+	void make_optimize_thread();
+	void optimize();
 	void draw_cursor();
 	bool is_intersect_window_pointer();
 	bool is_intersect_window_window();
@@ -35,7 +38,6 @@ public:
 	void update();
 	void draw();
 
-	void transform(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects);
 	void add_pin(pair<param::MENU_ITEM_ID, long long int>& id);
 	void make_sub_window(pair<param::CONTENT_ID, long long int>& id);
 
