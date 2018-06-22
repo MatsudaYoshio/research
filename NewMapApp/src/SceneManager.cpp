@@ -126,6 +126,11 @@ void SceneManager::draw() {
 
 	this->ab.draw(); // 広告バーの描画
 
+	//for (const auto& ud : this->hc->user_data) {
+	//	ofSetColor(ud.second.cursor_color, 120);
+	//	this->face_image.draw(ud.second.transformed_face_point.x(), ud.second.transformed_face_point.y(), 200, 200);
+	//}
+
 	this->draw_cursor(); // 手カーソルの描画
 
 	// サブウィンドウの描画

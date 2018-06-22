@@ -71,7 +71,7 @@ private:
 	static constexpr double overlap_ratio{ 0.1 };
 	static constexpr double default_face_size{ 60 };
 	static constexpr double face_hand_distance{ 300 };
-	static constexpr double face_error{ 100 };
+	static constexpr double face_error{ 150 };
 	static constexpr double windows_range_rate_top{ 2.0 }, windows_range_rate_bottom{ 0.5 }, windows_range_rate_left{ 1.5 }, windows_range_rate_right{ 1.5 };
 	static constexpr double sliding_window_step_rate{ 0.2 };
 	static constexpr int cursor_color_num{ 8 };

@@ -44,9 +44,9 @@ void HandCursor::update() {
 	//frc.NewFrame();
 	//printf("fps : %lf\n", frc.GetFrameRate());
 
-	/* ポインタを表示していない状態かつ一定時間顔の情報が更新されていないユーザを削除する */
+	/* 一定時間顔の情報が更新されていないユーザを削除する */
 	for (auto ite = begin(this->user_data); ite != end(this->user_data);) {
-		if (ite->second.state == STATE::INACTIVE && this->frame_count - ite->second.latest_update_frame > 80) {
+		if (this->frame_count - ite->second.latest_update_frame > 80) {
 			ite = this->user_data.erase(ite);
 		}
 		else {
@@ -67,27 +67,16 @@ void HandCursor::update() {
 
 			long long int user_id{ this->decide_user_id(i) }; // user_idを決定
 
-			if (this->pose_key_points[RIGHT_WRIST_X(i)] == 0.0) { // 右手が検出できなければ
-				if (user_id != this->new_user_id) { // 新たなユーザの顔じゃなければ
-					this->renew_user_data(i, face_size, user_id); // 顔の情報を更新
-				}
+			if (user_id != this->new_user_id) { // 新たなユーザの顔じゃなければ
+				this->renew_user_data(i, face_size, user_id); // 顔の情報を更新
 			}
-			else { // 顔も右手も検出できた場合
-				if (ofDist(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)], this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]) > this->face_hand_distance) { // 顔と右手の距離が一定以上だったら
-					if (user_id != this->new_user_id) { // 新たなユーザじゃなければ
-						this->renew_user_data(i, face_size, user_id); // 既に追跡しているユーザの顔の情報を更新
-						continue;
-					}
+
+			if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && ofDist(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)], this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]) < this->face_hand_distance && this->hand_detect(i, face_size)) { // 顔も右手も検出し、かつ、それらの距離が一定未満で、かつ、手が検出された場合
+				if (user_id != this->new_user_id && this->user_data[user_id].state == STATE::INACTIVE) { // 新たなユーザでないかつユーザがポインタを操作していない状態ならば
+					this->resume_track(user_id, i, face_size); // 手の追跡を再開する
 				}
-				else {
-					if (this->hand_detect(i, face_size)) { // 手が検出されれば
-						if (user_id != this->new_user_id && this->user_data[user_id].state == STATE::INACTIVE) { // 新たなユーザでないかつユーザがポインタを操作していない状態ならば
-							this->resume_track(user_id, i, face_size); // 手の追跡を再開する
-						}
-						else if (user_id == this->new_user_id) { // 新たなユーザならば
-							this->start_track(i, face_size); // 手の追跡をスタートする
-						}
-					}
+				else if (user_id == this->new_user_id) { // 新たなユーザならば
+					this->start_track(i, face_size); // 手の追跡をスタートする
 				}
 			}
 		}
@@ -226,6 +215,7 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 		this->user_data.at(user_id).face_point.x() = this->pose_key_points[NOSE_X(personal_id)];
 		this->user_data.at(user_id).face_point.y() = this->pose_key_points[NOSE_Y(personal_id)];
 		this->transform_point(this->user_data.at(user_id).face_point, this->user_data.at(user_id).transformed_face_point); // 顔の座標を画面上の座標に変換
+		//cout << "!" << endl;
 		this->user_data.at(user_id).latest_update_frame = this->frame_count;
 	}
 	catch (std::out_of_range&) {}
@@ -291,7 +281,7 @@ void HandCursor::tracking(correlation_tracker& ct, const long long int user_id) 
 
 		this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point);
 
-		this->user_data[user_id].latest_update_frame = this->frame_count;
+		//this->user_data[user_id].latest_update_frame = this->frame_count;
 
 		if (this->user_data[user_id].track_hand_dets.empty() || this->stop_flag) { // 直近フレームで手が検出されなかったら追跡をやめる
 			this->cursor_color_state[this->user_data[user_id].cursor_color_id] = false;

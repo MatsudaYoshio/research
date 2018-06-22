@@ -16,6 +16,7 @@ SubWindow::SubWindow(CONTENT_ID content_id, const long long int user_id) {
 	this->track_index = this->TRACK_READY;
 
 	this->image.load(CONTENT_DATA[static_cast<int>(content_id)].image_path);
+	//this->image.load("C:/Users/matsuda/workspace/almont_scene.jpg");
 
 	this->font.loadFont("meiryob.ttc", 30);
 }
@@ -50,6 +51,8 @@ void SubWindow::draw() {
 
 	ofSetColor(ofColor::white);
 	this->image.draw(this->frame_size, this->frame_size + 0.12*this->view_rect.getHeight(), this->view_rect.getWidth() - (this->frame_size << 1), 0.88*this->view_rect.getHeight() - (this->frame_size << 1));
+
+	//this->image.draw(0, 0, this->view_rect.getWidth(), this->view_rect.getHeight());
 
 	this->df.draw(); // ˜g‚Ì•`‰æ
 
