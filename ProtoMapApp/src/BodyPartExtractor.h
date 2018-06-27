@@ -18,6 +18,12 @@ class BodyPartExtractor {
 private:
 	/* 定数 */
 	static const string MODEL_POSE, MODEL_FOLDER, NET_RESOLUTION, OUTPUT_RESOLUTION;
+	/* NET_RESOLUTION は "320x160"のような文字列型
+	   大きくすればするほど速度が低下し、精度が良くなる
+	   幅と高さは16倍数のみ可能、例えば、"128x96"、"320x176"、"432x368"とか
+	   幅と高さのどちらかを-1にすれば、入力画像サイズに対して速度と精度ともに最大化するらしい？
+	   16の倍数：16,32,48,64,80,96,112,128,144,160,176,192,208,224,240,256,272,288,304,320,336,352,368,384,400,416,432,448,464,480,496,512
+	*/
 	static constexpr int NUM_GPU_START{ 0 };
 	static constexpr int SCALE_NUMBER{ 1 };
 	static constexpr double SCALE_GAP{ 0.3 };

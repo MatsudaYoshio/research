@@ -21,6 +21,8 @@
 
 /* OpenCV */
 #include <opencv2/opencv.hpp>
+#include <opencv2/tracking.hpp>
+#include <opencv2/core/ocl.hpp>
 
 #include "NonMaximumSuppression.h"
 #include "UEyeVideoCapture.h"
@@ -57,6 +59,7 @@ private:
 		STATE state;
 		long long int latest_update_frame;
 		dlib::rectangle hand;
+		cv::Rect2d face_rect;
 		dlib::point cursor_point, face_point;
 		double face_size;
 		int cursor_color_id;
@@ -116,7 +119,8 @@ private:
 	void resume_track(long long int user_id, int personal_id, double face_size);
 	void renew_user_data(int personal_id, double face_size, long long int user_id);
 	void get_frame();
-	void tracking(dlib::correlation_tracker& ct, long long int user_id);
+	//void tracking(dlib::correlation_tracker& ct, long long int user_id);
+	void tracking(cv::Ptr<cv::Tracker>& tracker, long long int user_id);
 	void generate_sliding_windows(std::vector<dlib::rectangle>& windows, int window_size, int step, int min_width, int max_width, int min_height, int max_height);
 	std::vector<dlib::rectangle> generate_sliding_windows(int window_size, int step, int min_width, int max_width, int min_height, int max_height);
 	bool is_hand(dlib::array2d<unsigned char>& img);

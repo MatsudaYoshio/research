@@ -57,29 +57,68 @@ void HandCursor::update() {
 	//if ((this->frame_count % 30) == 0) {
 	this->body_part_extractor(this->pose_key_points, this->mat_org_image_buffer.get_read_position()); // openPoseによる骨格推定
 
-	int dx, dy;
-	//OneEuroFilter dx_filter(120, 0.0, 0.0, 1.0), dy_filter(120, 0.00001, 0.0, 1.0);
-
 	const int people_num{ this->pose_key_points.getSize(0) }; // 検出された人数
-	for (int i = 0; i < people_num; ++i) {
-		if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
 
-			dlib::point p(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]);
-			this->past_point = current_point;
-			this->current_point = p;
-			dx = this->current_point.x() - this->past_point.x();
-			dy = this->current_point.y() - this->past_point.y();
-			dx = this->dx_filter.filter(dx);
-			dy = this->dy_filter.filter(dy);
-			this->user_data[i].state = STATE::ACTIVE;
-			//this->user_data[i].cursor_point = point(ofClamp(2*p.x(), 0, CAMERA_W), ofClamp(2 * p.y(), 0, CAMERA_H));
-			this->user_data[i].cursor_point = point(ofClamp(this->user_data[i].cursor_point.x() + 5 * dx, 0, CAMERA_W), ofClamp(this->user_data[i].cursor_point.y() + 5 * dy, 0, CAMERA_H)); // 現在の追跡位置から相対的にカーソルの位置を決定
-			this->user_data[i].cursor_color = ofColor::deepPink;
-			this->transform_point(this->user_data[i].cursor_point, this->user_data[i].transformed_cursor_point);
-			//cout << dx << " " << dy << endl;
-			//cout << this->user_data[i].cursor_point.x() << " " << this->user_data[i].cursor_point.y() << " " << this->user_data[i].transformed_cursor_point.x() << " " << this->user_data[i].transformed_cursor_point.y() << endl;
+	for (int i = 0; i < people_num; ++i) {
+		if (this->pose_key_points[NOSE_X(i)] == 0.0 || this->pose_key_points[NOSE_Y(i)] == 0.0) { // 顔が検出できなければ
+			continue;
+		}
+		double face_size{ this->estimate_face_size(i) }; // 顔の大きさを推定
+
+		long long int user_id{ this->decide_user_id(i) }; // user_idを決定
+
+		//cout << "user id = " << user_id << endl;
+		if (this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] < this->pose_key_points[RIGHT_SHOULDER_Y(i)]) {
+			if (user_id == this->new_user_id) {
+				int cursor_color_id = distance(cbegin(this->cursor_color_state), find_if_not(cbegin(this->cursor_color_state), cend(this->cursor_color_state), [](auto x) {return x; })); // 未使用の色からカーソルの色を選ぶ
+				this->cursor_color_state[cursor_color_id] = true; // 選んだカーソルの色を使用済みとする
+				this->user_data[this->user_id].state = STATE::ACTIVE;
+				this->user_data[this->user_id].cursor_color = this->cursor_colors[cursor_color_id];
+				this->user_data[this->user_id].cursor_color_id = cursor_color_id;
+				this->user_data[this->user_id].cursor_point.x() = this->pose_key_points[RIGHT_WRIST_X(i)];
+				this->user_data[this->user_id].cursor_point.y() = this->pose_key_points[RIGHT_WRIST_Y(i)];
+				this->user_data[this->user_id].face_size = face_size;
+				this->user_data[this->user_id].face_point.x() = this->pose_key_points[NOSE_X(i)];
+				this->user_data[this->user_id].face_point.y() = this->pose_key_points[NOSE_Y(i)];
+				//this->user_data[this->user_id].face_rect = Rect2d(this->pose_key_points[NOSE_X(personal_id)] - face_size / 2, this->pose_key_points[NOSE_Y(personal_id)] - face_size / 2, face_size, face_size);
+				this->transform_point(this->user_data[this->user_id].face_point, this->user_data[this->user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
+				this->transform_point(this->user_data[this->user_id].cursor_point, this->user_data[this->user_id].transformed_cursor_point); // カーソルの座標を画面上の座標に変換
+				++this->user_id;
+			}
+			else {
+				this->user_data[user_id].state = STATE::ACTIVE;
+				this->user_data[user_id].face_point.x() = this->pose_key_points[NOSE_X(i)];
+				this->user_data[user_id].face_point.y() = this->pose_key_points[NOSE_Y(i)];
+				this->user_data[user_id].cursor_point.x() = this->pose_key_points[RIGHT_WRIST_X(i)];
+				this->user_data[user_id].cursor_point.y() = this->pose_key_points[RIGHT_WRIST_Y(i)];
+				this->transform_point(this->user_data[user_id].face_point, this->user_data[user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
+				this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point);
+			}
 		}
 	}
+	//int dx, dy;
+	//OneEuroFilter dx_filter(120, 0.0, 0.0, 1.0), dy_filter(120, 0.00001, 0.0, 1.0);
+
+	//const int people_num{ this->pose_key_points.getSize(0) }; // 検出された人数
+	//for (int i = 0; i < people_num; ++i) {
+	//	if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
+
+	//		dlib::point p(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]);
+	//		this->past_point = current_point;
+	//		this->current_point = p;
+	//		dx = this->current_point.x() - this->past_point.x();
+	//		dy = this->current_point.y() - this->past_point.y();
+	//		dx = this->dx_filter.filter(dx);
+	//		dy = this->dy_filter.filter(dy);
+	//		this->user_data[i].state = STATE::ACTIVE;
+	//		//this->user_data[i].cursor_point = point(ofClamp(2*p.x(), 0, CAMERA_W), ofClamp(2 * p.y(), 0, CAMERA_H));
+	//		this->user_data[i].cursor_point = point(ofClamp(this->user_data[i].cursor_point.x() + 5 * dx, 0, CAMERA_W), ofClamp(this->user_data[i].cursor_point.y() + 5 * dy, 0, CAMERA_H)); // 現在の追跡位置から相対的にカーソルの位置を決定
+	//		this->user_data[i].cursor_color = ofColor::deepPink;
+	//		this->transform_point(this->user_data[i].cursor_point, this->user_data[i].transformed_cursor_point);
+	//		//cout << dx << " " << dy << endl;
+	//		//cout << this->user_data[i].cursor_point.x() << " " << this->user_data[i].cursor_point.y() << " " << this->user_data[i].transformed_cursor_point.x() << " " << this->user_data[i].transformed_cursor_point.y() << endl;
+	//	}
+	//}
 	//const int people_num{ this->pose_key_points.getSize(0) }; // 検出された人数
 	//for (int i = 0; i < people_num; ++i) {
 	//	if (this->pose_key_points[NOSE_X(i)] == 0.0) { // 顔が検出できなければ
@@ -104,7 +143,7 @@ void HandCursor::update() {
 	//	}
 	//}
 //}
-	this->show_detect_window(); // 動作確認用のウィンドウを表示
+	//this->show_detect_window(); // 動作確認用のウィンドウを表示
 }
 
 void HandCursor::exit() {
@@ -194,19 +233,28 @@ void HandCursor::hand_detect(const std::vector<dlib::rectangle>& sliding_windows
 
 void HandCursor::start_track(const int personal_id, const double face_size) {
 	int cursor_color_id = distance(cbegin(this->cursor_color_state), find_if_not(cbegin(this->cursor_color_state), cend(this->cursor_color_state), [](auto x) {return x; })); // 未使用の色からカーソルの色を選ぶ
-
 	this->cursor_color_state[cursor_color_id] = true; // 選んだカーソルの色を使用済みとする
-
-	this->user_data.emplace(this->user_id, user_data_type{ STATE::ACTIVE, this->frame_count, this->hand_dets[0], center(this->hand_dets[0]), point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]), face_size, cursor_color_id, this->cursor_colors[cursor_color_id], }); // ユーザの情報をできるだけ詰める
-
+	//this->user_data.emplace(this->user_id, user_data_type{ STATE::ACTIVE, this->frame_count, this->hand_dets[0], Rect2d(this->pose_key_points[NOSE_X(personal_id)] - face_size / 2, this->pose_key_points[NOSE_Y(personal_id)] - face_size / 2, face_size, face_size), point(this->pose_key_points[RIGHT_WRIST_X(personal_id)], this->pose_key_points[RIGHT_WRIST_Y(personal_id)]), point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]), face_size, cursor_color_id, this->cursor_colors[cursor_color_id], }); // ユーザの情報をできるだけ詰める
+	this->user_data[this->user_id].state = STATE::ACTIVE;
+	this->user_data[this->user_id].cursor_color = this->cursor_colors[cursor_color_id];
+	this->user_data[this->user_id].cursor_color_id = cursor_color_id;
+	this->user_data[this->user_id].cursor_point.x() = this->pose_key_points[RIGHT_WRIST_X(personal_id)];
+	this->user_data[this->user_id].cursor_point.y() = this->pose_key_points[RIGHT_WRIST_Y(personal_id)];
+	this->user_data[this->user_id].face_size = face_size;
+	this->user_data[this->user_id].face_point.x() = this->pose_key_points[NOSE_X(personal_id)];
+	this->user_data[this->user_id].face_point.y() = this->pose_key_points[NOSE_Y(personal_id)];
+	this->user_data[this->user_id].face_rect = Rect2d(this->pose_key_points[NOSE_X(personal_id)] - face_size / 2, this->pose_key_points[NOSE_Y(personal_id)] - face_size / 2, face_size, face_size);
 	this->transform_point(this->user_data[this->user_id].face_point, this->user_data[this->user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
 	this->transform_point(this->user_data[this->user_id].cursor_point, this->user_data[this->user_id].transformed_cursor_point); // カーソルの座標を画面上の座標に変換
-
-	/* 追跡を開始する */
-	correlation_tracker ct;
-	ct.start_track(this->org_image_buffer.get_read_position(), this->user_data[this->user_id].hand);
-	thread th(&HandCursor::tracking, this, ct, this->user_id++);
+	Ptr<Tracker> tracker{ TrackerGOTURN::create() };
+	tracker->init(this->mat_org_image_buffer.get_read_position(), this->user_data[this->user_id].face_rect);
+	thread th(&HandCursor::tracking, this, tracker, this->user_id++);
 	th.detach();
+	///* 追跡を開始する */
+	//correlation_tracker ct;
+	//ct.start_track(this->org_image_buffer.get_read_position(), this->user_data[this->user_id].hand);
+	//thread th(&HandCursor::tracking, this, ct, this->user_id++);
+	//th.detach();
 }
 
 void HandCursor::resume_track(const long long int user_id, const int personal_id, const double face_size) {
@@ -224,11 +272,13 @@ void HandCursor::resume_track(const long long int user_id, const int personal_id
 	this->transform_point(this->user_data[user_id].face_point, this->user_data[user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
 	this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point); // カーソルの座標を画面上の座標に変換
 
-	/* 追跡を開始する */
-	correlation_tracker ct;
-	ct.start_track(this->org_image_buffer.get_read_position(), this->user_data[user_id].hand);
-	thread th(&HandCursor::tracking, this, ct, user_id);
-	th.detach();
+
+
+	///* 追跡を開始する */
+	//correlation_tracker ct;
+	//ct.start_track(this->org_image_buffer.get_read_position(), this->user_data[user_id].hand);
+	//thread th(&HandCursor::tracking, this, ct, user_id);
+	//th.detach();
 }
 
 void HandCursor::renew_user_data(const int personal_id, const double face_size, const long long int user_id) {
@@ -259,60 +309,72 @@ void HandCursor::get_frame() {
 	}
 }
 
-void HandCursor::tracking(correlation_tracker& ct, const long long int user_id) {
-	int m;
-	int dx, dy;
-	drectangle past_pos, current_pos;
-	const double dx_rate{ static_cast<double>(CAMERA_W) / this->user_data[user_id].face_size };
-	const double dy_rate{ static_cast<double>(CAMERA_H) / this->user_data[user_id].face_size };
-	OneEuroFilter dx_filter(120, 0.5, 1.6, 1.0), dy_filter(120, 0.5, 1.6, 1.0);
-
+void HandCursor::tracking(Ptr<Tracker>& tracker, const long long int user_id) {
 	while (1) {
-		m = 0;
-		for (const auto& d : this->user_data[user_id].track_hand_dets) {
-			if (d.first < this->frame_count - 30) {
-				++m;
-				continue;
-			}
-			break;
-		}
-		this->user_data[user_id].track_hand_dets.erase(cbegin(this->user_data[user_id].track_hand_dets), cbegin(this->user_data[user_id].track_hand_dets) + m);
+		tracker->update(this->mat_org_image_buffer.get_read_position(), this->user_data[user_id].face_rect);
 
-		past_pos = ct.get_position(); // 直近フレームの手の位置を得る
-
-		ct.update(this->org_image_buffer.get_read_position()); // 追跡位置の更新
-
-		/* 現在の追跡位置(矩形)を得る */
-		current_pos = ct.get_position();
-
-		this->user_data[user_id].hand = current_pos;
-
-		/* 現在の追跡位置の周辺のスライディングウィンドウを作成して手を検出 */
-		/* 周辺とは追跡している手の矩形1個分周辺の範囲 */
-		this->hand_detect(this->generate_sliding_windows(current_pos.width(), current_pos.width()*this->sliding_window_step_rate, std::max(static_cast<int>(current_pos.left() - this->user_data[user_id].hand.width()), 0), std::min(static_cast<int>(current_pos.right() + this->user_data[user_id].hand.width()), CAMERA_W), std::max(static_cast<int>(current_pos.top() - this->user_data[user_id].hand.height()), 0), std::min(static_cast<int>(current_pos.bottom() + this->user_data[user_id].hand.height()), CAMERA_H)), user_id);
-
-		/* 現在の追跡位置と直前の追跡位置の差 */
-		dx = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x方向
-		dy = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y方向
-
-		/* それぞれの方向の差にフィルタをかける */
-		dx = dx_filter.filter(dx);
-		dy = dy_filter.filter(dy);
-
-		/* カーソルの位置を更新 */
-		this->user_data[user_id].cursor_point = point(ofClamp(this->user_data[user_id].cursor_point.x() + dx_rate * dx, 0, CAMERA_W), ofClamp(this->user_data[user_id].cursor_point.y() + dy_rate * dy, 0, CAMERA_H)); // 現在の追跡位置から相対的にカーソルの位置を決定
-
-		this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point);
-
-		//this->user_data[user_id].latest_update_frame = this->frame_count;
-
-		if (this->user_data[user_id].track_hand_dets.empty() || this->stop_flag) { // 直近フレームで手が検出されなかったら追跡をやめる
+		if (this->stop_flag) { // 直近フレームで手が検出されなかったら追跡をやめる
 			this->cursor_color_state[this->user_data[user_id].cursor_color_id] = false;
 			this->user_data[user_id].state = STATE::INACTIVE;
 			break;
 		}
 	}
 }
+
+//void HandCursor::tracking(correlation_tracker& ct, const long long int user_id) {
+//	int m;
+//	int dx, dy;
+//	drectangle past_pos, current_pos;
+//	const double dx_rate{ static_cast<double>(CAMERA_W) / this->user_data[user_id].face_size };
+//	const double dy_rate{ static_cast<double>(CAMERA_H) / this->user_data[user_id].face_size };
+//	OneEuroFilter dx_filter(120, 0.5, 1.6, 1.0), dy_filter(120, 0.5, 1.6, 1.0);
+//
+//	while (1) {
+//		m = 0;
+//		for (const auto& d : this->user_data[user_id].track_hand_dets) {
+//			if (d.first < this->frame_count - 30) {
+//				++m;
+//				continue;
+//			}
+//			break;
+//		}
+//		this->user_data[user_id].track_hand_dets.erase(cbegin(this->user_data[user_id].track_hand_dets), cbegin(this->user_data[user_id].track_hand_dets) + m);
+//
+//		past_pos = ct.get_position(); // 直近フレームの手の位置を得る
+//
+//		ct.update(this->org_image_buffer.get_read_position()); // 追跡位置の更新
+//
+//		/* 現在の追跡位置(矩形)を得る */
+//		current_pos = ct.get_position();
+//
+//		this->user_data[user_id].hand = current_pos;
+//
+//		/* 現在の追跡位置の周辺のスライディングウィンドウを作成して手を検出 */
+//		/* 周辺とは追跡している手の矩形1個分周辺の範囲 */
+//		this->hand_detect(this->generate_sliding_windows(current_pos.width(), current_pos.width()*this->sliding_window_step_rate, std::max(static_cast<int>(current_pos.left() - this->user_data[user_id].hand.width()), 0), std::min(static_cast<int>(current_pos.right() + this->user_data[user_id].hand.width()), CAMERA_W), std::max(static_cast<int>(current_pos.top() - this->user_data[user_id].hand.height()), 0), std::min(static_cast<int>(current_pos.bottom() + this->user_data[user_id].hand.height()), CAMERA_H)), user_id);
+//
+//		/* 現在の追跡位置と直前の追跡位置の差 */
+//		dx = (current_pos.left() + current_pos.right() - past_pos.left() - past_pos.right()) / 2; // x方向
+//		dy = (current_pos.top() + current_pos.bottom() - past_pos.top() - past_pos.bottom()) / 2; // y方向
+//
+//		/* それぞれの方向の差にフィルタをかける */
+//		dx = dx_filter.filter(dx);
+//		dy = dy_filter.filter(dy);
+//
+//		/* カーソルの位置を更新 */
+//		this->user_data[user_id].cursor_point = point(ofClamp(this->user_data[user_id].cursor_point.x() + dx_rate * dx, 0, CAMERA_W), ofClamp(this->user_data[user_id].cursor_point.y() + dy_rate * dy, 0, CAMERA_H)); // 現在の追跡位置から相対的にカーソルの位置を決定
+//
+//		this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point);
+//
+//		//this->user_data[user_id].latest_update_frame = this->frame_count;
+//
+//		if (this->user_data[user_id].track_hand_dets.empty() || this->stop_flag) { // 直近フレームで手が検出されなかったら追跡をやめる
+//			this->cursor_color_state[this->user_data[user_id].cursor_color_id] = false;
+//			this->user_data[user_id].state = STATE::INACTIVE;
+//			break;
+//		}
+//	}
+//}
 
 void HandCursor::generate_sliding_windows(std::vector<dlib::rectangle>& windows, const int window_size, const int step, const int min_width, const int max_width, const int min_height, const int max_height) {
 	if (step == 0) {
@@ -394,11 +456,12 @@ void HandCursor::show_detect_window() {
 			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 15, this->CV_RED, -1);
 		}
 
-		cv::rectangle(this->view_frame, Point(std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(i)]) - 200, 0), std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(i)]) - 200, 0)), Point(std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(i)]) + 200, CAMERA_W), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(i)]) + 100, CAMERA_H)), this->CV_RED, 10);
+		//cv::rectangle(this->view_frame, Point(std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(i)]) - 200, 0), std::max(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(i)]) - 200, 0)), Point(std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_X(i)]) + 200, CAMERA_W), std::min(static_cast<int>(this->pose_key_points[RIGHT_WRIST_Y(i)]) + 100, CAMERA_H)), this->CV_RED, 10);
 	});
 
 	for (const auto& t : this->user_data) {
-		cv::rectangle(img, Point(t.second.hand.left(), t.second.hand.top()), Point(t.second.hand.right(), t.second.hand.bottom()), this->CV_RED, 5);
+		//cv::rectangle(img, Point(t.second.hand.left(), t.second.hand.top()), Point(t.second.hand.right(), t.second.hand.bottom()), this->CV_RED, 5);
+		//cv::rectangle(img, t.second.face_rect, this->CV_BLUE, 10);
 	}
 
 	imshow("detect window", img);
