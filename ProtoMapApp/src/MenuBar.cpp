@@ -23,7 +23,7 @@ void MenuBar::update() {
 			if (ud.second.state == HandCursor::STATE::INACTIVE) {
 				continue;
 			}
-			if (this->items[i].is_inside(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y())) {
+			if (this->items[i].is_inside(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y)) {
 				this->items[i].set_state(MenuItem::STATE::POINT);
 				this->items[i].update(ud.first);
 				goto POINTED;

@@ -106,7 +106,7 @@ void SimulatedAnnealing::calculate_cost() {
 			if (ud.second.state == HandCursor::STATE::INACTIVE) {
 				continue;
 			}
-			if(s.second.intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x() - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y() - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))){
+			if(s.second.intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))){
 				// もし矩形とカーソルの周辺矩形が重複していたら、コストを最大にしてコスト計算を終了
 				this->next_cost = 0.0;
 				return;
@@ -137,7 +137,7 @@ void SimulatedAnnealing::calculate_cost() {
 				//	continue;
 				//}
 				if (this->sub_windows->at(s.first).get_user_id() == td.first) {
-					this->distance_cost += ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x(), td.second.transformed_face_point.y());
+					this->distance_cost += ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x, td.second.transformed_face_point.y);
 					continue;
 				}
 			}

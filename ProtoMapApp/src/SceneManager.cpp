@@ -27,9 +27,9 @@ void SceneManager::setup(HandCursor* const hc) {
 void SceneManager::update() {
 	if (!this->transform_thread_flag && all_of(cbegin(this->sub_windows), cend(this->sub_windows), [](const auto& x) {return x.second.track_index == SubWindow::TRACK_READY; })) { // 最適化の結果を反映している最中でないとき
 		if (this->hc->user_data.size() == 1 && this->sub_windows.size() == 1) { // ユーザの一人で一人のサブウィンドウを表示しているとき
-			ofRectangle best_rect(max(this->hc->user_data.begin()->second.transformed_face_point.x() - HALF_MAX_SUB_WINDOW_W, 0L), max(this->hc->user_data.begin()->second.transformed_face_point.y() - HALF_MAX_SUB_WINDOW_H, 0L), MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H);
+			ofRectangle best_rect(max(this->hc->user_data.begin()->second.transformed_face_point.x - HALF_MAX_SUB_WINDOW_W, 0), max(this->hc->user_data.begin()->second.transformed_face_point.y - HALF_MAX_SUB_WINDOW_H, 0), MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H);
 
-			if (this->hc->user_data.begin()->second.state == HandCursor::STATE::INACTIVE || !best_rect.intersects(ofRectangle(ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.x() - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.y() - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) { // ユーザのポインタがないか、ユーザの顔の正面に表示しても重複しないならば
+			if (this->hc->user_data.begin()->second.state == HandCursor::STATE::INACTIVE || !best_rect.intersects(ofRectangle(ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) { // ユーザのポインタがないか、ユーザの顔の正面に表示しても重複しないならば
 				this->old_rects.clear();
 				this->old_rects.emplace(this->sub_windows.begin()->first, this->sub_windows.begin()->second.get_rect());
 				this->best_rects.clear();
@@ -93,7 +93,7 @@ void SceneManager::update() {
 				if (ud.second.state == HandCursor::STATE::INACTIVE) {
 					continue;
 				}
-				if (p.is_inside(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y())) {
+				if (p.is_inside(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y)) {
 					p.point(ud.first);
 					goto CONTINUE_LOOP;
 				}
@@ -225,7 +225,7 @@ void SceneManager::draw_cursor() {
 		ofSetColor(ofColor::white);
 		ofFill();
 		ofSetColor(ud.second.cursor_color);
-		ofDrawCircle(ud.second.transformed_cursor_point.x(), ud.second.transformed_cursor_point.y(), 55);
+		ofDrawCircle(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y, 55);
 	}
 }
 
@@ -236,7 +236,7 @@ bool SceneManager::is_intersect_window_pointer() {
 			if (ud.second.state == HandCursor::STATE::INACTIVE) {
 				continue;
 			}
-			if (sw.second.get_rect().intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x() - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y() - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) {
+			if (sw.second.get_rect().intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) {
 				return true;
 			}
 		}
