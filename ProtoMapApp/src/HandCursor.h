@@ -8,16 +8,15 @@
 #include <thread>
 #include <cstdio>
 #include <map>
+#include <deque>
 #include <random>
 
 /* OpenCV */
 #include <opencv2/opencv.hpp>
 
-#include "NonMaximumSuppression.h"
 #include "UEyeVideoCapture.h"
 #include "FrameRateCounter.h"
 #include "AppParameters.h"
-#include "RingBuffer.cpp"
 #include "OneEuroFilter.h"
 #include "BodyPartExtractor.h"
 
@@ -45,11 +44,14 @@ private:
 		STATE state;
 		long long int latest_update_frame;
 		cv::Rect2d face_rect;
-		cv::Point cursor_point, face_point;
+		cv::Point cursor_point, face_point, hand_point;
 		double face_size;
 		int cursor_color_id;
 		ofColor cursor_color;
 		cv::Point transformed_face_point, transformed_cursor_point;
+		std::unique_ptr<OneEuroFilter> dx_filter, dy_filter;
+		//OneEuroFilter dx_filter =;
+		//OneEuroFilter dy_filter = OneEuroFilter{ 120, 0.3, 0.2, 1.0 };
 	};
 
 	/* 定数 */
@@ -57,7 +59,7 @@ private:
 	static constexpr double default_face_size{ 60 };
 	static constexpr double face_error{ 150 };
 	static constexpr int cursor_color_num{ 8 };
-	static constexpr long long int new_user_id { 0 };
+	static constexpr long long int new_user_id{ 0 };
 	static const std::array<ofColor, cursor_color_num> cursor_colors;
 	static const cv::Scalar CV_RED;
 	static const cv::Scalar CV_BLUE;
@@ -75,8 +77,7 @@ private:
 	UEyeVideoCapture cap;
 	FrameRateCounter frc;
 
-	/* 画像データのバッファ */
-	RingBuffer<cv::Mat> mat_org_image_buffer{ 256 }; // Mat型画像のバッファ
+	std::deque<cv::Mat> image_buffer; // 画像データのバッファ
 
 	//cv::VideoWriter writer;
 
@@ -91,11 +92,8 @@ private:
 	void inverse_transform_point(const cv::Point& src_point, cv::Point& dst_point) const;
 	void show_detect_window();
 
-
-	dlib::point past_point, current_point;
 	const double dx_rate{ 1920 / 40 };
 	const double dy_rate{ 1080 / 40 };
-	OneEuroFilter dx_filter, dy_filter;
 public:
 	op::Array<float> pose_key_points;
 	std::unordered_map<long long int, user_data_type> user_data;
