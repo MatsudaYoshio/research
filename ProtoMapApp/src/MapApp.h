@@ -9,6 +9,8 @@ class MapApp : public ofBaseApp {
 private:
 	HandCursor hc;
 	SceneManager sm;
+
+	void initialize_image();
 public:
 	void setup();
 	void update();

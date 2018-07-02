@@ -7,6 +7,8 @@ void MapApp::setup() {
 	ofEnableAlphaBlending(); // アルファチャンネルを使用可能にする
 	ofSetCircleResolution(256);
 	
+	this->initialize_image(); // コンテンツ画像の初期化
+
 	this->sm.setup(&this->hc);
 }
 
@@ -22,4 +24,11 @@ void MapApp::draw() {
 
 void MapApp::exit() {
 	this->hc.exit();
+}
+
+void MapApp::initialize_image() {
+	for (int i = 0; i < param::CONTENT_NUM; ++i) {
+		param::CONTENT_IMAGE[i].load("C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/family_villa_keage.jpg");
+	}
+	
 }

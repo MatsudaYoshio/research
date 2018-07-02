@@ -19,8 +19,6 @@ void SceneManager::setup(HandCursor* const hc) {
 	fill_n(begin(this->menu_item_user_id), MENU_ITEM_NUM, NOT_USER);
 	fill_n(begin(this->menu_item_life), MENU_ITEM_NUM, this->max_menu_item_life);
 
-	this->ab.setup(&this->menu_item_user_id);
-
 	this->sa.setup(this->hc, &this->sub_windows);
 }
 
@@ -50,7 +48,6 @@ void SceneManager::update() {
 	/* いなくなったユーザのサブウィンドウを削除 */
 	for (auto ite = begin(this->sub_windows); ite != end(this->sub_windows);) {
 		if (this->hc->user_data.find(ite->second.get_user_id()) == end(this->hc->user_data)) {
-			ite->second.exit();
 			ite = this->sub_windows.erase(ite);
 		}
 		else {
@@ -104,8 +101,6 @@ void SceneManager::update() {
 			p.update();
 		}
 	}
-
-	this->ab.update(); // 広告バーの更新
 }
 
 void SceneManager::draw() {
@@ -124,19 +119,17 @@ void SceneManager::draw() {
 		}
 	}
 
-	this->ab.draw(); // 広告バーの描画
-
 	//for (const auto& ud : this->hc->user_data) {
 	//	ofSetColor(ud.second.cursor_color, 120);
 	//	this->face_image.draw(ud.second.transformed_face_point.x(), ud.second.transformed_face_point.y(), 200, 200);
 	//}
 
-	this->draw_cursor(); // 手カーソルの描画
-
 	// サブウィンドウの描画
 	for (auto&& w : this->sub_windows) {
 		w.second.draw();
 	}
+
+	this->draw_cursor(); // 手カーソルの描画
 }
 
 void SceneManager::transform(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) {
@@ -206,8 +199,7 @@ void SceneManager::make_sub_window(pair<param::CONTENT_ID, long long int>& id) {
 		[this, id](const auto& x) {return x.second.get_user_id() == id.second; }
 	) };
 	if (ite != end(this->sub_windows)) { // そのユーザがすでにサブウィンドウを生成していたら
-		/* そのサブウィンドウを終了・削除する */
-		ite->second.exit();
+		/* そのサブウィンドウを削除する */
 		this->sub_windows.erase(ite->first);
 	}
 
@@ -220,11 +212,21 @@ void SceneManager::draw_cursor() {
 			continue;
 		}
 
+		auto alpha{ ofColor::limit() };
+
+		for (const auto& sw : this->sub_windows) {
+			if (sw.second.get_rect().inside(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y)) {
+				alpha = 100;
+				break;
+			}
+		}
+
 		ofNoFill();
 		ofSetLineWidth(60);
-		ofSetColor(ofColor::white);
+		ofSetColor(ofColor::white, alpha);
+		ofDrawCircle(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y, 60);
 		ofFill();
-		ofSetColor(ud.second.cursor_color);
+		ofSetColor(ud.second.cursor_color, alpha);
 		ofDrawCircle(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y, 55);
 	}
 }

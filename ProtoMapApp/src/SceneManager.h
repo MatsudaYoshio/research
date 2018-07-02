@@ -3,7 +3,6 @@
 #define ___Class_SceneManager
 
 #include "MenuBar.h"
-#include "AdBar.h"
 #include "HandCursor.h"
 #include "Pin.h"
 #include "SubWindow.h"
@@ -16,7 +15,6 @@ private:
 
 	HandCursor* hc;
 	MenuBar mb;
-	AdBar ab;
 	SimulatedAnnealing sa;
 
 	bool transform_thread_flag{ false };

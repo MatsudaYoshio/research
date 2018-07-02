@@ -53,11 +53,14 @@ namespace param {
 		int x, y; // ピンの指し示す座標
 		int number; // 各メニュー項目における番号
 		MENU_ITEM_ID menu_item_id; // 所属しているメニュー項目のID
-		string image_path; // 表示する画像のパス
 		string name; // 表示する名前
 	};
 
 	extern const content_data_type CONTENT_DATA[]; // コンテンツの情報
+
+	/* なぜか画像データをここで初期化することができないから、アプリ起動時に初期化する
+	   ここでは変数を用意するだけ */
+	extern ofImage CONTENT_IMAGE[];
 }
 
 #endif

@@ -31,6 +31,7 @@
 #define RIGHT_WRIST_Y(i) {i,4,1}
 #define LEFT_SHOULDER_X(i) {i,5,0}
 #define LEFT_SHOULDER_Y(i) {i,5,1}
+#define MIDDLE_HIP_Y(i) {i,8,1}
 #define RIGHT_EAR_X(i) {i,16,0}
 #define RIGHT_EAR_Y(i) {i,16,1}
 #define LEFT_EAR_X(i) {i,17,0}
@@ -79,6 +80,8 @@ private:
 
 	std::deque<cv::Mat> image_buffer; // 画像データのバッファ
 
+	double dx, dy, dx_rate, dy_rate;
+
 	//cv::VideoWriter writer;
 
 	BodyPartExtractor body_part_extractor;
@@ -91,9 +94,6 @@ private:
 	void transform_point(const cv::Point& src_point, cv::Point& dst_point) const;
 	void inverse_transform_point(const cv::Point& src_point, cv::Point& dst_point) const;
 	void show_detect_window();
-
-	const double dx_rate{ 1920 / 40 };
-	const double dy_rate{ 1080 / 40 };
 public:
 	op::Array<float> pose_key_points;
 	std::unordered_map<long long int, user_data_type> user_data;

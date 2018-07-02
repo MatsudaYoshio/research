@@ -3,7 +3,6 @@
 #define ___Class_SubWindow
 
 #include "AppParameters.h"
-#include "ofxSecondWindow.h"
 #include "DrawFrame.h"
 
 class SubWindow {
@@ -12,15 +11,12 @@ private:
 	static constexpr int defalut_height{ 400 };
 	static constexpr int defalut_width{ static_cast<int>(defalut_height * 1.618) };
 
-	ofxSecondWindow window;
 	DrawFrame df;
 	ofRectangle view_rect;
 	param::CONTENT_ID content_id;
 	long long int user_id;
-	ofImage image;
-	ofTrueTypeFont font;
 public:
-	static constexpr int track_rects_num{ 25 };
+	static constexpr int track_rects_num{ 20 };
 	static constexpr int TRACK_READY{ -1 };
 
 	ofRectangle track_rects[track_rects_num];
@@ -33,7 +29,6 @@ public:
 
 	ofRectangle get_rect() const;
 	long long int get_user_id() const;
-	void exit();
 };
 
 #endif
