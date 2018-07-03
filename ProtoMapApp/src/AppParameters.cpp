@@ -37,27 +37,27 @@ const vector<param::CONTENT_ID> param::MENU_ITEM_CONTENTS[]{
 /* コンテンツの情報 */
 const param::content_data_type param::CONTENT_DATA[]{
 	// y座標を大体90引きすることでピンの位置になる
-	param::content_data_type{ 1614, 1026, 1, param::MENU_ITEM_ID::SIGHTSEEING, "Kyoto Tower" },
-	param::content_data_type{ 1570, 784, 2, param::MENU_ITEM_ID::SIGHTSEEING, "Higashi-Hongan-ji" },
-	param::content_data_type{ 1814, 791, 3, param::MENU_ITEM_ID::SIGHTSEEING, "Syoseien" },
-	param::content_data_type{ 1197, 798, 4, param::MENU_ITEM_ID::SIGHTSEEING, "Nishi-Hongan-ji" },
-	param::content_data_type{ 2937, 568, 5, param::MENU_ITEM_ID::SIGHTSEEING, "Kiyomizudera" },
-	param::content_data_type{ 1012, 1025, 6, param::MENU_ITEM_ID::SIGHTSEEING, "Kyoto Aquarium" },
-	param::content_data_type{ 1386, 1070, 1, param::MENU_ITEM_ID::RESTAURANT, "Eijuan" },
-	param::content_data_type{ 2666, 320, 2, param::MENU_ITEM_ID::RESTAURANT, "Sodoh" },
-	param::content_data_type{ 2101, 287, 3, param::MENU_ITEM_ID::RESTAURANT, "Hunatsuru" },
-	param::content_data_type{ 1624, 634, 4, param::MENU_ITEM_ID::RESTAURANT, "Hanaroku" },
-	param::content_data_type{ 1741, 1117, 5, param::MENU_ITEM_ID::RESTAURANT, "Rantei" },
-	param::content_data_type{ 1368, 1323, 1, param::MENU_ITEM_ID::SHOPPING, "Aeon Mall" },
-	param::content_data_type{ 1547, 1165, 2, param::MENU_ITEM_ID::SHOPPING, "Isetan" },
-	param::content_data_type{ 1674, 1279, 3, param::MENU_ITEM_ID::SHOPPING, "Avanti" },
-	param::content_data_type{ 2068, 49, 4, param::MENU_ITEM_ID::SHOPPING, "Takashimaya" },
-	param::content_data_type{ 2737, 455, 5, param::MENU_ITEM_ID::SHOPPING, "Kyo-Yamashita" },
-	param::content_data_type{ 1852, 1294, 1, param::MENU_ITEM_ID::HOTEL, "Almont" },
-	param::content_data_type{ 1338, 734, 2, param::MENU_ITEM_ID::HOTEL, "Sakura-Honganji" },
-	param::content_data_type{ 1108, 1484, 3, param::MENU_ITEM_ID::HOTEL, "Kyostay-Iroha-Toji" },
-	param::content_data_type{ 2335, 958, 4, param::MENU_ITEM_ID::HOTEL, "Hyatt Regency" },
-	param::content_data_type{ 3314, 96, 5, param::MENU_ITEM_ID::HOTEL, "Family Villa Keage" }
+	param::content_data_type{ 1614, 1026, 1, param::MENU_ITEM_ID::SIGHTSEEING, "Kyoto Tower", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1570, 784, 2, param::MENU_ITEM_ID::SIGHTSEEING, "Higashi-Hongan-ji", param::CONTENT_NAME_POSITION::BOTTOM },
+	param::content_data_type{ 1814, 791, 3, param::MENU_ITEM_ID::SIGHTSEEING, "Syoseien", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1197, 798, 4, param::MENU_ITEM_ID::SIGHTSEEING, "Nishi-Hongan-ji", param::CONTENT_NAME_POSITION::LEFT },
+	param::content_data_type{ 2937, 568, 5, param::MENU_ITEM_ID::SIGHTSEEING, "Kiyomizudera", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1012, 1025, 6, param::MENU_ITEM_ID::SIGHTSEEING, "Kyoto Aquarium", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1386, 1070, 1, param::MENU_ITEM_ID::RESTAURANT, "Eijuan", param::CONTENT_NAME_POSITION::BOTTOM },
+	param::content_data_type{ 2666, 320, 2, param::MENU_ITEM_ID::RESTAURANT, "Sodoh", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 2101, 287, 3, param::MENU_ITEM_ID::RESTAURANT, "Hunatsuru", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1624, 634, 4, param::MENU_ITEM_ID::RESTAURANT, "Hanaroku", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1741, 1117, 5, param::MENU_ITEM_ID::RESTAURANT, "Rantei", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1368, 1323, 1, param::MENU_ITEM_ID::SHOPPING, "Aeon Mall", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1547, 1165, 2, param::MENU_ITEM_ID::SHOPPING, "Isetan", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1674, 1279, 3, param::MENU_ITEM_ID::SHOPPING, "Avanti", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 2068, 49, 4, param::MENU_ITEM_ID::SHOPPING, "Takashimaya", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 2737, 455, 5, param::MENU_ITEM_ID::SHOPPING, "Kyo-Yamashita", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1852, 1294, 1, param::MENU_ITEM_ID::HOTEL, "Almont", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1338, 734, 2, param::MENU_ITEM_ID::HOTEL, "Sakura-Honganji", param::CONTENT_NAME_POSITION::TOP },
+	param::content_data_type{ 1108, 1484, 3, param::MENU_ITEM_ID::HOTEL, "Kyostay-Iroha-Toji", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 2335, 958, 4, param::MENU_ITEM_ID::HOTEL, "Hyatt Regency", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 3314, 96, 5, param::MENU_ITEM_ID::HOTEL, "Family Villa Keage", param::CONTENT_NAME_POSITION::RIGHT }
 };
 
 ofImage param::CONTENT_IMAGE[]{

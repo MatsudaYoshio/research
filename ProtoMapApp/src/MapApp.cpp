@@ -28,7 +28,8 @@ void MapApp::exit() {
 
 void MapApp::initialize_image() {
 	for (int i = 0; i < param::CONTENT_NUM; ++i) {
-		param::CONTENT_IMAGE[i].load("C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/family_villa_keage.jpg");
+		CONTENT_IMAGE[i].load("C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/family_villa_keage.jpg");
 	}
-	
+
+	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::SYOSEIEN)].load("C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/shoseien_scene.jpg");
 }

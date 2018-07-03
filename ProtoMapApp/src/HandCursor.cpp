@@ -25,8 +25,8 @@ HandCursor::HandCursor() {
 
 void HandCursor::update() {
 	/* fpsを表示 */
-	frc.NewFrame();
-	printf("fps : %lf\n", frc.GetFrameRate());
+	//frc.NewFrame();
+	//printf("fps : %lf\n", frc.GetFrameRate());
 
 	/* 一定時間の間、情報が更新されていないユーザを削除する */
 	for (auto ite = begin(this->user_data); ite != end(this->user_data);) {

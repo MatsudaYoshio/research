@@ -48,12 +48,15 @@ namespace param {
 
 	extern const vector<CONTENT_ID> MENU_ITEM_CONTENTS[]; // メニュー項目に含まれるコンテンツの内訳
 
+	const enum class CONTENT_NAME_POSITION { TOP, BOTTOM, LEFT, RIGHT }; // コンテンツの名前の配置(ピンから見て上下左右のどれか)
+
 	/* コンテンツデータの型 */
 	using content_data_type = struct {
 		int x, y; // ピンの指し示す座標
 		int number; // 各メニュー項目における番号
 		MENU_ITEM_ID menu_item_id; // 所属しているメニュー項目のID
 		string name; // 表示する名前
+		CONTENT_NAME_POSITION position;
 	};
 
 	extern const content_data_type CONTENT_DATA[]; // コンテンツの情報

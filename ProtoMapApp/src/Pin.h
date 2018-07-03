@@ -16,7 +16,7 @@ private:
 	static constexpr double big_radius{ 80 };
 	static constexpr int font_size{ 40 };
 	static constexpr int big_font_size{ 70 };
-	static constexpr int progress_threshold{ 50 };
+	static constexpr int progress_threshold{ 30 };
 
 	const enum class STATE {
 		NORMAL, POINT
@@ -27,13 +27,15 @@ private:
 	param::CONTENT_ID content_id;
 	triangle_points tp, big_tp;
 	ofPoint cp, big_cp, fp, big_fp;
-	ofTrueTypeFont font, big_font;
+	array<ofPoint, 4> np, big_np;
+	ofTrueTypeFont number_font, big_number_font, name_font, big_name_font;
 	ofColor color;
 	float alpha{ ofColor::limit() };
 	int progress{ 0 };
 	long long int user_id;
 
-	void draw(const ofPoint& cp, int r, const triangle_points& tp, const ofTrueTypeFont& f, const ofPoint& fp) const;
+	void draw_pin(const ofPoint& cp, int r, const triangle_points& tp, const ofTrueTypeFont& f, const ofPoint& fp) const;
+	void draw_name() const;
 public:
 	ofEvent<pair<param::CONTENT_ID, long long int>> make_sub_window_event;
 
