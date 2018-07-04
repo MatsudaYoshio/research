@@ -27,9 +27,16 @@ void MapApp::exit() {
 }
 
 void MapApp::initialize_image() {
-	for (int i = 0; i < param::CONTENT_NUM; ++i) {
+	for (int i = 0; i < CONTENT_NUM; ++i) {
 		CONTENT_IMAGE[i].load("C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/family_villa_keage.jpg");
 	}
 
+	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::KYOTO_TOWER)].load("C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/kyoto_tower_scene.jpg");
+	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::HIGASHIHONGANJI)].load("C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/higashihonganji_scene.jpg");
+	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::NISHIHONGANJI)].load("C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/nishihonganji_scene.jpg");
 	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::SYOSEIEN)].load("C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/shoseien_scene.jpg");
+	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::KIYOMIZUDERA)].load("C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/kiyomizudera_scene.jpg");
+	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::KYOTO_AQUARIUM)].load("C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/kyoto_aquarium_scene.jpg");
+	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::KANNONJI)].load("C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/kannonji_scene.jpg");
+	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::TOJI)].load("C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/toji_scene.jpg");
 }

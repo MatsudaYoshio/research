@@ -28,7 +28,7 @@ const ofColor param::MENU_ITEM_COLOR[]{ ofColor::gold, ofColor::lawnGreen, ofCol
 
 /* メニュー項目に含まれるコンテンツの内訳 */
 const vector<param::CONTENT_ID> param::MENU_ITEM_CONTENTS[]{
-	vector<param::CONTENT_ID>{ param::CONTENT_ID::KYOTO_TOWER, param::CONTENT_ID::HIGASHIHONGANJI, param::CONTENT_ID::SYOSEIEN, param::CONTENT_ID::NISHIHONGANJI, param::CONTENT_ID::KIYOMIZUDERA, param::CONTENT_ID::KYOTO_AQUARIUM},
+	vector<param::CONTENT_ID>{param::CONTENT_ID::KYOTO_TOWER, param::CONTENT_ID::HIGASHIHONGANJI, param::CONTENT_ID::SYOSEIEN, param::CONTENT_ID::NISHIHONGANJI, param::CONTENT_ID::KIYOMIZUDERA, param::CONTENT_ID::KYOTO_AQUARIUM, param::CONTENT_ID::KANNONJI, param::CONTENT_ID::TOJI},
 	vector<param::CONTENT_ID>{param::CONTENT_ID::EIJUAN, param::CONTENT_ID::SODOH, param::CONTENT_ID::FUNATSURU, param::CONTENT_ID::HANAROKU, param::CONTENT_ID::RANTEI},
 	vector<param::CONTENT_ID>{param::CONTENT_ID::AEON_MALL, param::CONTENT_ID::ISETAN, param::CONTENT_ID::AVANTI, param::CONTENT_ID::TAKASHIMAYA, param::CONTENT_ID::YAMASHITA},
 	vector<param::CONTENT_ID>{param::CONTENT_ID::ALMONT, param::CONTENT_ID::SAKURA_HONGANJI, param::CONTENT_ID::KYOSTAY_IROHA_TOJI, param::CONTENT_ID::HYATT_REGENCY, param::CONTENT_ID::FAMILY_VILLA_KEAGE}
@@ -43,6 +43,8 @@ const param::content_data_type param::CONTENT_DATA[]{
 	param::content_data_type{ 1197, 798, 4, param::MENU_ITEM_ID::SIGHTSEEING, "Nishi-Hongan-ji", param::CONTENT_NAME_POSITION::LEFT },
 	param::content_data_type{ 2937, 568, 5, param::MENU_ITEM_ID::SIGHTSEEING, "Kiyomizudera", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 1012, 1025, 6, param::MENU_ITEM_ID::SIGHTSEEING, "Kyoto Aquarium", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 2727, 1513, 7, param::MENU_ITEM_ID::SIGHTSEEING, "Kannon-ji", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 955, 1499, 8, param::MENU_ITEM_ID::SIGHTSEEING, "To-ji", param::CONTENT_NAME_POSITION::TOP },
 	param::content_data_type{ 1386, 1070, 1, param::MENU_ITEM_ID::RESTAURANT, "Eijuan", param::CONTENT_NAME_POSITION::BOTTOM },
 	param::content_data_type{ 2666, 320, 2, param::MENU_ITEM_ID::RESTAURANT, "Sodoh", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 2101, 287, 3, param::MENU_ITEM_ID::RESTAURANT, "Hunatsuru", param::CONTENT_NAME_POSITION::RIGHT },
@@ -68,6 +70,7 @@ ofImage param::CONTENT_IMAGE[]{
 	ofImage{},
 	ofImage{},
 	ofImage{},
+	ofImage{},
 	ofImage{}, 
 	ofImage{}, 
 	ofImage{}, 
@@ -79,6 +82,7 @@ ofImage param::CONTENT_IMAGE[]{
 	ofImage{}, 
 	ofImage{}, 
 	ofImage{}, 
-	ofImage{}, 
+	ofImage{},
+	ofImage{},
 	ofImage{}
 };
