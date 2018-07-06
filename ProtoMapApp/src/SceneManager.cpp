@@ -111,10 +111,10 @@ void SceneManager::draw() {
 
 	/* ƒsƒ“‚Ì•`‰æ */
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
-		//if (this->menu_item_user_id[i] == NOT_USER) {
-		//	continue;
-		//}
-		if (i == 2) continue;
+		if (this->menu_item_user_id[i] == NOT_USER) {
+			continue;
+		}
+		//if (i == 2) continue;
 		for (const auto& p : this->pins[i]) {
 			p.draw();
 		}

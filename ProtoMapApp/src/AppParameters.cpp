@@ -84,5 +84,6 @@ ofImage param::CONTENT_IMAGE[]{
 	ofImage{}, 
 	ofImage{},
 	ofImage{},
+	ofImage{},
 	ofImage{}
 };

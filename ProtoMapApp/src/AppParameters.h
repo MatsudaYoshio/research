@@ -35,7 +35,7 @@ namespace param {
 
 	constexpr int MENU_ITEM_NUM{ 4 }; // メニュー項目の数
 
-	constexpr int CONTENT_NUM{ 22 }; // コンテンツの数
+	constexpr int CONTENT_NUM{ 23 }; // コンテンツの数
 
 	const enum class MENU_ITEM_ID { SIGHTSEEING, RESTAURANT, SHOPPING, HOTEL }; // メニュー項目ID
 

@@ -44,15 +44,13 @@ private:
 	using user_data_type = struct {
 		STATE state;
 		long long int latest_update_frame;
-		cv::Rect2d face_rect;
-		cv::Point cursor_point, face_point, hand_point;
+		cv::Rect2d face_rect, operation_area;
+		cv::Point cursor_point, face_point, hand_point, initial_point;
 		double face_size;
 		int cursor_color_id;
 		ofColor cursor_color;
 		cv::Point transformed_face_point, transformed_cursor_point;
 		std::unique_ptr<OneEuroFilter> dx_filter, dy_filter;
-		//OneEuroFilter dx_filter =;
-		//OneEuroFilter dy_filter = OneEuroFilter{ 120, 0.3, 0.2, 1.0 };
 	};
 
 	/* íËêî */
