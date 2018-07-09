@@ -33,6 +33,9 @@ namespace param {
 
 	extern const long long int NOT_USER; // 無効のユーザID
 
+	extern const float MAX_ALFHA;
+	extern const float HALF_MAX_ALFHA;
+
 	constexpr int MENU_ITEM_NUM{ 4 }; // メニュー項目の数
 
 	constexpr int CONTENT_NUM{ 23 }; // コンテンツの数

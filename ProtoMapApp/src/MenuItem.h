@@ -10,7 +10,6 @@ private:
 	static constexpr int font_size{ 30 }; // 項目名のフォントサイズ
 	static constexpr double progress_ratio{ 0.05 }; // プログレスバーの進行速度を決める比率
 	static constexpr int progress_bar_size{ 20 }; // プログレスバーのサイズ(高さ)
-	static constexpr float pointed_alpha{ 100 }; // 項目が選択されたときの透明度(アルファ値)
 
 	int progress_state{ 0 };
 	string item_name;

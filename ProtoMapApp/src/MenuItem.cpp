@@ -17,7 +17,7 @@ void MenuItem::setup(const string& image_path, const ofRectangle& item_rect, con
 void MenuItem::update() {
 	switch (this->state) {
 	case STATE::POINT:
-		this->alpha = this->pointed_alpha;
+		this->alpha = HALF_MAX_ALFHA;
 		if (this->progress_state == this->item_rect.width) {
 			pair<param::MENU_ITEM_ID, long long int> id(this->item_id, this->user_id);
 			ofNotifyEvent(this->select_event, id);
@@ -28,7 +28,7 @@ void MenuItem::update() {
 		}
 		break;
 	case STATE::INACTIVE:
-		this->alpha = ofColor::limit();
+		this->alpha = MAX_ALFHA;
 		this->progress_state = 0;
 		break;
 	}

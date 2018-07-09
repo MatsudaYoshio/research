@@ -39,7 +39,7 @@
 
 class HandCursor {
 public:
-	const enum class STATE { INACTIVE, ACTIVE };
+	const enum class STATE { INACTIVE, OVERLAP, ACTIVE };
 private:
 	using user_data_type = struct {
 		STATE state;
@@ -49,6 +49,7 @@ private:
 		double face_size;
 		int cursor_color_id;
 		ofColor cursor_color;
+		float alpha;
 		cv::Point transformed_face_point, transformed_cursor_point;
 		std::unique_ptr<OneEuroFilter> dx_filter, dy_filter;
 	};
@@ -99,7 +100,8 @@ public:
 	HandCursor();
 	void update();
 	void exit();
-	void modulate_cursor(const long long int& user_id);
+	void modulate_cursor(long long int user_id);
+	void overlap_window(long long int user_id);
 };
 
 #endif

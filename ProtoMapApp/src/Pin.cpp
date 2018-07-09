@@ -43,11 +43,11 @@ void Pin::update() {
 	switch (this->state) {
 	case STATE::NORMAL:
 		this->progress = 0;
-		this->alpha = ofColor::limit();
+		this->alpha = MAX_ALFHA;
 		break;
 	case STATE::POINT:
 		++this->progress;
-		this->alpha = 130;
+		this->alpha = HALF_MAX_ALFHA;
 		break;
 	}
 }

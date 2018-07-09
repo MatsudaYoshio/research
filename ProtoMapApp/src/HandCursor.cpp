@@ -135,6 +135,7 @@ void HandCursor::init_user_data(const int personal_id, const double face_size) {
 			face_size,
 			cursor_color_id,
 			this->cursor_colors[cursor_color_id],
+			ofColor::limit(),
 	});
 	this->user_data[this->user_id].dx_filter.reset(new OneEuroFilter(120, 0.0012, 0.0012, 1.0));
 	this->user_data[this->user_id].dy_filter.reset(new OneEuroFilter(120, 0.0012, 0.0012, 1.0));
@@ -184,8 +185,8 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 
 	//this->user_data[user_id].latest_update_frame = this->frame_count;
 
-
 	this->user_data[user_id].state = STATE::ACTIVE;
+	this->user_data[user_id].alpha = MAX_ALFHA;
 
 	this->user_data[user_id].face_size = face_size;
 	this->user_data[user_id].face_point.x = this->pose_key_points[NOSE_X(personal_id)];
@@ -222,8 +223,8 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 	this->transform_point(this->user_data[user_id].face_point, this->user_data[user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
 	//this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point); // カーソルの座標を画面上の座標に変換
 
-	this->user_data[user_id].transformed_cursor_point.x = DISPLAY_W / 2 - 1.2*1000/this->user_data[user_id].face_size * dx;
-	this->user_data[user_id].transformed_cursor_point.y = DISPLAY_H / 2 + 1.2*1000 / this->user_data[user_id].face_size * dy;
+	this->user_data[user_id].transformed_cursor_point.x = DISPLAY_W / 2 - 1.2 * 1000 / this->user_data[user_id].face_size * dx;
+	this->user_data[user_id].transformed_cursor_point.y = DISPLAY_H / 2 + 1.2 * 1000 / this->user_data[user_id].face_size * dy;
 
 	this->user_data[user_id].transformed_cursor_point.x = ofClamp(this->user_data[user_id].dx_filter->filter(this->user_data[user_id].transformed_cursor_point.x), 0, DISPLAY_W);
 	this->user_data[user_id].transformed_cursor_point.y = ofClamp(this->user_data[user_id].dy_filter->filter(this->user_data[user_id].transformed_cursor_point.y), 0, DISPLAY_H);
@@ -249,9 +250,17 @@ void HandCursor::inverse_transform_point(const Point& src_point, Point& dst_poin
 	dst_point.y = src_point.y / RESOLUTION_RATIO_H;
 }
 
-void HandCursor::modulate_cursor(const long long int& user_id) {
+void HandCursor::modulate_cursor(long long int user_id) {
 	try {
 		this->inverse_transform_point(this->user_data.at(user_id).transformed_cursor_point, this->user_data.at(user_id).cursor_point);
+	}
+	catch (std::out_of_range&) {}
+}
+
+void HandCursor::overlap_window(const long long int user_id) {
+	try {
+		this->user_data[user_id].state = STATE::OVERLAP;
+		this->user_data[user_id].alpha = HALF_MAX_ALFHA;
 	}
 	catch (std::out_of_range&) {}
 }

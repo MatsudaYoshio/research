@@ -9,8 +9,8 @@ const int param::HALF_DISPLAY_W{ param::DISPLAY_W >> 1 };
 const int param::HALF_DISPLAY_H{ param::DISPLAY_H >> 1 };
 
 /* サブウィンドウの最大サイズ */
-const int param::MAX_SUB_WINDOW_W{ 3*param::HALF_DISPLAY_W/4 };
-const int param::MAX_SUB_WINDOW_H{ 3*param::HALF_DISPLAY_H/4 };
+const int param::MAX_SUB_WINDOW_W{ 3 * param::HALF_DISPLAY_W / 4 };
+const int param::MAX_SUB_WINDOW_H{ 3 * param::HALF_DISPLAY_H / 4 };
 
 /* サブウィンドウの最大サイズの半分 */
 const int param::HALF_MAX_SUB_WINDOW_W{ param::MAX_SUB_WINDOW_W >> 1 };
@@ -23,6 +23,10 @@ const double param::RESOLUTION_RATIO_H{ param::DISPLAY_H / param::CAMERA_H };
 const ofRectangle param::USER_CERTAIN_WINDOW{ 250, 250, 500, 500 }; // ユーザのポインタの重複仮想領域の範囲
 
 const long long int param::NOT_USER{ -1 }; // 無効のユーザID
+
+/* アルファ値(透過度を決定する) */
+const float param::MAX_ALFHA{ ofColor::limit() };
+const float param::HALF_MAX_ALFHA{ param::MAX_ALFHA / 2 };
 
 const ofColor param::MENU_ITEM_COLOR[]{ ofColor::gold, ofColor::lawnGreen, ofColor::pink, ofColor::skyBlue }; // メニュー項目の色
 
@@ -71,17 +75,17 @@ ofImage param::CONTENT_IMAGE[]{
 	ofImage{},
 	ofImage{},
 	ofImage{},
-	ofImage{}, 
-	ofImage{}, 
-	ofImage{}, 
 	ofImage{},
-	ofImage{}, 
-	ofImage{}, 
-	ofImage{}, 
-	ofImage{}, 
-	ofImage{}, 
-	ofImage{}, 
-	ofImage{}, 
+	ofImage{},
+	ofImage{},
+	ofImage{},
+	ofImage{},
+	ofImage{},
+	ofImage{},
+	ofImage{},
+	ofImage{},
+	ofImage{},
+	ofImage{},
 	ofImage{},
 	ofImage{},
 	ofImage{},

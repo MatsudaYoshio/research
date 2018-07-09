@@ -80,6 +80,20 @@ void SceneManager::update() {
 
 	this->mb.update(); // メニューバーの更新
 
+	/* カーソルがウィンドウと重複するかどうかを調べて、カーソルの状態を変更する */
+	for (const auto& ud : this->hc->user_data) {
+		if (ud.second.state == HandCursor::STATE::INACTIVE) {
+			continue;
+		}
+
+		for (const auto& sw : this->sub_windows) {
+			if (sw.second.get_rect().inside(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y)) {
+				this->hc->overlap_window(ud.first);
+				break;
+			}
+		}
+	}
+
 	// ピンの更新
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
 		if (this->menu_item_user_id[i] == NOT_USER) {
@@ -87,7 +101,7 @@ void SceneManager::update() {
 		}
 		for (auto&& p : this->pins[i]) {
 			for (const auto& ud : this->hc->user_data) {
-				if (ud.second.state == HandCursor::STATE::INACTIVE) {
+				if (ud.second.state != HandCursor::STATE::ACTIVE) {
 					continue;
 				}
 				if (p.is_inside(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y)) {
@@ -213,21 +227,12 @@ void SceneManager::draw_cursor() {
 			continue;
 		}
 
-		auto alpha{ ofColor::limit() };
-
-		for (const auto& sw : this->sub_windows) {
-			if (sw.second.get_rect().inside(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y)) {
-				alpha = 100;
-				break;
-			}
-		}
-
 		ofNoFill();
 		ofSetLineWidth(60);
-		ofSetColor(ofColor::white, alpha);
+		ofSetColor(ofColor::white, ud.second.alpha);
 		ofDrawCircle(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y, 60);
 		ofFill();
-		ofSetColor(ud.second.cursor_color, alpha);
+		ofSetColor(ud.second.cursor_color, ud.second.alpha);
 		ofDrawCircle(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y, 55);
 	}
 }
