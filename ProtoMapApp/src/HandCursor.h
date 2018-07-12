@@ -43,7 +43,7 @@ public:
 private:
 	using user_data_type = struct {
 		STATE state;
-		long long int latest_update_frame;
+		long long int start_frame, latest_update_frame;
 		cv::Rect2d face_rect, operation_area;
 		cv::Point cursor_point, face_point, hand_point, initial_point;
 		double face_size;
@@ -60,6 +60,15 @@ private:
 	static constexpr double face_error{ 150 };
 	static constexpr int cursor_color_num{ 8 };
 	static constexpr long long int new_user_id{ 0 };
+	static constexpr double operation_width_rate{ 1000 };
+	static constexpr double operation_heght_rate{ 1000 };
+	static constexpr double moving_rate{ 1.3 };
+	static constexpr double filter_freq{ 120 };
+	static constexpr double filter_mincutoff{ 0.00128 };
+	static constexpr double filter_beta{ 0.00128 };
+	static const double display_operation_width_ratio;
+	static const double display_operation_height_ratio;
+	static const cv::Point invalid_point, display_center_point;
 	static const std::array<ofColor, cursor_color_num> cursor_colors;
 	static const cv::Scalar CV_RED;
 	static const cv::Scalar CV_BLUE;
@@ -91,7 +100,6 @@ private:
 	void renew_user_data(int personal_id, double face_size, long long int user_id);
 	void get_frame();
 	void transform_point(const cv::Point& src_point, cv::Point& dst_point) const;
-	void inverse_transform_point(const cv::Point& src_point, cv::Point& dst_point) const;
 	void show_detect_window();
 public:
 	op::Array<float> pose_key_points;
@@ -100,7 +108,6 @@ public:
 	HandCursor();
 	void update();
 	void exit();
-	void modulate_cursor(long long int user_id);
 	void overlap_window(long long int user_id);
 };
 

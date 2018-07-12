@@ -4,6 +4,12 @@ using namespace std;
 using namespace cv;
 using namespace param;
 
+const double HandCursor::display_operation_width_ratio{ DISPLAY_W / HandCursor::operation_width_rate };
+const double HandCursor::display_operation_height_ratio{ DISPLAY_H / HandCursor::operation_heght_rate };
+
+const Point HandCursor::invalid_point{ -100,-100 }; // 画面上に表示されないような座標の点(無効点)
+const Point HandCursor::display_center_point{ HALF_DISPLAY_W, HALF_DISPLAY_H }; // ディスプレイの中心の点
+
 /* カーソルの色 */
 const std::array<ofColor, HandCursor::cursor_color_num> HandCursor::cursor_colors = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::orange };
 
@@ -30,7 +36,7 @@ void HandCursor::update() {
 
 	/* 一定時間の間、情報が更新されていないユーザを削除する */
 	for (auto ite = begin(this->user_data); ite != end(this->user_data);) {
-		if (this->frame_count - ite->second.latest_update_frame > 80) {
+		if (this->frame_count - ite->second.latest_update_frame > 60) {
 			this->cursor_color_state[ite->second.cursor_color_id] = false; // 色を解放
 			ite = this->user_data.erase(ite);
 		}
@@ -68,7 +74,7 @@ void HandCursor::update() {
 			}
 		}
 	}
-	//}
+
 	//this->show_detect_window(); // 動作確認用のウィンドウを表示
 }
 
@@ -126,64 +132,43 @@ void HandCursor::init_user_data(const int personal_id, const double face_size) {
 	this->user_data.emplace(this->user_id, user_data_type{
 		STATE::ACTIVE,
 			this->frame_count,
+			this->frame_count,
 			Rect2d(this->pose_key_points[NOSE_X(personal_id)] - face_size / 2, this->pose_key_points[NOSE_Y(personal_id)] - face_size / 2, face_size, face_size),
-			Rect2d(this->pose_key_points[NOSE_X(personal_id)] - face_size*DISPLAY_W / 1000, this->pose_key_points[NOSE_Y(personal_id)] - face_size*DISPLAY_H / 2000, face_size*DISPLAY_W / 1000, face_size*DISPLAY_H / 1000),
+			Rect2d(this->pose_key_points[NECK_X(personal_id)] - face_size*this->display_operation_width_ratio, (this->pose_key_points[NECK_Y(personal_id)] + this->pose_key_points[NOSE_Y(personal_id)]) / 2 - face_size*this->display_operation_height_ratio / 2, face_size*this->display_operation_width_ratio, face_size*this->display_operation_height_ratio),
 			Point(this->pose_key_points[RIGHT_WRIST_X(personal_id)], this->pose_key_points[RIGHT_WRIST_Y(personal_id)]),
 			Point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]),
 			Point(this->pose_key_points[RIGHT_WRIST_X(personal_id)], this->pose_key_points[RIGHT_WRIST_Y(personal_id)]),
-			Point(this->pose_key_points[NOSE_X(personal_id)] - face_size*DISPLAY_W / 2000, this->pose_key_points[NOSE_Y(personal_id)]),
+			Point(this->pose_key_points[NECK_X(personal_id)] - face_size*this->display_operation_width_ratio / 2, (this->pose_key_points[NECK_Y(personal_id)] + this->pose_key_points[NOSE_Y(personal_id)]) / 2),
 			face_size,
 			cursor_color_id,
 			this->cursor_colors[cursor_color_id],
 			ofColor::limit(),
+			this->invalid_point,
+			this->invalid_point,
 	});
-	this->user_data[this->user_id].dx_filter.reset(new OneEuroFilter(120, 0.0012, 0.0012, 1.0));
-	this->user_data[this->user_id].dy_filter.reset(new OneEuroFilter(120, 0.0012, 0.0012, 1.0));
+	this->user_data[this->user_id].dx_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
+	this->user_data[this->user_id].dy_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
 
 	this->transform_point(this->user_data[this->user_id].face_point, this->user_data[this->user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
-	//this->transform_point(this->user_data[this->user_id].cursor_point, this->user_data[this->user_id].transformed_cursor_point); // カーソルの座標を画面上の座標に変換
-	this->user_data[user_id].transformed_cursor_point.x = -100;
-	this->user_data[user_id].transformed_cursor_point.y = -100;
-
 
 	++this->user_id;
 }
 
 void HandCursor::renew_user_data(const int personal_id, const double face_size, const long long int user_id) {
-	//this->user_data[user_id].state = STATE::ACTIVE;
+	this->user_data[user_id].latest_update_frame = this->frame_count;
 
-	//this->user_data[user_id].face_size = face_size;
-	//this->user_data[user_id].face_point.x = this->pose_key_points[NOSE_X(personal_id)];
-	//this->user_data[user_id].face_point.y = this->pose_key_points[NOSE_Y(personal_id)];
+	if (this->user_data[user_id].state == STATE::INACTIVE) { // カーソルが消えている状態から復帰したら
+		this->user_data[user_id].transformed_cursor_point = this->invalid_point;
+		this->user_data[user_id].start_frame = this->frame_count;
+		this->user_data[user_id].state = STATE::ACTIVE;
+		this->user_data[user_id].dx_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
+		this->user_data[user_id].dy_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
+	}
 
-	//this->dx_rate = CAMERA_W / this->user_data[user_id].face_size;
-	//this->dy_rate = CAMERA_H / this->user_data[user_id].face_size;
-
-	///* 現在の追跡位置と直前の追跡位置の差 */
-	//this->dx = this->pose_key_points[RIGHT_WRIST_X(personal_id)] - this->user_data[user_id].hand_point.x; // x方向
-	//this->dy = this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - this->user_data[user_id].hand_point.y; // y方向
-
-	//if (this->dx < this->user_data[user_id].face_size) {
-	//	this->dx *= 0.3;
-	//}
-	//if (this->dy < this->user_data[user_id].face_size) {
-	//	this->dy *= 0.3;
-	//}
-
-	///* それぞれの方向の差にフィルタをかける */
-	//this->dx = this->user_data[user_id].dx_filter->filter(this->dx);
-	//this->dy = this->user_data[user_id].dy_filter->filter(this->dy);
-
-	///* カーソルの位置を更新(現在の追跡位置から相対的にカーソルの位置を決定) */
-	//this->user_data[user_id].cursor_point = Point(ofClamp(this->user_data[user_id].cursor_point.x + this->dx_rate * this->dx, 0, CAMERA_W), ofClamp(this->user_data[user_id].cursor_point.y + this->dy_rate * this->dy, 0, CAMERA_H));
-
-	//this->user_data[user_id].hand_point.x = this->pose_key_points[RIGHT_WRIST_X(personal_id)];
-	//this->user_data[user_id].hand_point.y = this->pose_key_points[RIGHT_WRIST_Y(personal_id)];
-
-	//this->transform_point(this->user_data[user_id].face_point, this->user_data[user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
-	//this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point); // カーソルの座標を画面上の座標に変換
-
-	//this->user_data[user_id].latest_update_frame = this->frame_count;
+	/* 初めの一定量フレームを捨てる(最初のカーソルの表示を見た目きれいにするため) */
+	if (this->user_data[user_id].latest_update_frame - this->user_data[user_id].start_frame < 5) {
+		return;
+	}
 
 	this->user_data[user_id].state = STATE::ACTIVE;
 	this->user_data[user_id].alpha = MAX_ALFHA;
@@ -195,41 +180,16 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 	this->dx_rate = CAMERA_W / this->user_data[user_id].face_size;
 	this->dy_rate = CAMERA_H / this->user_data[user_id].face_size;
 
-	/* 現在の追跡位置と直前の追跡位置の差 */
-	//this->dx = this->pose_key_points[RIGHT_WRIST_X(personal_id)] - this->user_data[user_id].hand_point.x; // x方向
-	//this->dy = this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - this->user_data[user_id].hand_point.y; // y方向
-
 	this->dx = this->pose_key_points[RIGHT_WRIST_X(personal_id)] - this->user_data[user_id].initial_point.x;
 	this->dy = this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - this->user_data[user_id].initial_point.y;
 
-
-	//if (this->dx < this->user_data[user_id].face_size) {
-	//	this->dx *= 0.3;
-	//}
-	//if (this->dy < this->user_data[user_id].face_size) {
-	//	this->dy *= 0.3;
-	//}
-
-	///* それぞれの方向の差にフィルタをかける */
-	//this->dx = this->user_data[user_id].dx_filter->filter(this->dx);
-	//this->dy = this->user_data[user_id].dy_filter->filter(this->dy);
-
-	/* カーソルの位置を更新(現在の追跡位置から相対的にカーソルの位置を決定) */
-	//this->user_data[user_id].cursor_point = Point(ofClamp(this->user_data[user_id].cursor_point.x + this->dx_rate * this->dx, 0, CAMERA_W), ofClamp(this->user_data[user_id].cursor_point.y + this->dy_rate * this->dy, 0, CAMERA_H));
-
-	this->user_data[user_id].hand_point.x = this->pose_key_points[RIGHT_WRIST_X(personal_id)];
-	this->user_data[user_id].hand_point.y = this->pose_key_points[RIGHT_WRIST_Y(personal_id)];
-
 	this->transform_point(this->user_data[user_id].face_point, this->user_data[user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
-	//this->transform_point(this->user_data[user_id].cursor_point, this->user_data[user_id].transformed_cursor_point); // カーソルの座標を画面上の座標に変換
 
-	this->user_data[user_id].transformed_cursor_point.x = DISPLAY_W / 2 - 1.2 * 1000 / this->user_data[user_id].face_size * dx;
-	this->user_data[user_id].transformed_cursor_point.y = DISPLAY_H / 2 + 1.2 * 1000 / this->user_data[user_id].face_size * dy;
+	this->user_data[user_id].transformed_cursor_point.x = this->display_center_point.x - this->moving_rate * this->operation_width_rate / this->user_data[user_id].face_size * dx;
+	this->user_data[user_id].transformed_cursor_point.y = this->display_center_point.y + this->moving_rate * this->operation_heght_rate / this->user_data[user_id].face_size * dy;
 
-	this->user_data[user_id].transformed_cursor_point.x = ofClamp(this->user_data[user_id].dx_filter->filter(this->user_data[user_id].transformed_cursor_point.x), 0, DISPLAY_W);
-	this->user_data[user_id].transformed_cursor_point.y = ofClamp(this->user_data[user_id].dy_filter->filter(this->user_data[user_id].transformed_cursor_point.y), 0, DISPLAY_H);
-
-	this->user_data[user_id].latest_update_frame = this->frame_count;
+	this->user_data[user_id].transformed_cursor_point.x = this->user_data[user_id].dx_filter->filter(this->user_data[user_id].transformed_cursor_point.x);
+	this->user_data[user_id].transformed_cursor_point.y = this->user_data[user_id].dy_filter->filter(this->user_data[user_id].transformed_cursor_point.y);
 }
 
 void HandCursor::get_frame() {
@@ -245,24 +205,9 @@ void HandCursor::transform_point(const Point& src_point, Point& dst_point) const
 	dst_point.y = RESOLUTION_RATIO_H * src_point.y;
 }
 
-void HandCursor::inverse_transform_point(const Point& src_point, Point& dst_point) const {
-	dst_point.x = (DISPLAY_W - src_point.x) / RESOLUTION_RATIO_W;
-	dst_point.y = src_point.y / RESOLUTION_RATIO_H;
-}
-
-void HandCursor::modulate_cursor(long long int user_id) {
-	try {
-		this->inverse_transform_point(this->user_data.at(user_id).transformed_cursor_point, this->user_data.at(user_id).cursor_point);
-	}
-	catch (std::out_of_range&) {}
-}
-
 void HandCursor::overlap_window(const long long int user_id) {
-	try {
-		this->user_data[user_id].state = STATE::OVERLAP;
-		this->user_data[user_id].alpha = HALF_MAX_ALFHA;
-	}
-	catch (std::out_of_range&) {}
+	this->user_data[user_id].state = STATE::OVERLAP;
+	this->user_data[user_id].alpha = HALF_MAX_ALFHA;
 }
 
 void HandCursor::show_detect_window() {

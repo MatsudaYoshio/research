@@ -12,7 +12,7 @@ private:
 
 	unordered_map<long long int, SubWindow>* sub_windows;
 
-	static constexpr int MAX_ITERATION{ 2000 };
+	static constexpr int MAX_ITERATION{ 1000 };
 
 	/* —” */
 	static std::random_device rd;
