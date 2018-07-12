@@ -25,6 +25,15 @@ HandCursor::HandCursor() {
 	thread frame_thread(&HandCursor::get_frame, this);
 	frame_thread.detach();
 
+	//this->user_data[-100].alpha = 255;
+	//this->user_data[-100].cursor_color = ofColor::orange;
+	//this->user_data[-100].face_rect = Rect2d(200,200,200,200);
+	//this->user_data[-100].transformed_cursor_point.x = 2937;
+	//this->user_data[-100].transformed_cursor_point.y = 500;
+	//this->user_data[-100].transformed_face_point.x = 200;
+	//this->user_data[-100].transformed_face_point.y = 200;
+	//this->user_data[-100].state = STATE::ACTIVE;
+
 	/* 動画撮影 */
 	//this->writer.open("hand_tracking_openPose6.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 35, Size(CAMERA_W, CAMERA_H), true);
 }
@@ -33,6 +42,8 @@ void HandCursor::update() {
 	/* fpsを表示 */
 	//frc.NewFrame();
 	//printf("fps : %lf\n", frc.GetFrameRate());
+
+	//this->user_data[-100].latest_update_frame = this->frame_count;
 
 	/* 一定時間の間、情報が更新されていないユーザを削除する */
 	for (auto ite = begin(this->user_data); ite != end(this->user_data);) {

@@ -2,6 +2,8 @@
 
 using namespace param;
 
+SubWindow::SubWindow() {}
+
 SubWindow::SubWindow(CONTENT_ID content_id, const long long int user_id) {
 	this->content_id = content_id;
 	this->user_id = user_id;
@@ -14,12 +16,17 @@ SubWindow::SubWindow(CONTENT_ID content_id, const long long int user_id) {
 }
 
 void SubWindow::update() {
-	if (this->track_index == this->track_rects_num) {
-		this->track_index = this->TRACK_READY;
-	}
-	else if (this->track_index != this->TRACK_READY) {
-		this->view_rect = this->track_rects[this->track_index++];
-	}
+	//if (this->track_index == this->track_rects_num) {
+	//	this->track_index = this->TRACK_READY;
+	//}
+	//else if (this->track_index != this->TRACK_READY) {
+	//	this->view_rect = this->track_rects[this->track_index++];
+	//}
+
+	//this->view_rect.setX(this->filter_x.filter(this->view_rect.getX()));
+	//this->view_rect.setY(this->filter_y.filter(this->view_rect.getY()));
+	//this->view_rect.setWidth(this->filter_w.filter(this->view_rect.getWidth()));
+	//this->view_rect.setHeight(this->filter_h.filter(this->view_rect.getHeight()));
 
 	this->df.update(this->view_rect);
 }
@@ -33,6 +40,10 @@ void SubWindow::draw() {
 
 ofRectangle SubWindow::get_rect() const {
 	return this->view_rect;
+}
+
+void SubWindow::set_rect(const ofRectangle& rect) {
+	this->view_rect.set(rect);
 }
 
 long long int SubWindow::get_user_id() const {

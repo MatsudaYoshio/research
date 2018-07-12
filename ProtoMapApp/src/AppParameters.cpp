@@ -20,7 +20,7 @@ const int param::HALF_MAX_SUB_WINDOW_H{ param::MAX_SUB_WINDOW_H >> 1 };
 const double param::RESOLUTION_RATIO_W{ param::DISPLAY_W / param::CAMERA_W };
 const double param::RESOLUTION_RATIO_H{ param::DISPLAY_H / param::CAMERA_H };
 
-const ofRectangle param::USER_CERTAIN_WINDOW{ 250, 250, 500, 500 }; // ユーザのポインタの重複仮想領域の範囲
+const ofRectangle param::USER_CERTAIN_WINDOW{ param::MAX_SUB_WINDOW_W*0.2, param::MAX_SUB_WINDOW_H*0.2, param::MAX_SUB_WINDOW_W*0.4, param::MAX_SUB_WINDOW_H*0.4 }; // ユーザのポインタの重複仮想領域の範囲
 
 const long long int param::NOT_USER{ -1 }; // 無効のユーザID
 

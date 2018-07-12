@@ -23,26 +23,50 @@ void SceneManager::setup(HandCursor* const hc) {
 }
 
 void SceneManager::update() {
-	if (!this->transform_thread_flag && all_of(cbegin(this->sub_windows), cend(this->sub_windows), [](const auto& x) {return x.second.track_index == SubWindow::TRACK_READY; })) { // 最適化の結果を反映している最中でないとき
-		if (this->hc->user_data.size() == 1 && this->sub_windows.size() == 1) { // ユーザの一人で一人のサブウィンドウを表示しているとき
-			ofRectangle best_rect(max(this->hc->user_data.begin()->second.transformed_face_point.x - HALF_MAX_SUB_WINDOW_W, 0), max(this->hc->user_data.begin()->second.transformed_face_point.y - HALF_MAX_SUB_WINDOW_H, 0), MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H);
+	//if () { // 最適化の結果を反映している最中でないとき
+		//if (this->hc->user_data.size() == 1 && this->sub_windows.size() == 1) { // ユーザの一人で一人のサブウィンドウを表示しているとき
+		//	ofRectangle best_rect(max(this->hc->user_data.begin()->second.transformed_face_point.x - HALF_MAX_SUB_WINDOW_W, 0), max(this->hc->user_data.begin()->second.transformed_face_point.y - HALF_MAX_SUB_WINDOW_H, 0), MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H);
 
-			if (this->hc->user_data.begin()->second.state == HandCursor::STATE::INACTIVE || !best_rect.intersects(ofRectangle(ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) { // ユーザのポインタがないか、ユーザの顔の正面に表示しても重複しないならば
-				this->old_rects.clear();
-				this->old_rects.emplace(this->sub_windows.begin()->first, this->sub_windows.begin()->second.get_rect());
-				this->best_rects.clear();
-				this->best_rects.emplace(this->sub_windows.begin()->first, best_rect);
+		//	if (this->hc->user_data.begin()->second.state == HandCursor::STATE::INACTIVE || !best_rect.intersects(ofRectangle(ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) { // ユーザのポインタがないか、ユーザの顔の正面に表示しても重複しないならば
+		//		this->old_rects.clear();
+		//		this->old_rects.emplace(this->sub_windows.begin()->first, this->sub_windows.begin()->second.get_rect());
+		//		this->best_rects.clear();
+		//		this->best_rects.emplace(this->sub_windows.begin()->first, best_rect);
+		//		this->transform(this->old_rects, this->best_rects);
+		//		//this->make_optimize_thread();
+		//	}
+		//	else {
+		//		this->optimize();
+		//	}
+		//}
+		this->optimize();
 
-				this->make_optimize_thread();
-			}
-			else {
-				this->optimize();
-			}
-		}
-		else if (this->is_intersect_window_pointer() || this->is_intersect_window_window()) { // ウィンドウ間もしくはウィンドウとポインタ間で重複があれば
-			this->optimize();
-		}
-	}
+		//else if (this->is_intersect_window_pointer() || this->is_intersect_window_window()) { // ウィンドウ間もしくはウィンドウとポインタ間で重複があれば
+		//	this->optimize();
+		//}
+	//}
+
+	//if (!this->transform_thread_flag && all_of(cbegin(this->sub_windows), cend(this->sub_windows), [](const auto& x) {return x.second.track_index == SubWindow::TRACK_READY; })) { // 最適化の結果を反映している最中でないとき
+	//	if (this->hc->user_data.size() == 1 && this->sub_windows.size() == 1) { // ユーザの一人で一人のサブウィンドウを表示しているとき
+	//		ofRectangle best_rect(max(this->hc->user_data.begin()->second.transformed_face_point.x - HALF_MAX_SUB_WINDOW_W, 0), max(this->hc->user_data.begin()->second.transformed_face_point.y - HALF_MAX_SUB_WINDOW_H, 0), MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H);
+
+	//		if (this->hc->user_data.begin()->second.state == HandCursor::STATE::INACTIVE || !best_rect.intersects(ofRectangle(ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) { // ユーザのポインタがないか、ユーザの顔の正面に表示しても重複しないならば
+	//			this->old_rects.clear();
+	//			this->old_rects.emplace(this->sub_windows.begin()->first, this->sub_windows.begin()->second.get_rect());
+	//			this->best_rects.clear();
+	//			this->best_rects.emplace(this->sub_windows.begin()->first, best_rect);
+	//			
+	//			this->transform(this->old_rects, this->best_rects);
+	//			//this->make_optimize_thread();
+	//		}
+	//		else {
+	//			this->optimize();
+	//		}
+	//	}
+	//	else if (this->is_intersect_window_pointer() || this->is_intersect_window_window()) { // ウィンドウ間もしくはウィンドウとポインタ間で重複があれば
+	//		this->optimize();
+	//	}
+	//}
 
 	/* サブウィンドウの更新 */
 	/* いなくなったユーザのサブウィンドウを削除 */
@@ -148,7 +172,11 @@ void SceneManager::draw() {
 }
 
 void SceneManager::transform(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) {
-	this->transform_thread_flag = true;
+	for (const auto& id : this->sub_windows) {
+		this->sub_windows[id.first].set_rect(new_rects[id.first]);
+	}
+
+	/*this->transform_thread_flag = true;
 
 	const double change_rate{ 1.0 / SubWindow::track_rects_num };
 
@@ -177,7 +205,7 @@ void SceneManager::transform(unordered_map<long long int, ofRectangle>& old_rect
 		catch (std::out_of_range&) {}
 	}
 
-	this->transform_thread_flag = false;
+	this->transform_thread_flag = false;*/
 }
 
 void SceneManager::make_optimize_thread() {
@@ -197,7 +225,9 @@ void SceneManager::optimize() {
 
 	this->old_rects = move(this->rects_tmp);
 
-	this->make_optimize_thread();
+	this->transform(this->old_rects, this->best_rects);
+
+	//this->make_optimize_thread();
 }
 
 void SceneManager::add_pin(pair<param::MENU_ITEM_ID, long long int>& id) {

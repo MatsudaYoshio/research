@@ -61,25 +61,25 @@ bool SimulatedAnnealing::set_next_state() {
 	switch (this->modify_param) {
 	case 0:
 	{
-		uniform_int_distribution<int> random_x(0, DISPLAY_W - this->next_state[this->modify_window_num].getWidth());
+		uniform_int_distribution<int> random_x(0, (DISPLAY_W - this->next_state[this->modify_window_num].getWidth()*0.8));
 		this->next_state[this->modify_window_num].setX(random_x(this->mt));
 	}
 	break;
 	case 1:
 	{
-		uniform_int_distribution<int> random_y(0, DISPLAY_H - this->next_state[this->modify_window_num].getHeight());
+		uniform_int_distribution<int> random_y(0, (DISPLAY_H - this->next_state[this->modify_window_num].getHeight()*0.8));
 		this->next_state[this->modify_window_num].setY(random_y(this->mt));
 	}
 	break;
 	case 2:
 	{
-		uniform_int_distribution<int> random_w(100, 1200);
+		uniform_int_distribution<int> random_w(300, MAX_SUB_WINDOW_W);
 		this->next_state[this->modify_window_num].setWidth(random_w(this->mt));
 	}
 	break;
 	case 3:
 	{
-		uniform_int_distribution<int> random_h(100, 741);
+		uniform_int_distribution<int> random_h(300, MAX_SUB_WINDOW_H);
 		this->next_state[this->modify_window_num].setHeight(random_h(this->mt));
 	}
 	break;
@@ -106,7 +106,7 @@ void SimulatedAnnealing::calculate_cost() {
 			if (ud.second.state == HandCursor::STATE::INACTIVE) {
 				continue;
 			}
-			if(s.second.intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))){
+			if (s.second.intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) {
 				// もし矩形とカーソルの周辺矩形が重複していたら、コストを最大にしてコスト計算を終了
 				this->next_cost = 0.0;
 				return;
@@ -127,7 +127,7 @@ void SimulatedAnnealing::calculate_cost() {
 
 		this->next_cost -= s.second.getArea(); // 自分との重複面積分減らす
 
-		///* 円形度 */
+		/* 円形度 */
 		//this->shape_cost -= 4 * PI*s.second.getArea() / (s.second.getPerimeter()*s.second.getPerimeter());
 
 		/* 矩形と顔との距離 */
@@ -138,6 +138,7 @@ void SimulatedAnnealing::calculate_cost() {
 				//}
 				if (this->sub_windows->at(s.first).get_user_id() == td.first) {
 					this->distance_cost += ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x, td.second.transformed_face_point.y);
+					//this->distance_cost += sqrt((s.second.getCenter().x - td.second.transformed_face_point.x) * (s.second.getCenter().x - td.second.transformed_face_point.x) + 50 * (s.second.getCenter().y - td.second.transformed_face_point.y) * (s.second.getCenter().y - td.second.transformed_face_point.y));
 					continue;
 				}
 			}
@@ -148,5 +149,5 @@ void SimulatedAnnealing::calculate_cost() {
 	this->area_cost = -min_element(begin(this->next_state), end(this->next_state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
 	//this->next_cost += 150 * this->area_cost + 10000 * this->overlap_cost + 1000 * this->shape_cost + 700 * this->distance_cost;
-	this->next_cost += 150 * this->area_cost + 10000 * this->overlap_cost + 700 * this->distance_cost;
+	this->next_cost += this->area_cost + 10000 * this->overlap_cost + 800*this->distance_cost;
 }

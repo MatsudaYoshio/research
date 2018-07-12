@@ -4,6 +4,7 @@
 
 #include "AppParameters.h"
 #include "DrawFrame.h"
+#include "OneEuroFilter.h"
 
 class SubWindow {
 private:
@@ -15,19 +16,26 @@ private:
 	ofRectangle view_rect;
 	param::CONTENT_ID content_id;
 	long long int user_id;
+
+	OneEuroFilter filter_x{ 120, 0.1, 0.1 };
+	OneEuroFilter filter_y{ 120, 0.1, 0.1 };
+	OneEuroFilter filter_w{ 120, 0.01, 0.01 };
+	OneEuroFilter filter_h{ 120, 0.01, 0.01 };
 public:
-	static constexpr int track_rects_num{ 20 };
+	static constexpr int track_rects_num{ 10 };
 	static constexpr int TRACK_READY{ -1 };
 
 	ofRectangle track_rects[track_rects_num];
 	int track_index;
 
+	SubWindow();
 	SubWindow(param::CONTENT_ID content_id, long long int user_id);
 
 	void update();
 	void draw();
 
 	ofRectangle get_rect() const;
+	void set_rect(const ofRectangle& rect);
 	long long int get_user_id() const;
 };
 
