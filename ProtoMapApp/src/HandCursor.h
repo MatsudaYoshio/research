@@ -58,14 +58,14 @@ private:
 	static constexpr int resize_size{ 80 };
 	static constexpr double default_face_size{ 60 };
 	static constexpr double face_error{ 150 };
-	static constexpr int cursor_color_num{ 8 };
+	static constexpr int cursor_color_num{ 10 };
 	static constexpr long long int new_user_id{ 0 };
 	static constexpr double operation_width_rate{ 1000 };
 	static constexpr double operation_heght_rate{ 1000 };
-	static constexpr double moving_rate{ 1.3 };
+	static constexpr double moving_rate{ 1.4 };
 	static constexpr double filter_freq{ 120 };
-	static constexpr double filter_mincutoff{ 0.00128 };
-	static constexpr double filter_beta{ 0.00128 };
+	static constexpr double filter_mincutoff{ 0.00129 };
+	static constexpr double filter_beta{ 0.00129 };
 	static const double display_operation_width_ratio;
 	static const double display_operation_height_ratio;
 	static const cv::Point invalid_point, display_center_point;
@@ -90,7 +90,7 @@ private:
 
 	double dx, dy, dx_rate, dy_rate;
 
-	//cv::VideoWriter writer;
+	cv::VideoWriter writer;
 
 	BodyPartExtractor body_part_extractor;
 

@@ -14,7 +14,9 @@ void SimulatedAnnealing::setup(HandCursor* hc, unordered_map<long long int, SubW
 
 void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectangle>& start_state, unordered_map<long long int, ofRectangle>& best_state) {
 	this->current_state = start_state;
-
+	for (const auto& s : start_state) {
+		this->start_points[s.first] = s.second.getCenter();
+	}
 	this->current_cost = this->next_cost = this->best_cost = 0.0;
 
 	//this->ofs.open("cost_data" + to_string(this->file_index) + ".txt");
@@ -101,6 +103,8 @@ void SimulatedAnnealing::calculate_cost() {
 	this->overlap_cost = 0.0;
 	this->distance_cost = 0.0;
 
+	double nearest_distance_cost = 0.0;
+
 	for (const auto& s : this->next_state) {
 		for (const auto& ud : this->hc->user_data) {
 			if (ud.second.state == HandCursor::STATE::INACTIVE) {
@@ -144,10 +148,12 @@ void SimulatedAnnealing::calculate_cost() {
 			}
 		}
 		catch (std::out_of_range&) {}
+
+		nearest_distance_cost += ofDist(s.second.getCenter().x, s.second.getCenter().y, this->start_points[s.first].x, this->start_points[s.first].y);
 	}
 
 	this->area_cost = -min_element(begin(this->next_state), end(this->next_state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
 	//this->next_cost += 150 * this->area_cost + 10000 * this->overlap_cost + 1000 * this->shape_cost + 700 * this->distance_cost;
-	this->next_cost += this->area_cost + 10000 * this->overlap_cost + 800*this->distance_cost;
+	this->next_cost += this->area_cost + 10000 * this->overlap_cost + this->distance_cost + nearest_distance_cost;
 }

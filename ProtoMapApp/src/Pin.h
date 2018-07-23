@@ -16,7 +16,7 @@ private:
 	static constexpr double big_radius{ 80 };
 	static constexpr int font_size{ 40 };
 	static constexpr int big_font_size{ 70 };
-	static constexpr int progress_threshold{ 20 };
+	static constexpr int progress_threshold{ 15 };
 
 	const enum class STATE {
 		NORMAL, POINT

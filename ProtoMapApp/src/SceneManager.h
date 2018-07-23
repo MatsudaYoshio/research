@@ -10,7 +10,7 @@
 
 class SceneManager {
 private:
-	static constexpr int max_menu_item_life{ 100 };
+	static constexpr int max_menu_item_life{ 80 };
 	static constexpr int min_menu_item_life{ 0 };
 
 	HandCursor* hc;

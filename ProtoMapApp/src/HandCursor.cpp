@@ -11,7 +11,7 @@ const Point HandCursor::invalid_point{ -100,-100 }; // âÊñ è„Ç…ï\é¶Ç≥ÇÍÇ»Ç¢ÇÊÇ§Ç
 const Point HandCursor::display_center_point{ HALF_DISPLAY_W, HALF_DISPLAY_H }; // ÉfÉBÉXÉvÉåÉCÇÃíÜêSÇÃì_
 
 /* ÉJÅ[É\ÉãÇÃêF */
-const std::array<ofColor, HandCursor::cursor_color_num> HandCursor::cursor_colors = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::orange };
+const std::array<ofColor, HandCursor::cursor_color_num> HandCursor::cursor_colors = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::orange, ofColor::lightCoral, ofColor::goldenRod };
 
 /* Scalarå^ÇÃêF */
 const Scalar HandCursor::CV_RED{ Scalar(0, 0, 255) };
@@ -35,7 +35,7 @@ HandCursor::HandCursor() {
 	//this->user_data[-100].state = STATE::ACTIVE;
 
 	/* ìÆâÊéBâe */
-	//this->writer.open("hand_tracking_openPose6.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 35, Size(CAMERA_W, CAMERA_H), true);
+	//this->writer.open("hand_tracking_openPose2.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 13, Size(CAMERA_W, CAMERA_H), true);
 }
 
 void HandCursor::update() {
@@ -228,23 +228,43 @@ void HandCursor::show_detect_window() {
 
 	const int people_num{ this->pose_key_points.getSize(0) };
 	for (int i = 0; i < people_num; ++i) {
+		//if (i == 0) {
+		//	if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
+		//		cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 15, this->CV_RED, -1);
+		//	}
+		//	if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
+		//		cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 15, this->CV_RED, -1);
+		//	}
+		//}
+		//else if (i == 1) {
+		//	if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
+		//		cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 15, this->CV_BLUE, -1);
+		//	}
+		//	if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
+		//		cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 15, this->CV_BLUE, -1);
+		//	}
+		//}
+		//else {
+			if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
+				cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 15, this->CV_RED, -1);
+			}
+			if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
+				cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 15, this->CV_RED, -1);
+			}
+		//}
 		//if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
 		//	cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 15, this->CV_BLUE, -1);
 		//}
 
-		if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 15, this->CV_BLUE, -1);
-		}
-
 		//cv::rectangle(this->view_frame, Point(std::max(static_cast<int>(this->pose_key_points[RIGHT_EAR_X(i)]) - 256, 0), std::max(static_cast<int>(this->pose_key_points[RIGHT_EAR_Y(i)]) - 72, 0)), Point(std::min(static_cast<int>(this->pose_key_points[RIGHT_EAR_X(i)]), CAMERA_W), std::min(static_cast<int>(this->pose_key_points[RIGHT_EAR_Y(i)]) + 72, CAMERA_H)), this->CV_RED, 10);
 	}
 
-	for (const auto& t : this->user_data) {
-		cv::rectangle(this->view_frame, t.second.operation_area, this->CV_RED, 10);
-		//cout << t.second.operation_area.x << " " << t.second.operation_area.y << " " << t.second.operation_area.width << " " << t.second.operation_area.height << endl;
-		//cv::rectangle(img, Point(t.second.hand.left(), t.second.hand.top()), Point(t.second.hand.right(), t.second.hand.bottom()), this->CV_RED, 5);
-		//cv::rectangle(img, t.second.face_rect, this->CV_BLUE, 10);
-	}
+	//for (const auto& t : this->user_data) {
+	//	cv::rectangle(this->view_frame, t.second.operation_area, this->CV_RED, 10);
+	//	//cout << t.second.operation_area.x << " " << t.second.operation_area.y << " " << t.second.operation_area.width << " " << t.second.operation_area.height << endl;
+	//	//cv::rectangle(img, Point(t.second.hand.left(), t.second.hand.top()), Point(t.second.hand.right(), t.second.hand.bottom()), this->CV_RED, 5);
+	//	//cv::rectangle(img, t.second.face_rect, this->CV_BLUE, 10);
+	//}
 
 	imshow("detect window", img);
 

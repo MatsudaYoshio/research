@@ -12,7 +12,7 @@ private:
 
 	unordered_map<long long int, SubWindow>* sub_windows;
 
-	static constexpr int MAX_ITERATION{ 5000 };
+	static constexpr int MAX_ITERATION{ 25000 };
 
 	/* óêêî */
 	static std::random_device rd;
@@ -23,6 +23,8 @@ private:
 	double current_cost, next_cost, best_cost, area_cost, overlap_cost, distance_cost, shape_cost;
 	int modify_window_num, modify_param;
 	unordered_map<long long int, ofRectangle> current_state, next_state;
+
+	unordered_map<long long int, ofPoint> start_points;
 
 	int file_index = 1;
 	ofstream ofs;
