@@ -23,50 +23,7 @@ void SceneManager::setup(HandCursor* const hc) {
 }
 
 void SceneManager::update() {
-	//if () { // 最適化の結果を反映している最中でないとき
-		//if (this->hc->user_data.size() == 1 && this->sub_windows.size() == 1) { // ユーザの一人で一人のサブウィンドウを表示しているとき
-		//	ofRectangle best_rect(max(this->hc->user_data.begin()->second.transformed_face_point.x - HALF_MAX_SUB_WINDOW_W, 0), max(this->hc->user_data.begin()->second.transformed_face_point.y - HALF_MAX_SUB_WINDOW_H, 0), MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H);
-
-		//	if (this->hc->user_data.begin()->second.state == HandCursor::STATE::INACTIVE || !best_rect.intersects(ofRectangle(ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) { // ユーザのポインタがないか、ユーザの顔の正面に表示しても重複しないならば
-		//		this->old_rects.clear();
-		//		this->old_rects.emplace(this->sub_windows.begin()->first, this->sub_windows.begin()->second.get_rect());
-		//		this->best_rects.clear();
-		//		this->best_rects.emplace(this->sub_windows.begin()->first, best_rect);
-		//		this->transform(this->old_rects, this->best_rects);
-		//		//this->make_optimize_thread();
-		//	}
-		//	else {
-		//		this->optimize();
-		//	}
-		//}
-		this->optimize();
-
-		//else if (this->is_intersect_window_pointer() || this->is_intersect_window_window()) { // ウィンドウ間もしくはウィンドウとポインタ間で重複があれば
-		//	this->optimize();
-		//}
-	//}
-
-	//if (!this->transform_thread_flag && all_of(cbegin(this->sub_windows), cend(this->sub_windows), [](const auto& x) {return x.second.track_index == SubWindow::TRACK_READY; })) { // 最適化の結果を反映している最中でないとき
-	//	if (this->hc->user_data.size() == 1 && this->sub_windows.size() == 1) { // ユーザの一人で一人のサブウィンドウを表示しているとき
-	//		ofRectangle best_rect(max(this->hc->user_data.begin()->second.transformed_face_point.x - HALF_MAX_SUB_WINDOW_W, 0), max(this->hc->user_data.begin()->second.transformed_face_point.y - HALF_MAX_SUB_WINDOW_H, 0), MAX_SUB_WINDOW_W, MAX_SUB_WINDOW_H);
-
-	//		if (this->hc->user_data.begin()->second.state == HandCursor::STATE::INACTIVE || !best_rect.intersects(ofRectangle(ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(this->hc->user_data.begin()->second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) { // ユーザのポインタがないか、ユーザの顔の正面に表示しても重複しないならば
-	//			this->old_rects.clear();
-	//			this->old_rects.emplace(this->sub_windows.begin()->first, this->sub_windows.begin()->second.get_rect());
-	//			this->best_rects.clear();
-	//			this->best_rects.emplace(this->sub_windows.begin()->first, best_rect);
-	//			
-	//			this->transform(this->old_rects, this->best_rects);
-	//			//this->make_optimize_thread();
-	//		}
-	//		else {
-	//			this->optimize();
-	//		}
-	//	}
-	//	else if (this->is_intersect_window_pointer() || this->is_intersect_window_window()) { // ウィンドウ間もしくはウィンドウとポインタ間で重複があれば
-	//		this->optimize();
-	//	}
-	//}
+	this->optimize(); // 最適化
 
 	/* サブウィンドウの更新 */
 	/* いなくなったユーザのサブウィンドウを削除 */
@@ -152,7 +109,7 @@ void SceneManager::draw() {
 		if (this->menu_item_user_id[i] == NOT_USER) {
 			continue;
 		}
-		//if (i == 2) continue;
+
 		for (const auto& p : this->pins[i]) {
 			p.draw();
 		}
@@ -171,63 +128,26 @@ void SceneManager::draw() {
 	this->draw_cursor(); // 手カーソルの描画
 }
 
-void SceneManager::transform(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) {
-	for (const auto& id : this->sub_windows) {
-		this->sub_windows[id.first].set_rect(new_rects[id.first]);
-	}
-
-	/*this->transform_thread_flag = true;
-
-	const double change_rate{ 1.0 / SubWindow::track_rects_num };
-
-	int x_sign, y_sign, w_sign, h_sign;
-	double x_change_val, y_change_val, w_change_val, h_change_val;
-
-	for (const auto& id : this->sub_windows) {
-		w_sign = (new_rects[id.first].width > old_rects[id.first].width) ? +1 : -1;
-		h_sign = (new_rects[id.first].height > old_rects[id.first].height) ? +1 : -1;
-		w_change_val = change_rate*abs(new_rects[id.first].width - old_rects[id.first].width)*w_sign;
-		h_change_val = change_rate*abs(new_rects[id.first].height - old_rects[id.first].height)*h_sign;
-		x_sign = (new_rects[id.first].x > old_rects[id.first].x) ? +1 : -1;
-		y_sign = (new_rects[id.first].y > old_rects[id.first].y) ? +1 : -1;
-		x_change_val = change_rate*abs(new_rects[id.first].x - old_rects[id.first].x)*x_sign;
-		y_change_val = change_rate*abs(new_rects[id.first].y - old_rects[id.first].y)*y_sign;
-		try {
-			for (int i = 0; i < SubWindow::track_rects_num; ++i) {
-				this->sub_windows.at(id.first).track_rects[i] = old_rects[id.first];
-				old_rects[id.first].setWidth(old_rects[id.first].width + w_change_val);
-				old_rects[id.first].setHeight(old_rects[id.first].height + h_change_val);
-				old_rects[id.first].setX(old_rects[id.first].x + x_change_val);
-				old_rects[id.first].setY(old_rects[id.first].y + y_change_val);
-			}
-			this->sub_windows.at(id.first).track_index = 0;
-		}
-		catch (std::out_of_range&) {}
-	}
-
-	this->transform_thread_flag = false;*/
-}
-
-void SceneManager::make_optimize_thread() {
-	void(SceneManager::*funcp)(unordered_map<long long int, ofRectangle>& old_rects, unordered_map<long long int, ofRectangle>& new_rects) = &SceneManager::transform;
-	thread th(funcp, this, this->old_rects, this->best_rects);
-	th.detach();
-}
-
 void SceneManager::optimize() {
+	/* 焼きなまし法への入力の準備 */
 	this->rects_tmp.clear();
-
 	for (const auto& s : this->sub_windows) {
 		this->rects_tmp.emplace(s.first, s.second.get_rect());
 	}
 
-	this->sa(this->rects_tmp, this->best_rects);
+	this->sa(this->rects_tmp, this->best_rects, this->best_cost); // 焼きなまし法で最適化
 
-	this->old_rects = move(this->rects_tmp);
+	/* 重複状態でないかつ最適値に大きな変化がない場合は最適なパラメータの値を反映させない */
+	if (!this->is_intersect_window_pointer() && !this->is_intersect_window_window() && fabs(this->current_cost - this->best_cost) < this->transform_threshold) {
+		return;
+	}
 
-	this->transform(this->old_rects, this->best_rects);
+	this->current_cost = this->best_cost; // コストを更新
 
-	//this->make_optimize_thread();
+	/* 最適なパラメータをセット */
+	for (const auto& id : this->sub_windows) {
+		this->sub_windows[id.first].set_rect(best_rects[id.first]);
+	}
 }
 
 void SceneManager::add_pin(pair<param::MENU_ITEM_ID, long long int>& id) {

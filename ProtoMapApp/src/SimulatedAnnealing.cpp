@@ -12,12 +12,10 @@ void SimulatedAnnealing::setup(HandCursor* hc, unordered_map<long long int, SubW
 	this->sub_windows = sub_windows;
 }
 
-void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectangle>& start_state, unordered_map<long long int, ofRectangle>& best_state) {
+void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectangle>& start_state, unordered_map<long long int, ofRectangle>& best_state, double& best_cost) {
 	this->current_state = start_state;
-	for (const auto& s : start_state) {
-		this->start_points[s.first] = s.second.getCenter();
-	}
-	this->current_cost = this->next_cost = this->best_cost = 0.0;
+	this->past_cost = this->current_cost = this->next_cost = this->best_cost = 0.0;
+	this->convergence_count = 0;
 
 	//this->ofs.open("cost_data" + to_string(this->file_index) + ".txt");
 	for (int i = 0; i < this->MAX_ITERATION; ++i) {
@@ -28,6 +26,13 @@ void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectan
 		}
 
 		this->calculate_cost();
+
+		/* 一定のイテレーション数で同じコストが続いたら、収束したとして、ループを抜ける*/
+		this->convergence_count = (this->current_cost == this->past_cost && this->current_cost != 0) ? this->convergence_count + 1 : 0;
+		if (this->convergence_count == this->convergence_check_number) {
+			break;
+		}
+		this->past_cost = this->current_cost;
 
 		if (this->next_cost > this->current_cost) {
 			//cout << exp(-1 * this->MAX_ITERATION * log(this->next_cost - this->current_cost) / 100000000 * i) << endl;
@@ -46,6 +51,9 @@ void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectan
 			}
 		}
 	}
+
+	best_cost = this->best_cost;
+
 	//this->ofs.close();
 	//++this->file_index;
 }
@@ -103,8 +111,6 @@ void SimulatedAnnealing::calculate_cost() {
 	this->overlap_cost = 0.0;
 	this->distance_cost = 0.0;
 
-	double nearest_distance_cost = 0.0;
-
 	for (const auto& s : this->next_state) {
 		for (const auto& ud : this->hc->user_data) {
 			if (ud.second.state == HandCursor::STATE::INACTIVE) {
@@ -122,8 +128,7 @@ void SimulatedAnnealing::calculate_cost() {
 			if (s.second == s2.second) { // 自分との重複面積は除く
 				continue;
 			}
-			this->overlap_cost += s.second.getIntersection(s2.second).getArea();
-			if (this->overlap_cost > 0) { // もし重複していたら、コストを最大にしてコスト計算を終了
+			if (s.second.intersects(s2.second)) { // もし重複していたら、コストを最大にしてコスト計算を終了
 				this->next_cost = 0.0;
 				return;
 			}
@@ -131,29 +136,16 @@ void SimulatedAnnealing::calculate_cost() {
 
 		this->next_cost -= s.second.getArea(); // 自分との重複面積分減らす
 
-		/* 円形度 */
-		//this->shape_cost -= 4 * PI*s.second.getArea() / (s.second.getPerimeter()*s.second.getPerimeter());
-
 		/* 矩形と顔との距離 */
-		try {
-			for (const auto& td : this->hc->user_data) {
-				//if (td.second.state == HandCursor::STATE::INACTIVE) {
-				//	continue;
-				//}
-				if (this->sub_windows->at(s.first).get_user_id() == td.first) {
-					this->distance_cost += ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x, td.second.transformed_face_point.y);
-					//this->distance_cost += sqrt((s.second.getCenter().x - td.second.transformed_face_point.x) * (s.second.getCenter().x - td.second.transformed_face_point.x) + 50 * (s.second.getCenter().y - td.second.transformed_face_point.y) * (s.second.getCenter().y - td.second.transformed_face_point.y));
-					continue;
-				}
+		for (const auto& td : this->hc->user_data) {
+			if ((*this->sub_windows)[s.first].get_user_id() == td.first) {
+				this->distance_cost = max(this->distance_cost, static_cast<double>((s.second.getCenter().x - td.second.transformed_face_point.x) * (s.second.getCenter().x - td.second.transformed_face_point.x) + (s.second.getCenter().y - td.second.transformed_face_point.y) * (s.second.getCenter().y - td.second.transformed_face_point.y)));
+				continue;
 			}
 		}
-		catch (std::out_of_range&) {}
-
-		nearest_distance_cost += ofDist(s.second.getCenter().x, s.second.getCenter().y, this->start_points[s.first].x, this->start_points[s.first].y);
 	}
 
 	this->area_cost = -min_element(begin(this->next_state), end(this->next_state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
-	//this->next_cost += 150 * this->area_cost + 10000 * this->overlap_cost + 1000 * this->shape_cost + 700 * this->distance_cost;
-	this->next_cost += this->area_cost + 10000 * this->overlap_cost + this->distance_cost + nearest_distance_cost;
+	this->next_cost += 150 * this->area_cost + this->overlap_cost + this->distance_cost;
 }

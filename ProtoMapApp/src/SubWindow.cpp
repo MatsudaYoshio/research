@@ -23,8 +23,8 @@ void SubWindow::update() {
 	//	this->view_rect = this->track_rects[this->track_index++];
 	//}
 
-	//this->view_rect.setX(this->filter_x.filter(this->view_rect.getX()));
-	//this->view_rect.setY(this->filter_y.filter(this->view_rect.getY()));
+	this->view_rect.setX(this->filter_x.filter(this->view_rect.getX()));
+	this->view_rect.setY(this->filter_y.filter(this->view_rect.getY()));
 	//this->view_rect.setWidth(this->filter_w.filter(this->view_rect.getWidth()));
 	//this->view_rect.setHeight(this->filter_h.filter(this->view_rect.getHeight()));
 
