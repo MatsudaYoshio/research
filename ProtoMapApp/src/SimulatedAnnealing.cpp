@@ -35,7 +35,6 @@ void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectan
 		this->past_cost = this->current_cost;
 
 		if (this->next_cost > this->current_cost) {
-			//cout << exp(-1 * this->MAX_ITERATION * log(this->next_cost - this->current_cost) / 100000000 * i) << endl;
 			if (random_0to1(this->mt) < exp(-1 * this->MAX_ITERATION * log(this->next_cost - this->current_cost) / 10000000 * i)) {
 				this->current_cost = this->next_cost;
 				this->current_state = this->next_state;
