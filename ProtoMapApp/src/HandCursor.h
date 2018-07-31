@@ -11,6 +11,8 @@
 #include <deque>
 #include <random>
 
+#include <ppl.h>
+
 /* OpenCV */
 #include <opencv2/opencv.hpp>
 
@@ -45,12 +47,12 @@ private:
 		STATE state;
 		long long int start_frame, latest_update_frame;
 		cv::Rect2d face_rect, operation_area;
-		cv::Point cursor_point, face_point, hand_point, initial_point;
+		cv::Point face_point, initial_point;
 		double face_size;
 		int cursor_color_id;
 		ofColor cursor_color;
 		float alpha;
-		cv::Point transformed_face_point, transformed_cursor_point;
+		cv::Point transformed_face_point, cursor_point;
 		std::unique_ptr<OneEuroFilter> dx_filter, dy_filter;
 	};
 
@@ -72,7 +74,9 @@ private:
 	static const std::array<ofColor, cursor_color_num> cursor_colors;
 	static const cv::Scalar CV_RED;
 	static const cv::Scalar CV_BLUE;
+	static const cv::Scalar CV_GREEN;
 	static const cv::Scalar CV_ORANGE;
+	static const cv::Scalar CV_PURPLE;
 
 	std::array<bool, cursor_color_num> cursor_color_state;
 

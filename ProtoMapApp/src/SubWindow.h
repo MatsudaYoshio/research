@@ -17,8 +17,8 @@ private:
 	param::CONTENT_ID content_id;
 	long long int user_id;
 
-	OneEuroFilter filter_x{ 120, 0.08, 0.08 };
-	OneEuroFilter filter_y{ 120, 0.08, 0.08 };
+	OneEuroFilter filter_x{ 120, 0.065, 0.065 };
+	OneEuroFilter filter_y{ 120, 0.065, 0.065 };
 public:
 	SubWindow();
 	SubWindow(param::CONTENT_ID content_id, long long int user_id);

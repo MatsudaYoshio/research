@@ -68,7 +68,7 @@ void SceneManager::update() {
 		}
 
 		for (const auto& sw : this->sub_windows) {
-			if (sw.second.get_rect().inside(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y)) {
+			if (sw.second.get_rect().inside(ud.second.cursor_point.x, ud.second.cursor_point.y)) {
 				this->hc->overlap_window(ud.first);
 				break;
 			}
@@ -85,7 +85,7 @@ void SceneManager::update() {
 				if (ud.second.state != HandCursor::STATE::ACTIVE) {
 					continue;
 				}
-				if (p.is_inside(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y)) {
+				if (p.is_inside(ud.second.cursor_point.x, ud.second.cursor_point.y)) {
 					p.point(ud.first);
 					goto CONTINUE_LOOP;
 				}
@@ -180,10 +180,10 @@ void SceneManager::draw_cursor() {
 		ofNoFill();
 		ofSetLineWidth(60);
 		ofSetColor(ofColor::white, ud.second.alpha);
-		ofDrawCircle(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y, 60);
+		ofDrawCircle(ud.second.cursor_point.x, ud.second.cursor_point.y, 60);
 		ofFill();
 		ofSetColor(ud.second.cursor_color, ud.second.alpha);
-		ofDrawCircle(ud.second.transformed_cursor_point.x, ud.second.transformed_cursor_point.y, 55);
+		ofDrawCircle(ud.second.cursor_point.x, ud.second.cursor_point.y, 55);
 	}
 }
 
@@ -194,7 +194,7 @@ bool SceneManager::is_intersect_window_pointer() {
 			if (ud.second.state == HandCursor::STATE::INACTIVE) {
 				continue;
 			}
-			if (sw.second.get_rect().intersects(ofRectangle(ofClamp(ud.second.transformed_cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.transformed_cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) {
+			if (sw.second.get_rect().intersects(ofRectangle(ofClamp(ud.second.cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) {
 				return true;
 			}
 		}

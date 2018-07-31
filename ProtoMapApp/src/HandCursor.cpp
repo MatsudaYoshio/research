@@ -16,7 +16,9 @@ const std::array<ofColor, HandCursor::cursor_color_num> HandCursor::cursor_color
 /* ScalarŒ^‚ÌF */
 const Scalar HandCursor::CV_RED{ Scalar(0, 0, 255) };
 const Scalar HandCursor::CV_BLUE{ Scalar(255, 0, 0) };
+const Scalar HandCursor::CV_GREEN{ Scalar(0, 255, 0) };
 const Scalar HandCursor::CV_ORANGE{ Scalar(76, 183, 255) };
+const Scalar HandCursor::CV_PURPLE{ Scalar(204, 0, 196) };
 
 HandCursor::HandCursor() {
 	this->image_buffer.emplace_front(this->cap.get_image()); // Å‰‚Ìˆê–‡‚ðŽæ‚èž‚ñ‚Å‚¨‚­
@@ -28,10 +30,10 @@ HandCursor::HandCursor() {
 	//this->user_data[-100].alpha = 255;
 	//this->user_data[-100].cursor_color = ofColor::orange;
 	//this->user_data[-100].face_rect = Rect2d(200,200,200,200);
-	//this->user_data[-100].transformed_cursor_point.x = 2937;
-	//this->user_data[-100].transformed_cursor_point.y = 500;
+	//this->user_data[-100].cursor_point.x = 2937;
+	//this->user_data[-100].cursor_point.y = 500;
 	//this->user_data[-100].transformed_face_point.x = 200;
-	//this->user_data[-100].transformed_face_point.y = 200;
+	//this->user_data[-100].transformed_face_point.y = 1000;
 	//this->user_data[-100].state = STATE::ACTIVE;
 
 	/* “®‰æŽB‰e */
@@ -146,9 +148,7 @@ void HandCursor::init_user_data(const int personal_id, const double face_size) {
 			this->frame_count,
 			Rect2d(this->pose_key_points[NOSE_X(personal_id)] - face_size / 2, this->pose_key_points[NOSE_Y(personal_id)] - face_size / 2, face_size, face_size),
 			Rect2d(this->pose_key_points[NECK_X(personal_id)] - face_size*this->display_operation_width_ratio, (this->pose_key_points[NECK_Y(personal_id)] + this->pose_key_points[NOSE_Y(personal_id)]) / 2 - face_size*this->display_operation_height_ratio / 2, face_size*this->display_operation_width_ratio, face_size*this->display_operation_height_ratio),
-			Point(this->pose_key_points[RIGHT_WRIST_X(personal_id)], this->pose_key_points[RIGHT_WRIST_Y(personal_id)]),
 			Point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]),
-			Point(this->pose_key_points[RIGHT_WRIST_X(personal_id)], this->pose_key_points[RIGHT_WRIST_Y(personal_id)]),
 			Point(this->pose_key_points[NECK_X(personal_id)] - face_size*this->display_operation_width_ratio / 2, (this->pose_key_points[NECK_Y(personal_id)] + this->pose_key_points[NOSE_Y(personal_id)]) / 2),
 			face_size,
 			cursor_color_id,
@@ -169,7 +169,7 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 	this->user_data[user_id].latest_update_frame = this->frame_count;
 
 	if (this->user_data[user_id].state == STATE::INACTIVE) { // ƒJ[ƒ\ƒ‹‚ªÁ‚¦‚Ä‚¢‚éó‘Ô‚©‚ç•œ‹A‚µ‚½‚ç
-		this->user_data[user_id].transformed_cursor_point = this->invalid_point;
+		this->user_data[user_id].cursor_point = this->invalid_point;
 		this->user_data[user_id].start_frame = this->frame_count;
 		this->user_data[user_id].state = STATE::ACTIVE;
 		this->user_data[user_id].dx_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
@@ -196,11 +196,11 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 
 	this->transform_point(this->user_data[user_id].face_point, this->user_data[user_id].transformed_face_point); // Šç‚ÌÀ•W‚ð‰æ–Êã‚ÌÀ•W‚É•ÏŠ·
 
-	this->user_data[user_id].transformed_cursor_point.x = this->display_center_point.x - this->moving_rate * this->operation_width_rate / this->user_data[user_id].face_size * dx;
-	this->user_data[user_id].transformed_cursor_point.y = this->display_center_point.y + this->moving_rate * this->operation_heght_rate / this->user_data[user_id].face_size * dy;
+	this->user_data[user_id].cursor_point.x = this->display_center_point.x - this->moving_rate * this->operation_width_rate / this->user_data[user_id].face_size * dx;
+	this->user_data[user_id].cursor_point.y = this->display_center_point.y + this->moving_rate * this->operation_heght_rate / this->user_data[user_id].face_size * dy;
 
-	this->user_data[user_id].transformed_cursor_point.x = this->user_data[user_id].dx_filter->filter(this->user_data[user_id].transformed_cursor_point.x);
-	this->user_data[user_id].transformed_cursor_point.y = this->user_data[user_id].dy_filter->filter(this->user_data[user_id].transformed_cursor_point.y);
+	this->user_data[user_id].cursor_point.x = this->user_data[user_id].dx_filter->filter(this->user_data[user_id].cursor_point.x);
+	this->user_data[user_id].cursor_point.y = this->user_data[user_id].dy_filter->filter(this->user_data[user_id].cursor_point.y);
 }
 
 void HandCursor::get_frame() {
@@ -224,40 +224,31 @@ void HandCursor::overlap_window(const long long int user_id) {
 void HandCursor::show_detect_window() {
 	this->view_frame = this->image_buffer.front();
 
-	Mat img = this->view_frame;
-
 	const int people_num{ this->pose_key_points.getSize(0) };
-	for (int i = 0; i < people_num; ++i) {
-		//if (i == 0) {
-		//	if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
-		//		cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 15, this->CV_RED, -1);
-		//	}
-		//	if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
-		//		cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 15, this->CV_RED, -1);
-		//	}
-		//}
-		//else if (i == 1) {
-		//	if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
-		//		cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 15, this->CV_BLUE, -1);
-		//	}
-		//	if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
-		//		cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 15, this->CV_BLUE, -1);
-		//	}
-		//}
-		//else {
-			if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
-				cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 15, this->CV_RED, -1);
-			}
-			if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
-				cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 15, this->CV_RED, -1);
-			}
-		//}
-		//if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
-		//	cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 15, this->CV_BLUE, -1);
-		//}
-
+	Concurrency::parallel_for(0, people_num, [&](int i) {
+		if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 12, this->CV_RED, -1);
+		}
+		if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 12, this->CV_BLUE, -1);
+		}
+		if (this->pose_key_points[RIGHT_EAR_X(i)] != 0.0 && this->pose_key_points[RIGHT_EAR_Y(i)] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_EAR_X(i)], this->pose_key_points[RIGHT_EAR_Y(i)]), 12, this->CV_ORANGE, -1);
+		}
+		if (this->pose_key_points[LEFT_EAR_X(i)] != 0.0 && this->pose_key_points[LEFT_EAR_Y(i)] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_EAR_X(i)], this->pose_key_points[LEFT_EAR_Y(i)]), 12, this->CV_ORANGE, -1);
+		}
+		if (this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), 12, this->CV_GREEN, -1);
+		}
+		if (this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), 12, this->CV_GREEN, -1);
+		}
+		if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), 12, this->CV_PURPLE, -1);
+		}
 		//cv::rectangle(this->view_frame, Point(std::max(static_cast<int>(this->pose_key_points[RIGHT_EAR_X(i)]) - 256, 0), std::max(static_cast<int>(this->pose_key_points[RIGHT_EAR_Y(i)]) - 72, 0)), Point(std::min(static_cast<int>(this->pose_key_points[RIGHT_EAR_X(i)]), CAMERA_W), std::min(static_cast<int>(this->pose_key_points[RIGHT_EAR_Y(i)]) + 72, CAMERA_H)), this->CV_RED, 10);
-	}
+	});
 
 	//for (const auto& t : this->user_data) {
 	//	cv::rectangle(this->view_frame, t.second.operation_area, this->CV_RED, 10);
@@ -266,8 +257,8 @@ void HandCursor::show_detect_window() {
 	//	//cv::rectangle(img, t.second.face_rect, this->CV_BLUE, 10);
 	//}
 
-	imshow("detect window", img);
+	imshow("detect window", this->view_frame);
 
 	/* “®‰æŽB‰e */
-	//this->writer << img;
+	//this->writer << this->view_frame;
 }

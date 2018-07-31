@@ -18,8 +18,8 @@ private:
 	MenuBar mb;
 	SimulatedAnnealing sa;
 
-	const ofImage map_image{ "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/kyoto_bg.png" };
-	const ofImage face_image{ "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/happy_smiley.png" };
+	const ofImage map_image{ "C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/kyoto_bg.png" };
+	//const ofImage face_image{ "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/happy_smiley.png" };
 	array<long long int, param::MENU_ITEM_NUM> menu_item_user_id;
 	array<int, param::MENU_ITEM_NUM> menu_item_life;
 	array<vector<Pin>, param::MENU_ITEM_NUM> pins;
