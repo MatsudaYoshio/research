@@ -33,7 +33,7 @@ const ofColor param::MENU_ITEM_COLOR[]{ ofColor::gold, ofColor::lawnGreen, ofCol
 /* メニュー項目に含まれるコンテンツの内訳 */
 const vector<param::CONTENT_ID> param::MENU_ITEM_CONTENTS[]{
 	vector<param::CONTENT_ID>{param::CONTENT_ID::KYOTO_TOWER, param::CONTENT_ID::HIGASHIHONGANJI, param::CONTENT_ID::SYOSEIEN, param::CONTENT_ID::NISHIHONGANJI, param::CONTENT_ID::KIYOMIZUDERA, param::CONTENT_ID::KYOTO_AQUARIUM, param::CONTENT_ID::KANNONJI, param::CONTENT_ID::TOJI},
-	vector<param::CONTENT_ID>{param::CONTENT_ID::EIJUAN, param::CONTENT_ID::SODOH, param::CONTENT_ID::FUNATSURU, param::CONTENT_ID::HANAROKU, param::CONTENT_ID::RANTEI},
+	vector<param::CONTENT_ID>{param::CONTENT_ID::EIJUAN, param::CONTENT_ID::SODOH, param::CONTENT_ID::FUNATSURU, param::CONTENT_ID::HANAROKU, param::CONTENT_ID::RANTEI, param::CONTENT_ID::MARUYASU, param::CONTENT_ID::IMASA, param::CONTENT_ID::SAWASHO},
 	vector<param::CONTENT_ID>{param::CONTENT_ID::AEON_MALL, param::CONTENT_ID::ISETAN, param::CONTENT_ID::AVANTI, param::CONTENT_ID::TAKASHIMAYA, param::CONTENT_ID::YAMASHITA},
 	vector<param::CONTENT_ID>{param::CONTENT_ID::ALMONT, param::CONTENT_ID::SAKURA_HONGANJI, param::CONTENT_ID::KYOSTAY_IROHA_TOJI, param::CONTENT_ID::HYATT_REGENCY, param::CONTENT_ID::FAMILY_VILLA_KEAGE}
 };
@@ -51,9 +51,12 @@ const param::content_data_type param::CONTENT_DATA[]{
 	param::content_data_type{ 955, 1499, 8, param::MENU_ITEM_ID::SIGHTSEEING, "To-ji", param::CONTENT_NAME_POSITION::TOP },
 	param::content_data_type{ 1386, 1070, 1, param::MENU_ITEM_ID::RESTAURANT, "Eijuan", param::CONTENT_NAME_POSITION::BOTTOM },
 	param::content_data_type{ 2666, 320, 2, param::MENU_ITEM_ID::RESTAURANT, "Sodoh", param::CONTENT_NAME_POSITION::RIGHT },
-	param::content_data_type{ 2101, 287, 3, param::MENU_ITEM_ID::RESTAURANT, "Hunatsuru", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 2101, 287, 3, param::MENU_ITEM_ID::RESTAURANT, "Funatsuru", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 1624, 634, 4, param::MENU_ITEM_ID::RESTAURANT, "Hanaroku", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 1741, 1117, 5, param::MENU_ITEM_ID::RESTAURANT, "Rantei", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1014, 608, 6, param::MENU_ITEM_ID::RESTAURANT, "Maruyasu", param::CONTENT_NAME_POSITION::TOP },
+	param::content_data_type{ 390, 934, 7, param::MENU_ITEM_ID::RESTAURANT, "Imasa", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 2547, 1319, 8, param::MENU_ITEM_ID::RESTAURANT, "Sawasho", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 1368, 1323, 1, param::MENU_ITEM_ID::SHOPPING, "Aeon Mall", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 1547, 1165, 2, param::MENU_ITEM_ID::SHOPPING, "Isetan", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 1674, 1279, 3, param::MENU_ITEM_ID::SHOPPING, "Avanti", param::CONTENT_NAME_POSITION::RIGHT },
@@ -66,7 +69,11 @@ const param::content_data_type param::CONTENT_DATA[]{
 	param::content_data_type{ 3314, 96, 5, param::MENU_ITEM_ID::HOTEL, "Family Villa Keage", param::CONTENT_NAME_POSITION::RIGHT }
 };
 
+/* コンテンツの数だけ初期化が必要 */
 ofImage param::CONTENT_IMAGE[]{
+	ofImage{},
+	ofImage{},
+	ofImage{},
 	ofImage{},
 	ofImage{},
 	ofImage{},

@@ -157,6 +157,8 @@ void HandCursor::init_user_data(const int personal_id, const double face_size) {
 			this->invalid_point,
 			this->invalid_point,
 	});
+
+	/* フィルタの初期化 */
 	this->user_data[this->user_id].dx_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
 	this->user_data[this->user_id].dy_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
 
@@ -188,9 +190,7 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 	this->user_data[user_id].face_point.x = this->pose_key_points[NOSE_X(personal_id)];
 	this->user_data[user_id].face_point.y = this->pose_key_points[NOSE_Y(personal_id)];
 
-	this->dx_rate = CAMERA_W / this->user_data[user_id].face_size;
-	this->dy_rate = CAMERA_H / this->user_data[user_id].face_size;
-
+	/* 初期座標からの差を計算 */
 	this->dx = this->pose_key_points[RIGHT_WRIST_X(personal_id)] - this->user_data[user_id].initial_point.x;
 	this->dy = this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - this->user_data[user_id].initial_point.y;
 

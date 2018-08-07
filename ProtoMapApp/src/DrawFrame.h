@@ -4,6 +4,7 @@
 
 #include "ofMain.h"
 
+/* lŠp‚¢˜g‚ğ•`‰æ‚·‚éƒNƒ‰ƒX */
 class DrawFrame {
 private:
 	ofRectangle frame_rect;

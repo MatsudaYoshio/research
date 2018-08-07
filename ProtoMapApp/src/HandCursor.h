@@ -92,7 +92,7 @@ private:
 
 	std::deque<cv::Mat> image_buffer; // 画像データのバッファ
 
-	double dx, dy, dx_rate, dy_rate;
+	double dx, dy;
 
 	cv::VideoWriter writer;
 
