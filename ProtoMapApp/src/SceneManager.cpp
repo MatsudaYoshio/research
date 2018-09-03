@@ -131,24 +131,38 @@ void SceneManager::draw() {
 }
 
 void SceneManager::optimize() {
-	/* 焼きなまし法への入力の準備 */
-	this->rects_tmp.clear();
+	/* 焼きなまし法への入力の準備(現在のウィンドウ状態から初期状態を作成) */
+	this->initial_rects.clear();
 	for (const auto& s : this->sub_windows) {
-		this->rects_tmp.emplace(s.first, s.second.get_rect());
+		this->initial_rects.emplace(s.first, s.second.get_rect());
 	}
 
-	this->sa(this->rects_tmp, this->best_rects, this->best_cost); // 焼きなまし法で最適化
+	this->sa(this->initial_rects, this->best_rects, this->best_cost); // 焼きなまし法で最適化
 
-	/* 重複状態でないかつ最適値に大きな変化がない場合は最適なパラメータの値を反映させない */
-	if (!this->is_intersect_window_pointer() && !this->is_intersect_window_window() && fabs(this->current_cost - this->best_cost) < this->transform_threshold) {
-		return;
+	/* 比較するコストを計算(直前のウィンドウ状態かつ現在のユーザ情報を使って) */
+	if (!this->previous_rects.empty() && !this->previous_sub_windows.empty()) {
+		this->sa.calculate_cost(this->previous_rects, this->comparative_cost, this->previous_sub_windows);
 	}
 
-	this->current_cost = this->best_cost; // コストを更新
+	cout << "comparative cost = " << this->comparative_cost << endl;
+	cout << "best cost = " << this->best_cost << endl;
+	cout << "-----------------------" << endl;
 
-	/* 最適なパラメータをセット */
-	for (const auto& id : this->sub_windows) {
-		this->sub_windows[id.first].set_rect(best_rects[id.first]);
+	if (this->comparative_cost > this->best_cost && this->comparative_cost - this->best_cost > this->transform_threshold) {
+	//if (this->is_intersect_window_pointer() || this->is_intersect_window_window() || (this->comparative_cost > this->best_cost && this->comparative_cost - this->best_cost > this->transform_threshold)) {
+
+		//cout << "comparative cost = " << this->comparative_cost << endl;
+		//cout << "best cost = " << this->best_cost << endl;
+		//cout << "-----------------------" << endl;
+
+		this->previous_sub_windows = this->sub_windows;
+
+		/* 最適なパラメータをセット */
+		for (const auto& id : this->sub_windows) {
+			this->sub_windows[id.first].set_rect(this->best_rects[id.first]);
+		}
+		
+		this->previous_rects = move(this->best_rects); // 状態(パラメータ)を更新
 	}
 }
 

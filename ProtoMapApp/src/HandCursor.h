@@ -66,8 +66,10 @@ private:
 	static constexpr double operation_heght_rate{ 1000 };
 	static constexpr double moving_rate{ 1.4 };
 	static constexpr double filter_freq{ 120 };
-	static constexpr double filter_mincutoff{ 0.00129 };
-	static constexpr double filter_beta{ 0.00129 };
+	// mincutoff: 0.00129    beta: 0.00129
+	// mincutoff: 0.00000065 beta: 0.0038
+	static constexpr double filter_mincutoff{ 0.00000065 };
+	static constexpr double filter_beta{ 0.0038 };
 	static const double display_operation_width_ratio;
 	static const double display_operation_height_ratio;
 	static const cv::Point invalid_point, display_center_point;

@@ -16,6 +16,8 @@ SubWindow::SubWindow(CONTENT_ID content_id, const long long int user_id) {
 void SubWindow::update() {
 	this->view_rect.setX(this->filter_x.filter(this->view_rect.getX()));
 	this->view_rect.setY(this->filter_y.filter(this->view_rect.getY()));
+	//this->view_rect.setX(this->view_rect.getX());
+	//this->view_rect.setY(this->view_rect.getY());
 
 	this->df.update(this->view_rect);
 }

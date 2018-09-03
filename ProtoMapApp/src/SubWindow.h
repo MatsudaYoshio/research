@@ -5,6 +5,7 @@
 #include "AppParameters.h"
 #include "DrawFrame.h"
 #include "OneEuroFilter.h"
+#include "MovingAverageFilter.h"
 
 class SubWindow {
 private:
@@ -17,8 +18,10 @@ private:
 	param::CONTENT_ID content_id;
 	long long int user_id;
 
-	OneEuroFilter filter_x{ 120, 0.065, 0.065 };
-	OneEuroFilter filter_y{ 120, 0.065, 0.065 };
+	MovingAverageFilter filter_x{ 2 };
+	MovingAverageFilter filter_y{ 2 };
+	//OneEuroFilter filter_x{ 120, 0.05, 0.05 };
+	//OneEuroFilter filter_y{ 120, 0.05, 0.05 };
 public:
 	SubWindow();
 	SubWindow(param::CONTENT_ID content_id, long long int user_id);

@@ -13,6 +13,8 @@ private:
 	unordered_map<long long int, SubWindow>* sub_windows;
 
 	static constexpr int MAX_ITERATION{ 3000 };
+	static constexpr double sigma{ 100 };
+
 	static constexpr int convergence_check_number{ 100 };
 
 	/* óêêî */
@@ -30,10 +32,10 @@ private:
 	ofstream ofs;
 
 	bool set_next_state();
-	void calculate_cost();
 public:
 	void setup(HandCursor* hc, unordered_map<long long int, SubWindow>* sub_windows);
-	void operator() (const unordered_map<long long int, ofRectangle>& start_state, unordered_map<long long int, ofRectangle>& best_state, double& best_cost);
+	void calculate_cost(const unordered_map<long long int, ofRectangle>& state, double& cost, const unordered_map<long long int, SubWindow>& sub_windows);
+	void operator() (const unordered_map<long long int, ofRectangle>& initial_state, unordered_map<long long int, ofRectangle>& best_state, double& best_cost);
 };
 
 #endif

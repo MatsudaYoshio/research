@@ -12,7 +12,7 @@ class SceneManager {
 private:
 	static constexpr int max_menu_item_life{ 80 };
 	static constexpr int min_menu_item_life{ 0 };
-	static constexpr double transform_threshold{ 75000000 };
+	static constexpr double transform_threshold{ 800 };
 
 	HandCursor* hc;
 	MenuBar mb;
@@ -23,9 +23,9 @@ private:
 	array<long long int, param::MENU_ITEM_NUM> menu_item_user_id;
 	array<int, param::MENU_ITEM_NUM> menu_item_life;
 	array<vector<Pin>, param::MENU_ITEM_NUM> pins;
-	unordered_map<long long int, SubWindow> sub_windows;
-	unordered_map<long long int, ofRectangle> rects_tmp, best_rects;
-	double current_cost{ 0.0 }, best_cost{ 0.0 };
+	unordered_map<long long int, SubWindow> sub_windows, previous_sub_windows;
+	unordered_map<long long int, ofRectangle> initial_rects, best_rects, previous_rects;
+	double comparative_cost{ 0.0 }, current_cost{ 0.0 }, best_cost{ 0.0 };
 
 	void optimize();
 	void draw_cursor();
