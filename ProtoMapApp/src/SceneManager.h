@@ -12,7 +12,7 @@ class SceneManager {
 private:
 	static constexpr int max_menu_item_life{ 80 };
 	static constexpr int min_menu_item_life{ 0 };
-	static constexpr double transform_threshold{ 800 };
+	static constexpr double transform_threshold{ 600 };
 
 	HandCursor* hc;
 	MenuBar mb;

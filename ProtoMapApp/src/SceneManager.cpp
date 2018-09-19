@@ -144,11 +144,11 @@ void SceneManager::optimize() {
 		this->sa.calculate_cost(this->previous_rects, this->comparative_cost, this->previous_sub_windows);
 	}
 
-	cout << "comparative cost = " << this->comparative_cost << endl;
-	cout << "best cost = " << this->best_cost << endl;
-	cout << "-----------------------" << endl;
+	//cout << "comparative cost = " << this->comparative_cost << endl;
+	//cout << "best cost = " << this->best_cost << endl;
+	//cout << "-----------------------" << endl;
 
-	if (this->comparative_cost > this->best_cost && this->comparative_cost - this->best_cost > this->transform_threshold) {
+	if (this->previous_sub_windows.size() != this->sub_windows.size() || (this->comparative_cost > this->best_cost && this->comparative_cost - this->best_cost > this->transform_threshold)) {
 	//if (this->is_intersect_window_pointer() || this->is_intersect_window_window() || (this->comparative_cost > this->best_cost && this->comparative_cost - this->best_cost > this->transform_threshold)) {
 
 		//cout << "comparative cost = " << this->comparative_cost << endl;
@@ -184,7 +184,7 @@ void SceneManager::make_sub_window(pair<param::CONTENT_ID, long long int>& id) {
 		this->sub_windows.erase(ite->first);
 	}
 
-	this->sub_windows.emplace(static_cast<int>(id.first), SubWindow{ id.first, id.second });
+	this->sub_windows.emplace(static_cast<int>(id.first), SubWindow{ id.first, id.second, this->hc->user_data[id.second].cursor_color });
 }
 
 void SceneManager::draw_cursor() {
