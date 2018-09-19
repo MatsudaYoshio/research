@@ -26,6 +26,10 @@ namespace param {
 	/* アルファ値(透過度を決定する) */
 	extern const float MAX_ALFHA;
 	extern const float HALF_MAX_ALFHA;
+
+	extern ofImage HAMMER_IMAGE; // ハンマーの画像
+	extern ofImage HOLE_IMAGE; // 穴の画像
+	extern ofImage MOLE_IMAGE; // モグラの画像
 }
 
 #endif
