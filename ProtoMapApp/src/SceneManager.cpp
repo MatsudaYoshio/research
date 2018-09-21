@@ -148,7 +148,8 @@ void SceneManager::optimize() {
 	//cout << "best cost = " << this->best_cost << endl;
 	//cout << "-----------------------" << endl;
 
-	if (this->previous_sub_windows.size() != this->sub_windows.size() || (this->comparative_cost > this->best_cost && this->comparative_cost - this->best_cost > this->transform_threshold)) {
+	if (this->make_sub_window_flag || (this->comparative_cost > this->best_cost && this->comparative_cost - this->best_cost > this->transform_threshold)) {
+		this->make_sub_window_flag = false;
 	//if (this->is_intersect_window_pointer() || this->is_intersect_window_window() || (this->comparative_cost > this->best_cost && this->comparative_cost - this->best_cost > this->transform_threshold)) {
 
 		//cout << "comparative cost = " << this->comparative_cost << endl;
@@ -171,12 +172,14 @@ void SceneManager::add_pin(pair<param::MENU_ITEM_ID, long long int>& id) {
 }
 
 void SceneManager::make_sub_window(pair<param::CONTENT_ID, long long int>& id) {
+	this->make_sub_window_flag = true;
+
 	/* 既に同じコンテンツのサブウィンドウがあったら、新たにサブウィンドウを生成しない */
 	if (this->sub_windows.find(static_cast<int>(id.first)) != end(this->sub_windows)) {
 		return;
 	}
 
-	auto ite{ find_if(begin(this->sub_windows), end(this->sub_windows),
+	const auto ite{ find_if(begin(this->sub_windows), end(this->sub_windows),
 		[this, id](const auto& x) {return x.second.get_user_id() == id.second; }
 	) };
 	if (ite != end(this->sub_windows)) { // そのユーザがすでにサブウィンドウを生成していたら

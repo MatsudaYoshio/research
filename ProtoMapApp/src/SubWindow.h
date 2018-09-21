@@ -10,7 +10,7 @@
 class SubWindow {
 private:
 	static constexpr int frame_size{ 10 };
-	static constexpr int defalut_height{ 400 };
+	static constexpr int defalut_height{ 600 };
 	static constexpr int defalut_width{ static_cast<int>(defalut_height * 1.618) };
 	static constexpr double track_rects_num{ 10 };
 	static constexpr auto change_rate{ 1 / track_rects_num };

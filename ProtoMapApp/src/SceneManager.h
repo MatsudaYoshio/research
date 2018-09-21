@@ -12,7 +12,7 @@ class SceneManager {
 private:
 	static constexpr int max_menu_item_life{ 80 };
 	static constexpr int min_menu_item_life{ 0 };
-	static constexpr double transform_threshold{ 600 };
+	static constexpr double transform_threshold{ 1000 };
 
 	HandCursor* hc;
 	MenuBar mb;
@@ -26,6 +26,7 @@ private:
 	unordered_map<long long int, SubWindow> sub_windows, previous_sub_windows;
 	unordered_map<long long int, ofRectangle> initial_rects, best_rects, previous_rects;
 	double comparative_cost{ 0.0 }, current_cost{ 0.0 }, best_cost{ 0.0 };
+	bool make_sub_window_flag{ false };
 
 	void optimize();
 	void draw_cursor();

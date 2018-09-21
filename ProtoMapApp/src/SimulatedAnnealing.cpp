@@ -170,5 +170,5 @@ void SimulatedAnnealing::calculate_cost(const unordered_map<long long int, ofRec
 
 	this->area_cost = -min_element(begin(state), end(state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
-	cost += this->area_cost/100 + 100*this->overlap_cost + this->distance_cost;
+	cost += this->area_cost/100 + this->overlap_cost + this->distance_cost;
 }
