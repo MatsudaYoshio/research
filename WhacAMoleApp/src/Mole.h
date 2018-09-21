@@ -8,11 +8,18 @@
 
 class Mole {
 private:
+	int appearance_time{ 0 };
+	int hidden_time{};
 	ofRectangle draw_rect;
 public:
-	void setup(const ofRectangle& draw_rect);
+	void setup(const ofRectangle& draw_rect, int hidden_time);
 	void update();
 	void draw();
+
+	ofRectangle get_rect() const;
+	bool is_idle() const;
+	void appear(int appearance_time);
+	void hide(int hidden_time);
 };
 
 #endif
