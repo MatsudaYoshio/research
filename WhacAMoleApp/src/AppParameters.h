@@ -19,13 +19,9 @@ namespace param {
 
 	/* カメラとディスプレイの解像度の比率 */
 	extern const double RESOLUTION_RATIO_WIDTH;
-	extern const double RESOLUTION_RATIO_H;
+	extern const double RESOLUTION_RATIO_HEIGHT;
 
 	extern const long long int NOT_USER; // 無効のユーザID
-
-	/* アルファ値(透過度を決定する) */
-	extern const float MAX_ALFHA;
-	extern const float HALF_MAX_ALFHA;
 
 	extern ofImage HAMMER_IMAGE; // ハンマーの画像
 	extern ofImage HOLE_IMAGE; // 穴の画像

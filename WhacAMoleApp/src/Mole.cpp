@@ -7,10 +7,6 @@ void Mole::setup(const ofRectangle& draw_rect, const int hidden_time) {
 	this->hidden_time = hidden_time;
 }
 
-void Mole::update() {
-
-}
-
 void Mole::draw() {
 	if (this->appearance_time != 0) {
 		MOLE_IMAGE.draw(this->draw_rect);
@@ -33,10 +29,16 @@ bool Mole::is_idle() const {
 	return this->appearance_time == 0 && this->hidden_time == 0;
 }
 
+bool Mole::is_appear() const {
+	return this->appearance_time != 0;
+}
+
 void Mole::appear(const int appearance_time) {
+	this->hidden_time = 0;
 	this->appearance_time = appearance_time;
 }
 
 void Mole::hide(const int hidden_time) {
+	this->appearance_time = 0;
 	this->hidden_time = hidden_time;
 }

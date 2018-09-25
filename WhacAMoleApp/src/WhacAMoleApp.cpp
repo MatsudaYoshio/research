@@ -3,32 +3,65 @@
 using namespace param;
 
 const ofColor WhacAMoleApp::bg_color{ 33, 215, 102 };
+const ofPoint WhacAMoleApp::font_draw_point{ 400, 120 };
 
 random_device WhacAMoleApp::rd;
 mt19937 WhacAMoleApp::mt(WhacAMoleApp::rd());
 uniform_int_distribution<int> WhacAMoleApp::random_0or1(0, 1);
-uniform_int_distribution<int> WhacAMoleApp::random_appearance_time(200, 800);
-uniform_int_distribution<int> WhacAMoleApp::random_hidden_time(200, 800);
+uniform_int_distribution<int> WhacAMoleApp::random_appearance_time(8, 90);
+uniform_int_distribution<int> WhacAMoleApp::random_hidden_time(8, 90);
 
 void WhacAMoleApp::setup() {
 	ofSetBackgroundAuto(false); // フレーム更新時に塗りつぶしを無効化
 	ofHideCursor(); // カーソル非表示
 
+	this->font.load("./font/SFNSText.ttf", 60); // フォントのロード
+
 	this->initialize_image(); // 画像の初期化
 
-	this->initialize_moles();
+	this->initialize_moles(); // モグラオブジェクトの初期化
 }
 
 void WhacAMoleApp::update() {
-	ofRectangle hammer_rect(mouseX - this->hammer_width / 2, mouseY - this->hammer_height / 2, this->hammer_width, this->hammer_height);
+	this->hc.update();
 
-	for (int i = 0; i < this->mole_num_all; ++i) {
-		if (!this->is_whacked(this->moles[i], hammer_rect) && this->moles[i].is_idle()) {
-			if (this->random_0or1(this->mt)) {
-				this->moles[i].appear(this->random_appearance_time(this->mt));
-			}
-			else {
+	this->hammer_rects.clear();
+	for (const auto& ud : this->hc.user_data) {
+		this->hammer_rects.emplace(ud.first, ofRectangle(ud.second.cursor_point.x - this->hammer_width / 2, ud.second.cursor_point.y - this->hammer_height / 2, this->hammer_width, this->hammer_height));
+	}
+
+	for (const auto& r : this->hammer_rects) {
+		for (int i = 0; i < this->mole_num_all; ++i) {
+			if (this->moles[i].is_appear() && this->is_whacked(this->moles[i], r.second)) {
+				++score;
 				this->moles[i].hide(this->random_hidden_time(this->mt));
+			}
+		}
+	}
+
+	if (this->hammer_rects.empty()) {
+		for (int i = 0; i < this->mole_num_all; ++i) {
+			if (this->moles[i].is_idle()) {
+				if (this->random_0or1(this->mt)) {
+					this->moles[i].appear(this->random_appearance_time(this->mt));
+				}
+				else {
+					this->moles[i].hide(this->random_hidden_time(this->mt));
+				}
+			}
+		}
+	}
+	else {
+		for (const auto& r : this->hammer_rects) {
+			for (int i = 0; i < this->mole_num_all; ++i) {
+				if (!this->is_whacked(this->moles[i], r.second) && this->moles[i].is_idle()) {
+					if (this->random_0or1(this->mt)) {
+						this->moles[i].appear(this->random_appearance_time(this->mt));
+					}
+					else {
+						this->moles[i].hide(this->random_hidden_time(this->mt));
+					}
+				}
 			}
 		}
 	}
@@ -41,15 +74,25 @@ void WhacAMoleApp::draw() {
 	ofDrawRectangle(0, 0, DISPLAY_WIDTH, this->information_view_size);
 
 	ofSetColor(ofColor::white);
+	this->font.drawString("Score :", this->font_draw_point.x, this->font_draw_point.y);
+	this->font.drawString(to_string(this->score), this->font_draw_point.x + 300, this->font_draw_point.y);
+
+	ofSetColor(ofColor::white);
 	for (int i = 0; i < this->mole_num_all; ++i) {
 		this->moles[i].draw();
 	}
 
-	HAMMER_IMAGE.draw(mouseX - this->hammer_width / 2, mouseY - this->hammer_height / 2, this->hammer_width, this->hammer_height);
+	for (const auto& ud : this->hc.user_data) {
+		ud.second.cursor_image.draw(ud.second.cursor_point.x - this->hammer_width / 2, ud.second.cursor_point.y - this->hammer_height / 2, this->hammer_width, this->hammer_height);
+	}
+}
+
+void WhacAMoleApp::exit() {
+	this->hc.exit();
 }
 
 void WhacAMoleApp::initialize_image() const {
-	HAMMER_IMAGE.load("fig/hammer.png");
+	HAMMER_IMAGE.load("fig/hammer2.png");
 	HOLE_IMAGE.load("fig/mole0.png");
 	MOLE_IMAGE.load("fig/mole1.png");
 }
