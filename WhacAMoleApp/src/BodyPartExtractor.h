@@ -1,3 +1,5 @@
+// OpenPoseで骨格認識の処理を行うクラス
+
 #pragma once
 #ifndef ___Class_BodyPartExtractor
 #define ___Class_BodyPartExtractor

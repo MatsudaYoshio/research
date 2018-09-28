@@ -15,6 +15,5 @@ const double param::RESOLUTION_RATIO_HEIGHT{ param::DISPLAY_HEIGHT / param::CAME
 const long long int param::NOT_USER{ -1 }; // 無効のユーザID
 
 /* ここで値の初期化を行わなずに、WhacAMoleAppで初期化を行う */
-ofImage param::HAMMER_IMAGE{ ofImage{} }; // ハンマーの画像
 ofImage param::HOLE_IMAGE{ ofImage{} }; // 穴の画像
 ofImage param::MOLE_IMAGE{ ofImage{} }; // モグラの画像

@@ -24,7 +24,6 @@ void FrameRateCounter::SetFrameRate(double frameRate)
 
 void FrameRateCounter::NewFrame()
 {
-	//DWORD currTime = timeGetTime();
 	__int64 currTime;
 	::QueryPerformanceCounter((LARGE_INTEGER*)&currTime);
 

@@ -2,10 +2,16 @@
 
 using namespace param;
 
-int main(){
+int main() {
+	/* こっちで問題なければ、本番ではこっちを使う */
+	/* ----------------------------------------------------------------------------- */
 	//ofSetupOpenGL(DISPLAY_WIDTH, DISPLAY_HEIGHT, OF_FULLSCREEN); // フルスクリーンでウィンドウ表示
+	/* ----------------------------------------------------------------------------- */
 
-	/* マルチディスプレイなどで、フルスクリーンがうまくいかない場合は以下のようにやってみる */
+
+
+	/* マルチディスプレイなどで、フルスクリーンがうまくいかない場合、または、動作テスト(FPSや検出のチェックなど)をするときは以下のようにやってみる */
+	/* ----------------------------------------------------------------------------- */
 	/* ウィンドウの準備 */
 	ofGLFWWindowSettings settings;
 	settings.setGLVersion(2, 1);
@@ -16,10 +22,10 @@ int main(){
 
 	/* ウィンドウの枠を消す(フルスクリーンにする) */
 	auto hWnd{ WindowFromDC(wglGetCurrentDC()) };
-	LONG lStyle;
-	lStyle = GetWindowLong(hWnd, GWL_STYLE);
+	auto lStyle{ GetWindowLong(hWnd, GWL_STYLE) };
 	lStyle &= ~WS_CAPTION;
 	lStyle = SetWindowLong(hWnd, GWL_STYLE, lStyle);
+	/* ----------------------------------------------------------------------------- */
 
 	ofRunApp(new WhacAMoleApp());
 }

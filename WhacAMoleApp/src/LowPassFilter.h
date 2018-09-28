@@ -1,3 +1,5 @@
+// OneEuroFilterクラスで使うためのローパスフィルタのクラス
+
 #pragma once
 #ifndef ___Class_LowPassFilter
 #define ___Class_LowPassFilter

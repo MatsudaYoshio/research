@@ -1,3 +1,5 @@
+// UEye SDKのサンプルで、フレームレートを計測するためのクラス
+
 #ifndef ___Class_FrameRateCounter
 #define ___Class_FrameRateCounter
 

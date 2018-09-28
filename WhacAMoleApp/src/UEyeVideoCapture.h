@@ -1,3 +1,5 @@
+// UEye SDK‚É‚æ‚éƒJƒƒ‰‰æ‘œæ“¾ƒNƒ‰ƒX
+
 #ifndef ___Class_UEyeVideoCapture
 #define ___Class_UEyeVideoCapture
 

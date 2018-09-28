@@ -5,6 +5,7 @@
 #include <random>
 
 #include "HandCursor.h"
+#include "KeyPointsRenderer.h"
 #include "Mole.h"
 
 class WhacAMoleApp : public ofBaseApp {
@@ -28,6 +29,7 @@ private:
 	static uniform_int_distribution<int> random_hidden_time; // ƒ‚ƒOƒ‰‚Ì‰B‚êŠÔ‚ğŒˆ‚ß‚é‚½‚ß‚Ì—”
 
 	HandCursor hc;
+	KeyPointsRenderer kpr;
 
 	long long int score{ 0 };
 	ofTrueTypeFont font;

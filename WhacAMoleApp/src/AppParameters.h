@@ -1,3 +1,5 @@
+// アプリ全体で使う変数を管理する
+
 #pragma once
 #ifndef ___AppParameters
 #define ___AppParameters
@@ -23,7 +25,6 @@ namespace param {
 
 	extern const long long int NOT_USER; // 無効のユーザID
 
-	extern ofImage HAMMER_IMAGE; // ハンマーの画像
 	extern ofImage HOLE_IMAGE; // 穴の画像
 	extern ofImage MOLE_IMAGE; // モグラの画像
 }

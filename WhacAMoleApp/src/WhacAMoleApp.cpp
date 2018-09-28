@@ -20,6 +20,8 @@ void WhacAMoleApp::setup() {
 	this->initialize_image(); // 画像の初期化
 
 	this->initialize_moles(); // モグラオブジェクトの初期化
+
+	this->kpr.setup(&this->hc.pose_key_points);
 }
 
 void WhacAMoleApp::update() {
@@ -82,6 +84,9 @@ void WhacAMoleApp::draw() {
 		this->moles[i].draw();
 	}
 
+	this->kpr.draw();
+
+	ofSetColor(ofColor::white);
 	for (const auto& ud : this->hc.user_data) {
 		ud.second.cursor_image.draw(ud.second.cursor_point.x - this->hammer_width / 2, ud.second.cursor_point.y - this->hammer_height / 2, this->hammer_width, this->hammer_height);
 	}
@@ -92,7 +97,6 @@ void WhacAMoleApp::exit() {
 }
 
 void WhacAMoleApp::initialize_image() const {
-	HAMMER_IMAGE.load("fig/hammer2.png");
 	HOLE_IMAGE.load("fig/mole0.png");
 	MOLE_IMAGE.load("fig/mole1.png");
 }

@@ -45,7 +45,7 @@ HandCursor::HandCursor() {
 }
 
 void HandCursor::update() {
-	/* fpsを表示 */
+	/* fpsをコマンドラインに出力 */
 	//frc.NewFrame();
 	//printf("fps : %lf\n", frc.GetFrameRate());
 
@@ -63,7 +63,7 @@ void HandCursor::update() {
 		}
 	}
 
-	this->body_part_extractor(this->pose_key_points, this->image_buffer.front()); // openPoseによる骨格推定
+	this->body_part_extractor(this->pose_key_points, this->image_buffer.front()); // openPoseによる骨格推定(結果をpose_key_pointsに保存)
 
 	const int people_num{ this->pose_key_points.getSize(0) }; // 検出された人数
 
@@ -75,7 +75,7 @@ void HandCursor::update() {
 
 		long long int user_id{ this->decide_user_id(i) }; // user_idを決定
 
-		auto interaction_threshold{ (this->pose_key_points[RIGHT_SHOULDER_Y(i)] + this->pose_key_points[MIDDLE_HIP_Y(i)]) / 2 }; // 腰と右肩の中間点をインタラクションの基準点とする
+		auto interaction_threshold{ (this->pose_key_points[RIGHT_SHOULDER_Y(i)] + this->pose_key_points[RIGHT_HIP_Y(i)]) / 2 }; // 右腰と右肩の中間点をインタラクションの基準点とする
 
 		if (this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] < interaction_threshold) {
 			// 右手と右肩が検出され、右手が腰と右肩の中間点より上であれば
@@ -229,27 +229,32 @@ void HandCursor::show_detect_window() {
 
 	const int people_num{ this->pose_key_points.getSize(0) };
 	Concurrency::parallel_for(0, people_num, [&](int i) {
-		if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 12, this->CV_RED, -1);
-		}
-		if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 12, this->CV_BLUE, -1);
-		}
-		if (this->pose_key_points[RIGHT_EAR_X(i)] != 0.0 && this->pose_key_points[RIGHT_EAR_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_EAR_X(i)], this->pose_key_points[RIGHT_EAR_Y(i)]), 12, this->CV_ORANGE, -1);
-		}
-		if (this->pose_key_points[LEFT_EAR_X(i)] != 0.0 && this->pose_key_points[LEFT_EAR_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_EAR_X(i)], this->pose_key_points[LEFT_EAR_Y(i)]), 12, this->CV_ORANGE, -1);
-		}
-		if (this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), 12, this->CV_GREEN, -1);
-		}
-		if (this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), 12, this->CV_GREEN, -1);
-		}
-		if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), 12, this->CV_PURPLE, -1);
-		}
+		Concurrency::parallel_for(0, 18, [&](int j) {
+			if (this->pose_key_points[{i, j, 0}] != 0.0 && this->pose_key_points[{i, j, 1}] != 0.0) {
+				cv::circle(this->view_frame, Point(this->pose_key_points[{i, j, 0}], this->pose_key_points[{i, j, 1}]), 12, this->CV_RED, -1);
+			}
+		});
+		//if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 12, this->CV_RED, -1);
+		//}
+		//if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 12, this->CV_BLUE, -1);
+		//}
+		//if (this->pose_key_points[RIGHT_EAR_X(i)] != 0.0 && this->pose_key_points[RIGHT_EAR_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_EAR_X(i)], this->pose_key_points[RIGHT_EAR_Y(i)]), 12, this->CV_ORANGE, -1);
+		//}
+		//if (this->pose_key_points[LEFT_EAR_X(i)] != 0.0 && this->pose_key_points[LEFT_EAR_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_EAR_X(i)], this->pose_key_points[LEFT_EAR_Y(i)]), 12, this->CV_ORANGE, -1);
+		//}
+		//if (this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), 12, this->CV_GREEN, -1);
+		//}
+		//if (this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), 12, this->CV_GREEN, -1);
+		//}
+		//if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), 12, this->CV_PURPLE, -1);
+		//}
 		//cv::rectangle(this->view_frame, Point(std::max(static_cast<int>(this->pose_key_points[RIGHT_EAR_X(i)]) - 256, 0), std::max(static_cast<int>(this->pose_key_points[RIGHT_EAR_Y(i)]) - 72, 0)), Point(std::min(static_cast<int>(this->pose_key_points[RIGHT_EAR_X(i)]), CAMERA_W), std::min(static_cast<int>(this->pose_key_points[RIGHT_EAR_Y(i)]) + 72, CAMERA_H)), this->CV_RED, 10);
 	});
 

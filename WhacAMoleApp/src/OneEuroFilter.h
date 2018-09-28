@@ -1,3 +1,5 @@
+// カーソルの動きを滑らかにするためのフィルタ(One Euro Filter)クラス
+
 #pragma once
 #ifndef ___Class_OneEuroFilter
 #define ___Class_OneEuroFilter
