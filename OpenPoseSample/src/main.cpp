@@ -1,8 +1,8 @@
-#include "WhacAMoleApp.h"
+#include "ofApp.h"
 
 using namespace param;
 
-int main() {
+int main(){
 	// フルスクリーンで表示する方法が二通りある
 
 	/* こっちで問題なければ、本番ではこっちを使う */
@@ -27,5 +27,5 @@ int main() {
 	lStyle = SetWindowLong(hWnd, GWL_STYLE, lStyle);
 	/* ----------------------------------------------------------------------------- */
 
-	ofRunApp(new WhacAMoleApp());
+	ofRunApp(new ofApp());
 }

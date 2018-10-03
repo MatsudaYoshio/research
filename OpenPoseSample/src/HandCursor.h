@@ -1,5 +1,3 @@
-// 手カーソルの検出、情報更新のクラス
-
 #pragma once
 #ifndef ___Class_HandCursor
 #define ___Class_HandCursor

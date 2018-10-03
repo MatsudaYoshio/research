@@ -37,7 +37,7 @@ HandCursor::HandCursor() {
 }
 
 void HandCursor::update() {
-	/* fpsをコマンドラインに出力 */
+	///* fpsをコマンドラインに出力 */
 	//frc.NewFrame();
 	//printf("fps : %lf\n", frc.GetFrameRate());
 
@@ -215,9 +215,9 @@ void HandCursor::transform_point(const Point& src_point, Point& dst_point) const
 }
 
 void HandCursor::show_detect_window() {
-	this->view_frame = this->image_buffer.front();
+	this->view_frame = this->image_buffer.front(); // 最新フレームをコピー
 
-	const int people_num{ this->pose_key_points.getSize(0) };
+	const int people_num{ this->pose_key_points.getSize(0) }; // 検出された人数
 	Concurrency::parallel_for(0, people_num, [&](int i) {
 		Concurrency::parallel_for(0, 18, [&](int j) {
 			if (this->pose_key_points[{i, j, 0}] != 0.0 && this->pose_key_points[{i, j, 1}] != 0.0) {

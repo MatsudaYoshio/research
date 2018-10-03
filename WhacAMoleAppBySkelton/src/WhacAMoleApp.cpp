@@ -20,29 +20,23 @@ void WhacAMoleApp::setup() {
 	this->initialize_image(); // 画像の初期化
 
 	this->initialize_moles(); // モグラオブジェクトの初期化
-
-	this->kpr.setup(&this->hc.pose_key_points); // 骨格描画の準備
 }
 
 void WhacAMoleApp::update() {
-	this->hc.update(); // 手カーソルの更新
+	this->se.update();
 
-	/* 各ユーザの手の座標からハンマーの範囲（画像）を表した矩形を求める */
-	this->hammer_rects.clear();
-	for (const auto& ud : this->hc.user_data) {
-		this->hammer_rects.emplace(ud.first, ofRectangle(ud.second.cursor_point.x - this->hammer_width / 2, ud.second.cursor_point.y - this->hammer_height / 2, this->hammer_width, this->hammer_height));
-	}
-
-	for (const auto& r : this->hammer_rects) {
-		for (int i = 0; i < this->mole_num_all; ++i) {
-			if (this->moles[i].is_appear() && this->is_whacked(this->moles[i], r.second)) { // もしハンマーがモグラを叩いたら
-				++score; // スコアを加算
-				this->moles[i].hide(this->random_hidden_time(this->mt)); // モグラに隠れ時間を与え、隠れてもらう
+	for (const auto& up : this->se.transformed_key_points) { // すべてのユーザを含めた骨格点のをループでまわす
+		if (up.first.second == RIGHT_WRIST || up.first.second == LEFT_WRIST) { // 右手首か左手首の骨格点だったら
+			for (int i = 0; i < this->mole_num_all; ++i) {
+				if (this->moles[i].is_appear() && this->is_whacked(this->moles[i], up.second)) { // もしモグラを叩いたら
+					++score; // スコアを加算
+					this->moles[i].hide(this->random_hidden_time(this->mt)); // モグラに隠れ時間を与え、隠れてもらう
+				}
 			}
 		}
 	}
 
-	if (this->hammer_rects.empty()) { // もしハンマーがなかったら（ユーザがいなかったら）
+	if (this->se.transformed_key_points.empty()) { // もしユーザがいなかったら
 		for (int i = 0; i < this->mole_num_all; ++i) {
 			if (this->moles[i].is_idle()) { // モグラが暇だったら
 				/* ランダムに出現時間または隠れ時間を与える */
@@ -55,16 +49,18 @@ void WhacAMoleApp::update() {
 			}
 		}
 	}
-	else { // もしハンマーがあったら（ユーザがいたら）ハンマーがあるところでモグラを出現させない
-		for (const auto& r : this->hammer_rects) {
-			for (int i = 0; i < this->mole_num_all; ++i) {
-				if (!this->is_whacked(this->moles[i], r.second) && this->moles[i].is_idle()) { // モグラの位置にハンマーがなくて、かつ、モグラが暇していたら
-					/* ランダムに出現時間または隠れ時間を与える */
-					if (this->random_0or1(this->mt)) {
-						this->moles[i].appear(this->random_appearance_time(this->mt));
-					}
-					else {
-						this->moles[i].hide(this->random_hidden_time(this->mt));
+	else { // もしユーザがいたらそのにはモグラを出現させない
+		for (const auto& up : this->se.transformed_key_points) { // すべてのユーザを含めた骨格点のをループでまわす
+			if (up.first.second == RIGHT_WRIST || up.first.second == LEFT_WRIST) { // 右手首か左手首の骨格点だったら
+				for (int i = 0; i < this->mole_num_all; ++i) {
+					if (!this->is_whacked(this->moles[i], up.second) && this->moles[i].is_idle()) { // モグラの位置に骨格点がなくて、かつ、モグラが暇していたら
+						/* ランダムに出現時間または隠れ時間を与える */
+						if (this->random_0or1(this->mt)) {
+							this->moles[i].appear(this->random_appearance_time(this->mt));
+						}
+						else {
+							this->moles[i].hide(this->random_hidden_time(this->mt));
+						}
 					}
 				}
 			}
@@ -91,17 +87,11 @@ void WhacAMoleApp::draw() {
 	}
 
 	/* 骨格の描画 */
-	this->kpr.draw(); 
-
-	/* それぞれのユーザに割り当てられたハンマー（画像）を描画*/
-	ofSetColor(ofColor::white);
-	for (const auto& ud : this->hc.user_data) {
-		ud.second.cursor_image.draw(ud.second.cursor_point.x - this->hammer_width / 2, ud.second.cursor_point.y - this->hammer_height / 2, this->hammer_width, this->hammer_height);
-	}
+	this->kpr.draw(this->se.transformed_key_points);
 }
 
 void WhacAMoleApp::exit() {
-	this->hc.exit();
+	this->se.exit();
 }
 
 void WhacAMoleApp::initialize_image() const {
@@ -120,6 +110,6 @@ void WhacAMoleApp::initialize_moles() {
 	}
 }
 
-bool WhacAMoleApp::is_whacked(const Mole& mole, const ofRectangle& hammer_rect) const {
-	return mole.get_rect().intersects(hammer_rect);
+bool WhacAMoleApp::is_whacked(const Mole& mole, const ofPoint& key_point) const {
+	return mole.get_rect().inside(key_point);
 }
