@@ -1,6 +1,6 @@
 #include "HistoryPlotter.h"
 
-HistoryPlotter::HistoryPlotter(const string& name, const ofRectangle& draw_area, const double max_history) :plot_name(name), draw_area(draw_area), max_history(max_history) {
+HistoryPlotter::HistoryPlotter(const char* name, const ofRectangle& draw_area, const double max_history) :plot_name(name), draw_area(draw_area), max_history(max_history) {
 	this->grid_mesh.setMode(OF_PRIMITIVE_LINES);
 	this->plot_mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
 	this->plot_mesh.getVertices().reserve(max_history * 2);

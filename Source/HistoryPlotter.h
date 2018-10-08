@@ -50,10 +50,10 @@ private:
 	void refill_grid_mesh();
 	void refill_plot_mesh();
 public:
-	HistoryPlotter(const string& name, const ofRectangle& draw_area, double max_history);
+	HistoryPlotter(const char* name, const ofRectangle& draw_area, double max_history);
 
 	void update(double new_value);
-	void draw();
+	virtual void draw();
 
 	void set_range(double low, double high);
 	void set_lower_range(double low);
