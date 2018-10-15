@@ -20,10 +20,25 @@ void SceneManager::setup(HandCursor* const hc) {
 	fill_n(begin(this->menu_item_life), MENU_ITEM_NUM, this->max_menu_item_life);
 
 	this->sa.setup(this->hc, &this->sub_windows);
+
+	//this->best_cost_plotter.set_window_position(1920, 0);
+	//this->best_cost_plotter.set_range(-5000, 5000);
 }
 
 void SceneManager::update() {
-	this->optimize(); // 最適化
+	if (!this->sub_windows.empty()) {
+		this->optimize(); // 最適化
+	}
+
+	//if (this->comparative_cost > this->best_cost) {
+	//	this->best_cost_plotter.set_line_color(ofColor::lightPink);
+	//	//this->best_cost_plotter.update(this->comparative_cost - this->best_cost);
+	//}
+	//else {
+	//	this->best_cost_plotter.set_line_color(ofColor::lightBlue);
+	//}
+	//this->best_cost_plotter.update(this->comparative_cost - this->best_cost);
+	//this->best_cost_plotter.update(this->best_cost);
 
 	/* サブウィンドウの更新 */
 	/* いなくなったユーザのサブウィンドウを削除 */
@@ -128,6 +143,8 @@ void SceneManager::draw() {
 	}
 
 	this->draw_cursor(); // 手カーソルの描画
+
+	//this->best_cost_plotter.draw();
 }
 
 void SceneManager::optimize() {
@@ -144,17 +161,8 @@ void SceneManager::optimize() {
 		this->sa.calculate_cost(this->previous_rects, this->comparative_cost, this->previous_sub_windows);
 	}
 
-	//cout << "comparative cost = " << this->comparative_cost << endl;
-	//cout << "best cost = " << this->best_cost << endl;
-	//cout << "-----------------------" << endl;
-
 	if (this->make_sub_window_flag || (this->comparative_cost > this->best_cost && this->comparative_cost - this->best_cost > this->transform_threshold)) {
 		this->make_sub_window_flag = false;
-	//if (this->is_intersect_window_pointer() || this->is_intersect_window_window() || (this->comparative_cost > this->best_cost && this->comparative_cost - this->best_cost > this->transform_threshold)) {
-
-		//cout << "comparative cost = " << this->comparative_cost << endl;
-		//cout << "best cost = " << this->best_cost << endl;
-		//cout << "-----------------------" << endl;
 
 		this->previous_sub_windows = this->sub_windows;
 

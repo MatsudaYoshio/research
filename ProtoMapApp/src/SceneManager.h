@@ -7,16 +7,18 @@
 #include "Pin.h"
 #include "SubWindow.h"
 #include "SimulatedAnnealing.h"
+#include "HistoryPlotterSecondWindow.h"
 
 class SceneManager {
 private:
 	static constexpr int max_menu_item_life{ 80 };
 	static constexpr int min_menu_item_life{ 0 };
-	static constexpr double transform_threshold{ 1000 };
+	static constexpr double transform_threshold{ 10000 };
 
 	HandCursor* hc;
 	MenuBar mb;
 	SimulatedAnnealing sa;
+	//HistoryPlotterSecondWindow best_cost_plotter{ "best cost", ofRectangle(0,0,1920,1080), 100 };
 
 	const ofImage map_image{ "C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/kyoto_bg.png" };
 	//const ofImage face_image{ "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/happy_smiley.png" };

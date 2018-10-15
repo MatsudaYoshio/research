@@ -17,6 +17,10 @@ namespace param {
 	extern const int HALF_DISPLAY_W;
 	extern const int HALF_DISPLAY_H;
 
+	/* サブウィンドウの最小サイズ */
+	extern const int MIN_SUB_WINDOW_W;
+	extern const int MIN_SUB_WINDOW_H;
+
 	/* サブウィンドウの最大サイズ */
 	extern const int MAX_SUB_WINDOW_W;
 	extern const int MAX_SUB_WINDOW_H;
