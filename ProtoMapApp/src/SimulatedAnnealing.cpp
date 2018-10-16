@@ -38,11 +38,13 @@ void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectan
 		//this->cost_plotter.update(this->overlap_cost);
 		//this->cost_plotter.draw();
 	//}
-		int k = 100000000;
-		//printf("[%d] : %lf,  %lf\n", i, exp(-1 * this->MAX_ITERATION * (this->next_cost - this->current_cost) / k * i), this->next_cost - this->current_cost);
+		double k = 1000000;
+		double T = pow(0.00005, static_cast<double>(i) / this->MAX_ITERATION);
+		//printf("[%d] : %lf,  %lf\n", i, exp(-(this->next_cost - this->current_cost) / (k * T)), this->next_cost - this->current_cost);
 		if (this->next_cost > this->current_cost) {
 			//if (this->random_0to1(this->mt) < exp(-1 * this->MAX_ITERATION * log(this->next_cost - this->current_cost) / 10000000 * i)) {
-			if(this->random_0to1(this->mt) <= exp(-1 * this->MAX_ITERATION * (this->next_cost - this->current_cost) / k * i)){
+			//if(this->random_0to1(this->mt) <= exp(-1 * this->MAX_ITERATION * (this->next_cost - this->current_cost) / k * i)){
+			if (this->random_0to1(this->mt) <= exp(-(this->next_cost - this->current_cost) / (k * T))) {
 				this->current_cost = this->next_cost;
 				this->current_state = this->next_state;
 			}
@@ -126,7 +128,7 @@ void SimulatedAnnealing::calculate_cost(const unordered_map<long long int, ofRec
 			for (const auto& s2 : state) {
 				//this->overlap_cost += s.second.getIntersection(s2.second).getArea();
 				if (s.first != s2.first) {
-					this->overlap_cost += 10000 * (atan(s.second.getIntersection(s2.second).getArea()) / PI + 0.5);
+					this->overlap_cost += 1555200 * (atan(s.second.getIntersection(s2.second).getArea()) / PI + 0.5);
 					//this->overlap_cost += exp(pow(s.second.getIntersection(s2.second).getArea(), 2) / (2 * pow(this->sigma, 2))) / (sqrt(2 * PI)*this->sigma);
 				}
 			}

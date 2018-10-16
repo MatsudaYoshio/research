@@ -14,7 +14,7 @@ private:
 
 	unordered_map<long long int, SubWindow>* sub_windows;
 
-	static constexpr int MAX_ITERATION{ 3000 };
+	static constexpr int MAX_ITERATION{ 1000 };
 	static constexpr double sigma{ 170 };
 
 	static constexpr int convergence_check_number{ 100 };
