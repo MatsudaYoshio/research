@@ -7,9 +7,16 @@ mt19937 SimulatedAnnealing::mt(SimulatedAnnealing::rd());
 uniform_int_distribution<int> SimulatedAnnealing::random_parameter(0, 3);
 uniform_real_distribution<double> SimulatedAnnealing::random_0to1(0.0, 1.0);
 
+array<double, SimulatedAnnealing::MAX_ITERATION> SimulatedAnnealing::kT;
+const double SimulatedAnnealing::a{ l * 5 / (sqrt(2 * PI)*sigma) };
+
 void SimulatedAnnealing::setup(HandCursor* hc, unordered_map<long long int, SubWindow>* sub_windows) {
 	this->hc = hc;
 	this->sub_windows = sub_windows;
+
+	Concurrency::parallel_for(0, MAX_ITERATION, [&](int i) {
+		this->kT[i] = this->k*pow(0.00005, static_cast<double>(i) / this->MAX_ITERATION);
+	});
 
 	//this->cost_plotter.set_range(0, 10000);
 	//this->cost_plotter.set_line_color(ofColor::skyBlue);
@@ -38,13 +45,9 @@ void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectan
 		//this->cost_plotter.update(this->overlap_cost);
 		//this->cost_plotter.draw();
 	//}
-		double k = 1000000;
-		double T = pow(0.00005, static_cast<double>(i) / this->MAX_ITERATION);
-		//printf("[%d] : %lf,  %lf\n", i, exp(-(this->next_cost - this->current_cost) / (k * T)), this->next_cost - this->current_cost);
+
 		if (this->next_cost > this->current_cost) {
-			//if (this->random_0to1(this->mt) < exp(-1 * this->MAX_ITERATION * log(this->next_cost - this->current_cost) / 10000000 * i)) {
-			//if(this->random_0to1(this->mt) <= exp(-1 * this->MAX_ITERATION * (this->next_cost - this->current_cost) / k * i)){
-			if (this->random_0to1(this->mt) <= exp(-(this->next_cost - this->current_cost) / (k * T))) {
+			if (this->random_0to1(this->mt) <= exp(-(this->next_cost - this->current_cost) / this->kT[i])) {
 				this->current_cost = this->next_cost;
 				this->current_state = this->next_state;
 			}
@@ -106,62 +109,42 @@ void SimulatedAnnealing::calculate_cost(const unordered_map<long long int, ofRec
 				continue;
 			}
 
-			//double sigma = 11000;
-
-			auto center_point = s.second.getCenter();
-
 			//this->overlap_cost += 10000 * exp(-ofDistSquared(center_point.x, center_point.y, ud.second.cursor_point.x, ud.second.cursor_point.y) / (2 * pow(this->sigma, 2)))*s.second.getIntersection(ofRectangle(ofClamp(ud.second.cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight())).getArea();
-			this->overlap_cost += 10000 * exp(-ofDistSquared(center_point.x, center_point.y, ud.second.cursor_point.x, ud.second.cursor_point.y) / (2 * pow(this->sigma, 2)))*s.second.getIntersection(ofRectangle(ofClamp(ud.second.cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight())).getArea() / (sqrt(2 * PI)*this->sigma);
+			//this->overlap_cost += 10000 * exp(-ofDistSquared(center_point.x, center_point.y, ud.second.cursor_point.x, ud.second.cursor_point.y) / (2 * pow(this->sigma, 2)))*s.second.getIntersection(ofRectangle(ofClamp(ud.second.cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight())).getArea() / (sqrt(2 * PI)*this->sigma);
+			//this->overlap_cost += 1555200 * 5 * exp(-this->minimum_distance(s.second, ud.second.cursor_point.x, ud.second.cursor_point.y) / (2 * this->sigma*this->sigma)) / (sqrt(2 * PI)*this->sigma);
+			this->overlap_cost += a*exp(-b*this->minimum_distance(s.second, ud.second.cursor_point.x, ud.second.cursor_point.y));
+			//cout << this->overlap_cost << endl;
 			//this->overlap_cost += exp(pow(s.second.getIntersection(ofRectangle(ofClamp(ud.second.cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight())).getArea(), 2) / (2 * pow(sigma, 2))) / (sqrt(2 * PI)*sigma);
 
 			//this->overlap_cost += s.second.getIntersection(ofRectangle(ofClamp(ud.second.cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight())).getArea();
-
-			//if (s.second.intersects(ofRectangle(ofClamp(ud.second.cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) {
-			//	// もし矩形とカーソルの周辺矩形が重複していたら、コストを最大にしてコスト計算を終了
-			//	//this->overlap_cost += 50000000000;
-			//	cost = 0.0;
-			//	return;
-			//}
 		}
 
 		if (state.size() != 1) {
 			for (const auto& s2 : state) {
-				//this->overlap_cost += s.second.getIntersection(s2.second).getArea();
 				if (s.first != s2.first) {
-					this->overlap_cost += 1555200 * (atan(s.second.getIntersection(s2.second).getArea()) / PI + 0.5);
-					//this->overlap_cost += exp(pow(s.second.getIntersection(s2.second).getArea(), 2) / (2 * pow(this->sigma, 2))) / (sqrt(2 * PI)*this->sigma);
+					this->overlap_cost += l*s.second.getIntersection(s2.second).getArea();
 				}
 			}
-
-			//for (const auto& s2 : state) {
-			//	if (s.second == s2.second) { // 自分との重複面積は除く
-			//		continue;
-			//	}
-			//	if (s.second.intersects(s2.second)) { // もし重複していたら、コストを最大にしてコスト計算を終了
-			//		//this->overlap_cost += 50000000000;
-			//		cost = 0.0;
-			//		return;
-			//	}
-			//}
-
-			//this->overlap_cost -= exp(pow(s.second.getArea(), 2) / (2 * pow(this->sigma, 2))) / (sqrt(2 * PI)*this->sigma);
-
-			//this->overlap_cost -= s.second.getArea(); // 自分との重複面積分減らす
 		}
 
 		/* 矩形と顔との距離 */
 		for (const auto& td : this->hc->user_data) {
 			if (sub_windows.at(s.first).get_user_id() == td.first) {
-				//this->distance_cost = max(this->distance_cost, static_cast<double>((s.second.getCenter().x - td.second.transformed_face_point.x) * (s.second.getCenter().x - td.second.transformed_face_point.x) + (s.second.getCenter().y - td.second.transformed_face_point.y) * (s.second.getCenter().y - td.second.transformed_face_point.y)));
-				this->distance_cost = max(this->distance_cost, static_cast<double>(sqrt((s.second.getCenter().x - td.second.transformed_face_point.x) * (s.second.getCenter().x - td.second.transformed_face_point.x) + (s.second.getCenter().y - td.second.transformed_face_point.y) * (s.second.getCenter().y - td.second.transformed_face_point.y))));
+				//this->distance_cost = max(this->distance_cost, static_cast<double>(sqrt((s.second.getCenter().x - td.second.transformed_face_point.x) * (s.second.getCenter().x - td.second.transformed_face_point.x) + (s.second.getCenter().y - td.second.transformed_face_point.y) * (s.second.getCenter().y - td.second.transformed_face_point.y))));
+				this->distance_cost = max(this->distance_cost, static_cast<double>(ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x, td.second.transformed_face_point.y)));
 				continue;
 			}
 		}
 	}
 
-	//this->overlap_cost = exp(pow(this->overlap_cost, 2) / (2 * pow(this->sigma, 2))) / (sqrt(2 * PI)*this->sigma);
+	this->area_cost = -min_element(cbegin(state), cend(state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
 
-	this->area_cost = -min_element(begin(state), end(state), [](const pair<int, ofRectangle>& a, const pair<int, ofRectangle>& b) {return a.second.getArea() < b.second.getArea(); })->second.getArea();
+	cost += this->alpha*this->area_cost + this->beta*this->overlap_cost + this->gamma*this->distance_cost;
+}
 
-	cost += this->area_cost + this->overlap_cost + this->distance_cost;
+double SimulatedAnnealing::minimum_distance(const ofRectangle& r, const double x, const double y) const {
+	const double dx{ max(static_cast<double>(fabs(x - r.getCenter().x) - r.getWidth() / 2), 0.0) };
+	const double dy{ max(static_cast<double>(fabs(y - r.getCenter().y) - r.getHeight() / 2), 0.0) };
+
+	return dx*dx + dy*dy;
 }

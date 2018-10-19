@@ -27,14 +27,14 @@ HandCursor::HandCursor() {
 	thread frame_thread(&HandCursor::get_frame, this);
 	frame_thread.detach();
 
-	this->user_data[-100].alpha = 255;
-	this->user_data[-100].cursor_color = ofColor::orange;
-	this->user_data[-100].face_rect = Rect2d(200,200,200,200);
-	this->user_data[-100].cursor_point.x = 2937;
-	this->user_data[-100].cursor_point.y = 500;
-	this->user_data[-100].transformed_face_point.x = 200;
-	this->user_data[-100].transformed_face_point.y = 1500;
-	this->user_data[-100].state = STATE::ACTIVE;
+	//this->user_data[-100].alpha = 255;
+	//this->user_data[-100].cursor_color = ofColor::orange;
+	//this->user_data[-100].face_rect = Rect2d(200,200,200,200);
+	//this->user_data[-100].cursor_point.x = 2937;
+	//this->user_data[-100].cursor_point.y = 500;
+	//this->user_data[-100].transformed_face_point.x = 200;
+	//this->user_data[-100].transformed_face_point.y = 1500;
+	//this->user_data[-100].state = STATE::ACTIVE;
 
 	/* 動画撮影 */
 	//this->writer.open("hand_tracking_openPose2.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 13, Size(CAMERA_W, CAMERA_H), true);
@@ -45,7 +45,7 @@ void HandCursor::update() {
 	//frc.NewFrame();
 	//printf("fps : %lf\n", frc.GetFrameRate());
 
-	this->user_data[-100].latest_update_frame = this->frame_count;
+	//this->user_data[-100].latest_update_frame = this->frame_count;
 
 	/* 一定時間の間、情報が更新されていないユーザを削除する */
 	for (auto ite = begin(this->user_data); ite != end(this->user_data);) {
@@ -70,7 +70,7 @@ void HandCursor::update() {
 
 		long long int user_id{ this->decide_user_id(i) }; // user_idを決定
 
-		auto interaction_threshold{ (this->pose_key_points[RIGHT_SHOULDER_Y(i)] + this->pose_key_points[MIDDLE_HIP_Y(i)]) / 2 }; // 腰と右肩の中間点をインタラクションの基準点とする
+		auto interaction_threshold{ (this->pose_key_points[RIGHT_SHOULDER_Y(i)] + this->pose_key_points[RIGHT_HIP_Y(i)]) / 2 }; // 腰と右肩の中間点をインタラクションの基準点とする
 
 		if (this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] < interaction_threshold) {
 			// 右手と右肩が検出され、右手が腰と右肩の中間点より上であれば
@@ -250,12 +250,12 @@ void HandCursor::show_detect_window() {
 		//cv::rectangle(this->view_frame, Point(std::max(static_cast<int>(this->pose_key_points[RIGHT_EAR_X(i)]) - 256, 0), std::max(static_cast<int>(this->pose_key_points[RIGHT_EAR_Y(i)]) - 72, 0)), Point(std::min(static_cast<int>(this->pose_key_points[RIGHT_EAR_X(i)]), CAMERA_W), std::min(static_cast<int>(this->pose_key_points[RIGHT_EAR_Y(i)]) + 72, CAMERA_H)), this->CV_RED, 10);
 	});
 
-	//for (const auto& t : this->user_data) {
-	//	cv::rectangle(this->view_frame, t.second.operation_area, this->CV_RED, 10);
-	//	//cout << t.second.operation_area.x << " " << t.second.operation_area.y << " " << t.second.operation_area.width << " " << t.second.operation_area.height << endl;
-	//	//cv::rectangle(img, Point(t.second.hand.left(), t.second.hand.top()), Point(t.second.hand.right(), t.second.hand.bottom()), this->CV_RED, 5);
-	//	//cv::rectangle(img, t.second.face_rect, this->CV_BLUE, 10);
-	//}
+	for (const auto& t : this->user_data) {
+		cv::rectangle(this->view_frame, t.second.operation_area, this->CV_RED, 10);
+		//cout << t.second.operation_area.x << " " << t.second.operation_area.y << " " << t.second.operation_area.width << " " << t.second.operation_area.height << endl;
+		//cv::rectangle(img, Point(t.second.hand.left(), t.second.hand.top()), Point(t.second.hand.right(), t.second.hand.bottom()), this->CV_RED, 5);
+		//cv::rectangle(img, t.second.face_rect, this->CV_BLUE, 10);
+	}
 
 	imshow("detect window", this->view_frame);
 

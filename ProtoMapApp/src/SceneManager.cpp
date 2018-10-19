@@ -21,8 +21,8 @@ void SceneManager::setup(HandCursor* const hc) {
 
 	this->sa.setup(this->hc, &this->sub_windows);
 
-	//this->best_cost_plotter.set_window_position(1920, 0);
-	//this->best_cost_plotter.set_range(-5000, 5000);
+	//this->cost_change_plotter.set_window_position(1920, 0);
+	//this->cost_change_plotter.set_range(-10000, 10000);
 }
 
 void SceneManager::update() {
@@ -30,15 +30,7 @@ void SceneManager::update() {
 		this->optimize(); // 最適化
 	}
 
-	//if (this->comparative_cost > this->best_cost) {
-	//	this->best_cost_plotter.set_line_color(ofColor::lightPink);
-	//	//this->best_cost_plotter.update(this->comparative_cost - this->best_cost);
-	//}
-	//else {
-	//	this->best_cost_plotter.set_line_color(ofColor::lightBlue);
-	//}
-	//this->best_cost_plotter.update(this->comparative_cost - this->best_cost);
-	//this->best_cost_plotter.update(this->best_cost);
+	//this->cost_change_plotter.update(this->comparative_cost - this->best_cost);
 
 	/* サブウィンドウの更新 */
 	/* いなくなったユーザのサブウィンドウを削除 */
@@ -144,7 +136,7 @@ void SceneManager::draw() {
 
 	this->draw_cursor(); // 手カーソルの描画
 
-	//this->best_cost_plotter.draw();
+	//this->cost_change_plotter.draw();
 }
 
 void SceneManager::optimize() {
@@ -212,39 +204,6 @@ void SceneManager::draw_cursor() {
 		ofSetColor(ud.second.cursor_color, ud.second.alpha);
 		ofDrawCircle(ud.second.cursor_point.x, ud.second.cursor_point.y, 55);
 	}
-}
-
-bool SceneManager::is_intersect_window_pointer() {
-	// サブウィンドウとポインタの周辺領域が重複するかどうかを調べる
-	for (const auto& sw : this->sub_windows) {
-		for (const auto& ud : this->hc->user_data) {
-			if (ud.second.state == HandCursor::STATE::INACTIVE) {
-				continue;
-			}
-			if (sw.second.get_rect().intersects(ofRectangle(ofClamp(ud.second.cursor_point.x - USER_CERTAIN_WINDOW.getX(), 0, DISPLAY_W), ofClamp(ud.second.cursor_point.y - USER_CERTAIN_WINDOW.getY(), 0, DISPLAY_H), USER_CERTAIN_WINDOW.getWidth(), USER_CERTAIN_WINDOW.getHeight()))) {
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-bool SceneManager::is_intersect_window_window() {
-	// サブウィンドウ同士が重複するかどうかを調べる
-	for (const auto& sw1 : this->sub_windows) {
-		for (const auto& sw2 : this->sub_windows) {
-			if (sw1.first == sw2.first) {
-				continue;
-			}
-
-			if (sw1.second.get_rect().intersects(sw2.second.get_rect())) {
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 SceneManager::~SceneManager() {

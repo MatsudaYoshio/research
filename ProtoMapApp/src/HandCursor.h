@@ -33,7 +33,7 @@
 #define RIGHT_WRIST_Y(i) {i,4,1}
 #define LEFT_SHOULDER_X(i) {i,5,0}
 #define LEFT_SHOULDER_Y(i) {i,5,1}
-#define MIDDLE_HIP_Y(i) {i,8,1}
+#define RIGHT_HIP_Y(i) {i,8,1}
 #define RIGHT_EAR_X(i) {i,16,0}
 #define RIGHT_EAR_Y(i) {i,16,1}
 #define LEFT_EAR_X(i) {i,17,0}
