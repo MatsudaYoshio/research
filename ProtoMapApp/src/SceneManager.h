@@ -18,7 +18,7 @@ private:
 	HandCursor* hc;
 	MenuBar mb;
 	SimulatedAnnealing sa;
-	//HistoryPlotterSecondWindow cost_change_plotter{ "cost change", ofRectangle(0,0,1920,1080), 100 };
+	HistoryPlotterSecondWindow cost_change_plotter{ "cost change", ofRectangle(0,0,1024,768), 150 };
 
 	const ofImage map_image{ "C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/kyoto_bg.png" };
 	//const ofImage face_image{ "C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/happy_smiley.png" };

@@ -7,12 +7,10 @@
 #include "math.h"
 #include "HandCursor.h"
 #include "SubWindow.h"
-#include "HistoryPlotterSecondWindow.h"
 
 class SimulatedAnnealing {
 private:
 	HandCursor* hc;
-	//HistoryPlotterSecondWindow cost_plotter{ "cost function", ofRectangle(0,0,1920,1080), 50 };
 
 	unordered_map<long long int, SubWindow>* sub_windows;
 
@@ -20,9 +18,8 @@ private:
 	static constexpr double sigma{ 150 };
 	static constexpr double k{ 1000000 };
 	static constexpr double b{ 1 / (2 * sigma*sigma) };
-	static constexpr double l{ 1555200 };
 	static constexpr double alpha{ 1 };
-	static constexpr double beta{ 1 };
+	static constexpr double beta{ 1555200 };
 	static constexpr double gamma{ 10 };
 
 	/* óêêî */

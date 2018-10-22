@@ -21,8 +21,9 @@ void SceneManager::setup(HandCursor* const hc) {
 
 	this->sa.setup(this->hc, &this->sub_windows);
 
-	//this->cost_change_plotter.set_window_position(1920, 0);
-	//this->cost_change_plotter.set_range(-10000, 10000);
+	this->cost_change_plotter.set_line_color(ofColor::lightGreen);
+	this->cost_change_plotter.set_window_position(DISPLAY_W - 1024, 0);
+	this->cost_change_plotter.set_range(-10000, 10000);
 }
 
 void SceneManager::update() {
@@ -30,7 +31,7 @@ void SceneManager::update() {
 		this->optimize(); // 最適化
 	}
 
-	//this->cost_change_plotter.update(this->comparative_cost - this->best_cost);
+	this->cost_change_plotter.update(this->comparative_cost - this->best_cost);
 
 	/* サブウィンドウの更新 */
 	/* いなくなったユーザのサブウィンドウを削除 */
@@ -136,7 +137,7 @@ void SceneManager::draw() {
 
 	this->draw_cursor(); // 手カーソルの描画
 
-	//this->cost_change_plotter.draw();
+	this->cost_change_plotter.draw();
 }
 
 void SceneManager::optimize() {
@@ -162,7 +163,7 @@ void SceneManager::optimize() {
 		for (const auto& id : this->sub_windows) {
 			this->sub_windows[id.first].set_rect(this->best_rects[id.first]);
 		}
-		
+
 		this->previous_rects = move(this->best_rects); // 状態(パラメータ)を更新
 	}
 }
@@ -179,10 +180,10 @@ void SceneManager::make_sub_window(pair<param::CONTENT_ID, long long int>& id) {
 		return;
 	}
 
-	const auto ite{ find_if(begin(this->sub_windows), end(this->sub_windows),
+	const auto ite{ find_if(cbegin(this->sub_windows), cend(this->sub_windows),
 		[this, id](const auto& x) {return x.second.get_user_id() == id.second; }
 	) };
-	if (ite != end(this->sub_windows)) { // そのユーザがすでにサブウィンドウを生成していたら
+	if (ite != cend(this->sub_windows)) { // そのユーザがすでにサブウィンドウを生成していたら
 		/* そのサブウィンドウを削除する */
 		this->sub_windows.erase(ite->first);
 	}
