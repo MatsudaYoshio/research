@@ -21,9 +21,9 @@ void SceneManager::setup(HandCursor* const hc) {
 
 	this->sa.setup(this->hc, &this->sub_windows);
 
-	this->cost_change_plotter.set_line_color(ofColor::lightGreen);
-	this->cost_change_plotter.set_window_position(DISPLAY_W - 1024, 0);
-	this->cost_change_plotter.set_range(-10000, 10000);
+	//this->cost_change_plotter.set_line_color(ofColor::lightGreen);
+	//this->cost_change_plotter.set_window_position(DISPLAY_W - 1024, 0);
+	//this->cost_change_plotter.set_range(-10000, 10000);
 }
 
 void SceneManager::update() {
@@ -31,7 +31,7 @@ void SceneManager::update() {
 		this->optimize(); // 最適化
 	}
 
-	this->cost_change_plotter.update(this->comparative_cost - this->best_cost);
+	//this->cost_change_plotter.update(this->comparative_cost - this->best_cost);
 
 	/* サブウィンドウの更新 */
 	/* いなくなったユーザのサブウィンドウを削除 */
@@ -137,7 +137,7 @@ void SceneManager::draw() {
 
 	this->draw_cursor(); // 手カーソルの描画
 
-	this->cost_change_plotter.draw();
+	//this->cost_change_plotter.draw();
 }
 
 void SceneManager::optimize() {

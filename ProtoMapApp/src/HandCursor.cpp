@@ -27,14 +27,14 @@ HandCursor::HandCursor() {
 	thread frame_thread(&HandCursor::get_frame, this);
 	frame_thread.detach();
 
-	this->user_data[-100].alpha = 255;
-	this->user_data[-100].cursor_color = ofColor::orange;
-	this->user_data[-100].face_rect = Rect2d(200,200,200,200);
-	this->user_data[-100].cursor_point.x = 2937;
-	this->user_data[-100].cursor_point.y = 500;
-	this->user_data[-100].transformed_face_point.x = 200;
-	this->user_data[-100].transformed_face_point.y = 1500;
-	this->user_data[-100].state = STATE::ACTIVE;
+	//this->user_data[-100].alpha = 255;
+	//this->user_data[-100].cursor_color = ofColor::orange;
+	//this->user_data[-100].face_rect = Rect2d(200,200,200,200);
+	//this->user_data[-100].cursor_point.x = 2937;
+	//this->user_data[-100].cursor_point.y = 500;
+	//this->user_data[-100].transformed_face_point.x = 200;
+	//this->user_data[-100].transformed_face_point.y = 1500;
+	//this->user_data[-100].state = STATE::ACTIVE;
 
 	/* 動画撮影 */
 	//this->writer.open("hand_tracking_openPose2.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 13, Size(CAMERA_W, CAMERA_H), true);
@@ -42,10 +42,10 @@ HandCursor::HandCursor() {
 
 void HandCursor::update() {
 	/* fpsを表示 */
-	//frc.NewFrame();
-	//printf("fps : %lf\n", frc.GetFrameRate());
+	frc.NewFrame();
+	printf("fps : %lf\n", frc.GetFrameRate());
 
-	this->user_data[-100].latest_update_frame = this->frame_count;
+	//this->user_data[-100].latest_update_frame = this->frame_count;
 
 	/* 一定時間の間、情報が更新されていないユーザを削除する */
 	for (auto ite = begin(this->user_data); ite != end(this->user_data);) {
@@ -70,7 +70,7 @@ void HandCursor::update() {
 
 		long long int user_id{ this->decide_user_id(i) }; // user_idを決定
 
-		auto interaction_threshold{ (this->pose_key_points[RIGHT_SHOULDER_Y(i)] + this->pose_key_points[RIGHT_HIP_Y(i)]) / 2 }; // 腰と右肩の中間点をインタラクションの基準点とする
+		auto interaction_threshold{ (this->pose_key_points[RIGHT_SHOULDER_Y(i)] + this->pose_key_points[MIDDLE_HIP_Y(i)]) / 2 }; // 腰と右肩の中間点をインタラクションの基準点とする
 
 		if (this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] < interaction_threshold) {
 			// 右手と右肩が検出され、右手が腰と右肩の中間点より上であれば

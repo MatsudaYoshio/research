@@ -22,7 +22,37 @@
 #include "OneEuroFilter.h"
 #include "BodyPartExtractor.h"
 
-/* OpenPoseの骨格点参照のための定義 */
+// Result for BODY_25 (25 body parts consisting of COCO + foot)
+// const std::map<unsigned int, std::string> POSE_BODY_25_BODY_PARTS {
+//     {0,  "Nose"},
+//     {1,  "Neck"},
+//     {2,  "RShoulder"},
+//     {3,  "RElbow"},
+//     {4,  "RWrist"},
+//     {5,  "LShoulder"},
+//     {6,  "LElbow"},
+//     {7,  "LWrist"},
+//     {8,  "MidHip"},
+//     {9,  "RHip"},
+//     {10, "RKnee"},
+//     {11, "RAnkle"},
+//     {12, "LHip"},
+//     {13, "LKnee"},
+//     {14, "LAnkle"},
+//     {15, "REye"},
+//     {16, "LEye"},
+//     {17, "REar"},
+//     {18, "LEar"},
+//     {19, "LBigToe"},
+//     {20, "LSmallToe"},
+//     {21, "LHeel"},
+//     {22, "RBigToe"},
+//     {23, "RSmallToe"},
+//     {24, "RHeel"},
+//     {25, "Background"}
+// };
+
+/* OpenPoseの骨格点参照のための定義（上記を参考） */
 #define NOSE_X(i) {i,0,0}
 #define NOSE_Y(i) {i,0,1}
 #define NECK_X(i) {i,1,0}
@@ -33,11 +63,11 @@
 #define RIGHT_WRIST_Y(i) {i,4,1}
 #define LEFT_SHOULDER_X(i) {i,5,0}
 #define LEFT_SHOULDER_Y(i) {i,5,1}
-#define RIGHT_HIP_Y(i) {i,8,1}
-#define RIGHT_EAR_X(i) {i,16,0}
-#define RIGHT_EAR_Y(i) {i,16,1}
-#define LEFT_EAR_X(i) {i,17,0}
-#define LEFT_EAR_Y(i) {i,17,1}
+#define MIDDLE_HIP_Y(i) {i,8,1}
+#define RIGHT_EAR_X(i) {i,17,0}
+#define RIGHT_EAR_Y(i) {i,17,1}
+#define LEFT_EAR_X(i) {i,18,0}
+#define LEFT_EAR_Y(i) {i,18,1}
 
 class HandCursor {
 public:
@@ -64,12 +94,13 @@ private:
 	static constexpr long long int new_user_id{ 0 };
 	static constexpr double operation_width_rate{ 1000 };
 	static constexpr double operation_heght_rate{ 1000 };
-	static constexpr double moving_rate{ 1.4 };
+	static constexpr double moving_rate{ 1.45 };
 	static constexpr double filter_freq{ 120 };
 	// mincutoff: 0.00129    beta: 0.00129
 	// mincutoff: 0.00000065 beta: 0.0038
-	static constexpr double filter_mincutoff{ 0.00000065 };
-	static constexpr double filter_beta{ 0.0038 };
+	// mincutoff: 0.000001 beta: 0.004
+	static constexpr double filter_mincutoff{ 0.000001 };
+	static constexpr double filter_beta{ 0.004 };
 	static const double display_operation_width_ratio;
 	static const double display_operation_height_ratio;
 	static const cv::Point invalid_point, display_center_point;

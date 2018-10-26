@@ -5,8 +5,8 @@ using namespace op;
 using namespace cv;
 using namespace param;
 
-const string BodyPartExtractor::MODEL_POSE{ "COCO" };
-const string BodyPartExtractor::MODEL_FOLDER{ "C:/openpose-1.2.1/models/" };
+const string BodyPartExtractor::MODEL_POSE{ "BODY_25" };
+const string BodyPartExtractor::MODEL_FOLDER{ "C:/openpose-1.4.0/models/" };
 const string BodyPartExtractor::NET_RESOLUTION{ "-1x256" };
 const string BodyPartExtractor::OUTPUT_RESOLUTION{ "-1x-1" };
 
