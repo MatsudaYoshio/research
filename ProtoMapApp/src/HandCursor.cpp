@@ -42,8 +42,8 @@ HandCursor::HandCursor() {
 
 void HandCursor::update() {
 	/* fps‚ð•\Ž¦ */
-	frc.NewFrame();
-	printf("fps : %lf\n", frc.GetFrameRate());
+	//frc.NewFrame();
+	//printf("fps : %lf\n", frc.GetFrameRate());
 
 	//this->user_data[-100].latest_update_frame = this->frame_count;
 

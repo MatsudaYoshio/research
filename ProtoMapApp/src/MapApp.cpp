@@ -52,7 +52,7 @@ void MapApp::initialize_image() {
 	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::TAKASHIMAYA)].load("C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/takashimaya.jpg");
 	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::YAMASHITA)].load("C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/yamashita.jpg");
 
-	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::ALMONT)].load("C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/almont.jpg");
+	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::ALMONT)].load("C:/of_v0.9.8_vs_release/apps/myApps/ProtoMapApp/fig/almont_scene.jpg");
 	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::SAKURA_HONGANJI)].load("C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/sakura_honganji.jpg");
 	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::KYOSTAY_IROHA_TOJI)].load("C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/kyostay_iroha_toji.jpg");
 	CONTENT_IMAGE[static_cast<int>(CONTENT_ID::HYATT_REGENCY)].load("C:/of_v0.9.8_vs_release/apps/myApps/NewMapApp/fig/hyatt_regency.jpg");
