@@ -89,7 +89,7 @@ private:
 	/* íËêî */
 	static constexpr int resize_size{ 80 };
 	static constexpr double default_face_size{ 60 };
-	static constexpr double face_error{ 150 };
+	static constexpr double face_error{ 100 };
 	static constexpr int cursor_color_num{ 10 };
 	static constexpr long long int new_user_id{ 0 };
 	static constexpr double operation_width_rate{ 1000 };
