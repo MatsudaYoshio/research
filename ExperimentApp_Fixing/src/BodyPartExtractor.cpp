@@ -7,7 +7,7 @@ using namespace param;
 
 const string BodyPartExtractor::MODEL_POSE{ "BODY_25" };
 const string BodyPartExtractor::MODEL_FOLDER{ "C:/openpose-1.4.0/models/" };
-const string BodyPartExtractor::NET_RESOLUTION{ "-1x256" };
+const string BodyPartExtractor::NET_RESOLUTION{ "-1x272" };
 const string BodyPartExtractor::OUTPUT_RESOLUTION{ "-1x-1" };
 
 const op::Point<int> BodyPartExtractor::output_size{ flagsToPoint(BodyPartExtractor::OUTPUT_RESOLUTION, BodyPartExtractor::OUTPUT_RESOLUTION) };

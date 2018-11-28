@@ -144,9 +144,9 @@ void SceneManager::make_sub_window(pair<param::CONTENT_ID, long long int>& id) {
 
 void SceneManager::draw_cursor() {
 	for (const auto& ud : this->hc->user_data) {
-		if (ud.second.state == HandCursor::STATE::INACTIVE) {
-			continue;
-		}
+		//if (ud.second.state == HandCursor::STATE::INACTIVE) {
+		//	continue;
+		//}
 
 		ofNoFill();
 		ofSetLineWidth(60);

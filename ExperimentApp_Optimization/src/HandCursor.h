@@ -63,6 +63,9 @@
 #define RIGHT_WRIST_Y(i) {i,4,1}
 #define LEFT_SHOULDER_X(i) {i,5,0}
 #define LEFT_SHOULDER_Y(i) {i,5,1}
+#define LEFT_WRIST_X(i) {i,7,0}
+#define LEFT_WRIST_Y(i) {i,7,1}
+#define MIDDLE_HIP_X(i) {i,8,0}
 #define MIDDLE_HIP_Y(i) {i,8,1}
 #define RIGHT_EAR_X(i) {i,17,0}
 #define RIGHT_EAR_Y(i) {i,17,1}
@@ -72,9 +75,11 @@
 class HandCursor {
 public:
 	const enum class STATE { INACTIVE, OVERLAP, ACTIVE };
+	const enum class USING_HAND { RIGHT, LEFT };
 private:
 	using user_data_type = struct {
 		STATE state;
+		USING_HAND hand;
 		long long int start_frame, latest_update_frame;
 		cv::Rect2d face_rect, operation_area;
 		cv::Point face_point, initial_point;
@@ -99,7 +104,7 @@ private:
 	// mincutoff: 0.00129    beta: 0.00129
 	// mincutoff: 0.00000065 beta: 0.0038
 	// mincutoff: 0.000001 beta: 0.004
-	static constexpr double filter_mincutoff{ 0.000001 };
+	static constexpr double filter_mincutoff{ 0.0000005 };
 	static constexpr double filter_beta{ 0.004 };
 	static const double display_operation_width_ratio;
 	static const double display_operation_height_ratio;
@@ -110,6 +115,7 @@ private:
 	static const cv::Scalar CV_GREEN;
 	static const cv::Scalar CV_ORANGE;
 	static const cv::Scalar CV_PURPLE;
+	static const cv::Scalar CV_YELLOW;
 
 	std::array<bool, cursor_color_num> cursor_color_state;
 
@@ -133,7 +139,9 @@ private:
 
 	double estimate_face_size(int personal_id) const;
 	int decide_user_id(int personal_id) const;
-	void init_user_data(int personal_id, double face_size);
+	bool is_start_interaction_by_right_hand(int personal_id) const;
+	bool is_start_interaction_by_left_hand(int personal_id) const;
+	void init_user_data(int personal_id, double face_size, USING_HAND hand);
 	void renew_user_data(int personal_id, double face_size, long long int user_id);
 	void get_frame();
 	void transform_point(const cv::Point& src_point, cv::Point& dst_point) const;

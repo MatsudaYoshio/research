@@ -19,6 +19,7 @@ const Scalar HandCursor::CV_BLUE{ Scalar(255, 0, 0) };
 const Scalar HandCursor::CV_GREEN{ Scalar(0, 255, 0) };
 const Scalar HandCursor::CV_ORANGE{ Scalar(76, 183, 255) };
 const Scalar HandCursor::CV_PURPLE{ Scalar(204, 0, 196) };
+const Scalar HandCursor::CV_YELLOW{ Scalar(255, 255, 0) };
 
 HandCursor::HandCursor() {
 	this->image_buffer.emplace_front(this->cap.get_image()); // 最初の一枚を取り込んでおく
@@ -70,20 +71,23 @@ void HandCursor::update() {
 
 		long long int user_id{ this->decide_user_id(i) }; // user_idを決定
 
-		auto interaction_threshold{ (this->pose_key_points[RIGHT_SHOULDER_Y(i)] + this->pose_key_points[MIDDLE_HIP_Y(i)]) / 2 }; // 腰と右肩の中間点をインタラクションの基準点とする
-
-		if (this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] < interaction_threshold) {
-			// 右手と右肩が検出され、右手が腰と右肩の中間点より上であれば
-			if (user_id == this->new_user_id) { // 新しいユーザであれば
-				this->init_user_data(i, face_size); // ユーザデータの初期化
+		if (user_id == this->new_user_id) { // 新しいユーザであれば
+			if (this->is_start_interaction_by_right_hand(i)) { // 右手を上げていれば
+				this->init_user_data(i, face_size, USING_HAND::RIGHT); // 右手でインタラクションを開始したとして、ユーザデータの初期化
+			}
+			else if (this->is_start_interaction_by_left_hand(i)) { // 左手を上げていれば
+				this->init_user_data(i, face_size, USING_HAND::LEFT); // 左手でインタラクションを開始したとして、ユーザデータの初期化
+			}
+		}
+		else { // 既に操作しているユーザであれば
+			if (this->user_data[user_id].hand == USING_HAND::RIGHT && !this->is_start_interaction_by_right_hand(i)) { // 右手で操作していたが右手が上がっていなければ
+				this->user_data[user_id].state = STATE::INACTIVE;
+			}
+			else if (this->user_data[user_id].hand == USING_HAND::LEFT && !this->is_start_interaction_by_left_hand(i)) { // 左手で操作していたが左手が上がっていなければ
+				this->user_data[user_id].state = STATE::INACTIVE;
 			}
 			else {
 				this->renew_user_data(i, face_size, user_id); // ユーザデータの更新
-			}
-		}
-		else {
-			if (user_id != this->new_user_id) {
-				this->user_data[user_id].state = STATE::INACTIVE;
 			}
 		}
 	}
@@ -137,13 +141,22 @@ int HandCursor::decide_user_id(const int personal_id) const {
 	return user_id;
 }
 
-void HandCursor::init_user_data(const int personal_id, const double face_size) {
+bool HandCursor::is_start_interaction_by_right_hand(const int personal_id) const {
+	return this->pose_key_points[RIGHT_WRIST_Y(personal_id)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(personal_id)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(personal_id)] < (this->pose_key_points[RIGHT_SHOULDER_Y(personal_id)] + this->pose_key_points[MIDDLE_HIP_Y(personal_id)]) / 2;
+}
+
+bool HandCursor::is_start_interaction_by_left_hand(int personal_id) const {
+	return this->pose_key_points[LEFT_WRIST_Y(personal_id)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(personal_id)] != 0.0 && this->pose_key_points[LEFT_WRIST_Y(personal_id)] < (this->pose_key_points[LEFT_SHOULDER_Y(personal_id)] + this->pose_key_points[MIDDLE_HIP_Y(personal_id)]) / 2;
+}
+
+void HandCursor::init_user_data(const int personal_id, const double face_size, USING_HAND hand) {
 	const int cursor_color_id = distance(cbegin(this->cursor_color_state), find_if_not(cbegin(this->cursor_color_state), cend(this->cursor_color_state), [](auto x) {return x; })); // 未使用の色からカーソルの色を選ぶ
 	this->cursor_color_state[cursor_color_id] = true; // 選んだカーソルの色を使用済みとする
 
 	/* ユーザの情報をできるだけ詰めて初期化 */
 	this->user_data.emplace(this->user_id, user_data_type{
 		STATE::ACTIVE,
+			hand,
 			this->frame_count,
 			this->frame_count,
 			Rect2d(this->pose_key_points[NOSE_X(personal_id)] - face_size / 2, this->pose_key_points[NOSE_Y(personal_id)] - face_size / 2, face_size, face_size),
@@ -157,6 +170,12 @@ void HandCursor::init_user_data(const int personal_id, const double face_size) {
 			this->invalid_point,
 			this->invalid_point,
 	});
+
+	if (hand == USING_HAND::LEFT) {
+		auto center_diff{ this->pose_key_points[NECK_X(personal_id)] - this->user_data[this->user_id].initial_point.x };
+		this->user_data[this->user_id].initial_point.x += 2 * center_diff;
+		this->user_data[this->user_id].operation_area.x += 2 * center_diff;
+	}
 
 	/* フィルタの初期化 */
 	this->user_data[this->user_id].dx_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
@@ -191,8 +210,15 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 	this->user_data[user_id].face_point.y = this->pose_key_points[NOSE_Y(personal_id)];
 
 	/* 初期座標からの差を計算 */
-	this->dx = this->pose_key_points[RIGHT_WRIST_X(personal_id)] - this->user_data[user_id].initial_point.x;
-	this->dy = this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - this->user_data[user_id].initial_point.y;
+	if (this->user_data[user_id].hand == USING_HAND::RIGHT) {
+		this->dx = this->pose_key_points[RIGHT_WRIST_X(personal_id)] - this->user_data[user_id].initial_point.x;
+		this->dy = this->pose_key_points[RIGHT_WRIST_Y(personal_id)] - this->user_data[user_id].initial_point.y;
+	}
+	else {
+		this->dx = this->pose_key_points[LEFT_WRIST_X(personal_id)] - this->user_data[user_id].initial_point.x;
+		this->dy = this->pose_key_points[LEFT_WRIST_Y(personal_id)] - this->user_data[user_id].initial_point.y;
+	}
+
 
 	this->transform_point(this->user_data[user_id].face_point, this->user_data[user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
 
@@ -229,6 +255,9 @@ void HandCursor::show_detect_window() {
 		if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
 			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 12, this->CV_RED, -1);
 		}
+		if (this->pose_key_points[LEFT_WRIST_X(i)] != 0.0 && this->pose_key_points[LEFT_WRIST_Y(i)] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_WRIST_X(i)], this->pose_key_points[LEFT_WRIST_Y(i)]), 12, this->CV_RED, -1);
+		}
 		if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
 			cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 12, this->CV_BLUE, -1);
 		}
@@ -246,6 +275,9 @@ void HandCursor::show_detect_window() {
 		}
 		if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0) {
 			cv::circle(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), 12, this->CV_PURPLE, -1);
+		}
+		if (this->pose_key_points[MIDDLE_HIP_X(i)] != 0.0 && this->pose_key_points[MIDDLE_HIP_Y(i)] != 0.0) {
+			cv::circle(this->view_frame, Point(this->pose_key_points[MIDDLE_HIP_X(i)], this->pose_key_points[MIDDLE_HIP_Y(i)]), 12, this->CV_YELLOW, -1);
 		}
 		//cv::rectangle(this->view_frame, Point(std::max(static_cast<int>(this->pose_key_points[RIGHT_EAR_X(i)]) - 256, 0), std::max(static_cast<int>(this->pose_key_points[RIGHT_EAR_Y(i)]) - 72, 0)), Point(std::min(static_cast<int>(this->pose_key_points[RIGHT_EAR_X(i)]), CAMERA_W), std::min(static_cast<int>(this->pose_key_points[RIGHT_EAR_Y(i)]) + 72, CAMERA_H)), this->CV_RED, 10);
 	});
