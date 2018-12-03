@@ -38,7 +38,7 @@ HandCursor::HandCursor() {
 	//this->user_data[-100].state = STATE::ACTIVE;
 
 	/* “®‰æŽB‰e */
-	//this->writer.open("hand_tracking_openPose2.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 13, Size(CAMERA_W, CAMERA_H), true);
+	//this->writer.open("hand_tracking_openPose3.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 18, Size(CAMERA_W, CAMERA_H), true);
 }
 
 void HandCursor::update() {

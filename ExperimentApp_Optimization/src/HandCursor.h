@@ -104,7 +104,7 @@ private:
 	// mincutoff: 0.00129    beta: 0.00129
 	// mincutoff: 0.00000065 beta: 0.0038
 	// mincutoff: 0.000001 beta: 0.004
-	static constexpr double filter_mincutoff{ 0.0000005 };
+	static constexpr double filter_mincutoff{ 0.00000065 };
 	static constexpr double filter_beta{ 0.004 };
 	static const double display_operation_width_ratio;
 	static const double display_operation_height_ratio;
