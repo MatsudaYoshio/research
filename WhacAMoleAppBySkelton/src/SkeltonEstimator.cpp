@@ -30,7 +30,7 @@ void SkeltonEstimator::update() {
 	this->body_part_extractor(this->raw_pose_key_points, this->image_buffer.front()); // openPoseによる骨格推定(結果をraw_pose_key_pointsに保存)
 	this->transform_points(); // 骨格点をディスプレイ座標に変換
 
-	//this->show_detect_window(); // 動作確認用のウィンドウを表示
+	this->show_detect_window(); // 動作確認用のウィンドウを表示
 }
 
 void SkeltonEstimator::exit() {
@@ -48,7 +48,7 @@ void SkeltonEstimator::show_detect_window() {
 
 	const int people_num{ this->raw_pose_key_points.getSize(0) }; // 検出された人数
 	Concurrency::parallel_for(0, people_num, [&](int i) {
-		Concurrency::parallel_for(0, 18, [&](int j) {
+		Concurrency::parallel_for(0, BODY25_KEY_POINTS_NUM, [&](int j) {
 			if (this->raw_pose_key_points[{i, j, 0}] != 0.0 && this->raw_pose_key_points[{i, j, 1}] != 0.0) {
 				cv::circle(this->view_frame, Point(this->raw_pose_key_points[{i, j, 0}], this->raw_pose_key_points[{i, j, 1}]), 12, this->CV_RED, -1);
 			}
@@ -66,7 +66,7 @@ void SkeltonEstimator::transform_points() {
 
 	this->people_num = this->raw_pose_key_points.getSize(0);
 	for (int i = 0; i < this->people_num; ++i) {
-		for (int j = 0; j < COCO_KEY_POINTS_NUM; ++j) {
+		for (int j = 0; j < BODY25_KEY_POINTS_NUM; ++j) {
 			if (this->raw_pose_key_points[{ i, j, 0 }] != 0.0 && this->raw_pose_key_points[{ i, j, 1 }] != 0.0) {
 				this->transformed_key_points.emplace(make_pair(i, j), ofPoint(DISPLAY_WIDTH - RESOLUTION_RATIO_WIDTH*this->raw_pose_key_points[{ i, j, 0 }], RESOLUTION_RATIO_HEIGHT*this->raw_pose_key_points[{ i, j, 1 }]));
 			}

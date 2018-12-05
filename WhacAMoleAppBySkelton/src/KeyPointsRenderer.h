@@ -4,6 +4,8 @@
 #ifndef ___Class_KeyPointsRenderer
 #define ___Class_KeyPointsRenderer
 
+#define _USE_MATH_DEFINES
+
 #include <openpose/core/headers.hpp>
 
 #include "ofMain.h"
@@ -12,14 +14,14 @@
 
 class KeyPointsRenderer {
 private:
-	static constexpr int COCO_key_points_num{ 18 }; // openPose‚ÌCOCOƒ‚ƒfƒ‹‚ÌœŠi“_‚Ì”
-	static constexpr int COCO_key_points_pairs_num{ 17 }; // openPose‚ÌCOCOƒ‚ƒfƒ‹‚Ìi•`‰æ‚·‚éœŠi‚Ìü•ª‚Ì‚½‚ß‚ÌjœŠi“_‚ÌƒyƒA‚Ì”
+	static constexpr int BODY25_key_points_num{ 25 }; // openPose‚ÌBODY25ƒ‚ƒfƒ‹‚ÌœŠi“_‚Ì”
+	static constexpr int BODY25_key_points_pairs_num{ 24 }; // openPose‚ÌBODY25ƒ‚ƒfƒ‹‚Ìi•`‰æ‚·‚éœŠi‚Ìü•ª‚Ì‚½‚ß‚ÌjœŠi“_‚ÌƒyƒA‚Ì”
 	static constexpr int point_size{ 20 }; // •`‰æ‚·‚éœŠi“_‚Ì‘å‚«‚³i‰~‚Ì”¼Œaj
-	static constexpr int line_size{ 20 }; // •`‰æ‚·‚éœŠi‚Ìü•ª‚Ì‘¾‚³
+	static constexpr int line_size = point_size*0.8; // •`‰æ‚·‚éœŠi‚Ìü•ª‚Ì‘¾‚³
 
-	static const array<pair<bool, ofColor>, COCO_key_points_num> points_state; // œŠi“_‚Ì•`‰æİ’è
-	static const array<pair<bool, ofColor>, COCO_key_points_pairs_num> lines_state; // œŠi‚Ìü•ª‚Ì•`‰æİ’è
-	static const array<pair<int, int>, COCO_key_points_pairs_num> key_points_pairs; // •`‰æ‚·‚éœŠi‚Ìü•ª‚Ì‚½‚ß‚ÌjœŠi“_‚ÌƒyƒA
+	static const array<pair<bool, ofColor>, BODY25_key_points_num> points_state; // œŠi“_‚Ì•`‰æİ’è
+	static const array<pair<bool, ofColor>, BODY25_key_points_pairs_num> lines_state; // œŠi‚Ìü•ª‚Ì•`‰æİ’è
+	static const array<pair<int, int>, BODY25_key_points_pairs_num> key_points_pairs; // •`‰æ‚·‚éœŠi‚Ìü•ª‚Ì‚½‚ß‚ÌjœŠi“_‚ÌƒyƒA
 	
 	int people_num; // ŒŸo‚³‚ê‚½l”
 

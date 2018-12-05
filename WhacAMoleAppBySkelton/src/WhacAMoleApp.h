@@ -8,7 +8,7 @@
 #include "KeyPointsRenderer.h"
 #include "Mole.h"
 
-/* OpenPoseの骨格点参照のための定義(COCOモデル) */
+/* OpenPoseの骨格点参照のための定義(BODY25モデル) */
 #define NOSE 0
 #define NECK 1
 #define RIGHT_SHOULDER 2
@@ -17,17 +17,23 @@
 #define LEFT_SHOULDER 5
 #define LEFT_ELBOW 6
 #define LEFT_WRIST 7
-#define RIGHT_HIP 8
-#define RIGHT_KNEE 9
-#define RIGHT_ANKLE 10
-#define LEFT_HIP 11
-#define LEFT_KNEE 12
-#define LEFT_ANKLE 13
-#define RIGHT_EYE 14
-#define LEFT_EYE 15
-#define RIGHT_EAR 16
-#define LEFT_EAR 17
-#define BACKGROUND 18
+#define MIDDLE_HIP 8
+#define RIGHT_HIP 9
+#define RIGHT_KNEE 10
+#define RIGHT_ANKLE 11
+#define LEFT_HIP 12
+#define LEFT_KNEE 13
+#define LEFT_ANKLE 14
+#define RIGHT_EYE 15
+#define LEFT_EYE 16
+#define RIGHT_EAR 17
+#define LEFT_EAR 18
+#define LEFT_BIG_TOE 19
+#define LEFT_SMALL_TOE 20
+#define LEFT_HEEL 21
+#define RIGHT_BIG_TOE 22
+#define RIGHT_SMALL_TOE 23
+#define RIGHT_HEEL 24
 
 class WhacAMoleApp : public ofBaseApp {
 private:

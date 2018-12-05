@@ -25,7 +25,7 @@ namespace param {
 
 	extern const long long int NOT_USER; // 無効のユーザID
 
-	extern const int COCO_KEY_POINTS_NUM; // COCOモデルの骨格点の数
+	extern const int BODY25_KEY_POINTS_NUM; // COCOモデルの骨格点の数
 
 	extern ofImage HOLE_IMAGE; // 穴の画像
 	extern ofImage MOLE_IMAGE; // モグラの画像

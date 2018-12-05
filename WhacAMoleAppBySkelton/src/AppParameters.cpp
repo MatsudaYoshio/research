@@ -14,7 +14,7 @@ const double param::RESOLUTION_RATIO_HEIGHT{ param::DISPLAY_HEIGHT / param::CAME
 
 const long long int param::NOT_USER{ -1 }; // 無効のユーザID
 
-const int param::COCO_KEY_POINTS_NUM{ 18 };
+const int param::BODY25_KEY_POINTS_NUM{ 25 };
 
 /* ここで値の初期化を行わなずに、WhacAMoleAppで初期化を行う */
 ofImage param::HOLE_IMAGE{ ofImage{} }; // 穴の画像
