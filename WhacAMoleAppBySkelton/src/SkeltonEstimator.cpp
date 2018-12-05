@@ -4,7 +4,7 @@ using namespace std;
 using namespace cv;
 using namespace param;
 
-/* ScalarŒ^‚ÌF */
+/* Scalaråž‹ã®è‰² */
 const Scalar SkeltonEstimator::CV_RED{ Scalar(0, 0, 255) };
 const Scalar SkeltonEstimator::CV_BLUE{ Scalar(255, 0, 0) };
 const Scalar SkeltonEstimator::CV_GREEN{ Scalar(0, 255, 0) };
@@ -12,25 +12,25 @@ const Scalar SkeltonEstimator::CV_ORANGE{ Scalar(76, 183, 255) };
 const Scalar SkeltonEstimator::CV_PURPLE{ Scalar(204, 0, 196) };
 
 SkeltonEstimator::SkeltonEstimator() {
-	this->image_buffer.emplace_front(this->cap.get_image()); // Å‰‚Ìˆê–‡‚ðŽæ‚èž‚ñ‚Å‚¨‚­
+	this->image_buffer.emplace_front(this->cap.get_image()); // æœ€åˆã®ä¸€æžšã‚’å–ã‚Šè¾¼ã‚“ã§ãŠã
 
-	/* ‰æ‘œŽæ“¾ƒXƒŒƒbƒh */
+	/* ç”»åƒå–å¾—ã‚¹ãƒ¬ãƒƒãƒ‰ */
 	thread frame_thread(&SkeltonEstimator::get_frame, this);
 	frame_thread.detach();
 
-	/* “®‰æŽB‰e */
+	/* å‹•ç”»æ’®å½± */
 	//this->writer.open("OpenPose_test.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 14, Size(CAMERA_WIDTH, CAMERA_HEIGHT), true);
 }
 
 void SkeltonEstimator::update() {
-	///* fps‚ðƒRƒ}ƒ“ƒhƒ‰ƒCƒ“‚Éo—Í */
+	///* fpsã‚’ã‚³ãƒžãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ã«å‡ºåŠ› */
 	//frc.NewFrame();
 	//printf("fps : %lf\n", frc.GetFrameRate());
 
-	this->body_part_extractor(this->raw_pose_key_points, this->image_buffer.front()); // openPose‚É‚æ‚éœŠi„’è(Œ‹‰Ê‚ðraw_pose_key_points‚É•Û‘¶)
-	this->transform_points(); // œŠi“_‚ðƒfƒBƒXƒvƒŒƒCÀ•W‚É•ÏŠ·
+	this->body_part_extractor(this->raw_pose_key_points, this->image_buffer.front()); // openPoseã«ã‚ˆã‚‹éª¨æ ¼æŽ¨å®š(çµæžœã‚’raw_pose_key_pointsã«ä¿å­˜)
+	this->transform_points(); // éª¨æ ¼ç‚¹ã‚’ãƒ‡ã‚£ã‚¹ãƒ—ãƒ¬ã‚¤åº§æ¨™ã«å¤‰æ›
 
-	this->show_detect_window(); // “®ìŠm”F—p‚ÌƒEƒBƒ“ƒhƒE‚ð•\Ž¦
+	//this->show_detect_window(); // å‹•ä½œç¢ºèªç”¨ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’è¡¨ç¤º
 }
 
 void SkeltonEstimator::exit() {
@@ -44,9 +44,9 @@ void SkeltonEstimator::get_frame() {
 }
 
 void SkeltonEstimator::show_detect_window() {
-	this->view_frame = this->image_buffer.front(); // ÅVƒtƒŒ[ƒ€‚ðƒRƒs[
+	this->view_frame = this->image_buffer.front(); // æœ€æ–°ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ã‚³ãƒ”ãƒ¼
 
-	const int people_num{ this->raw_pose_key_points.getSize(0) }; // ŒŸo‚³‚ê‚½l”
+	const int people_num{ this->raw_pose_key_points.getSize(0) }; // æ¤œå‡ºã•ã‚ŒãŸäººæ•°
 	Concurrency::parallel_for(0, people_num, [&](int i) {
 		Concurrency::parallel_for(0, BODY25_KEY_POINTS_NUM, [&](int j) {
 			if (this->raw_pose_key_points[{i, j, 0}] != 0.0 && this->raw_pose_key_points[{i, j, 1}] != 0.0) {
@@ -57,7 +57,7 @@ void SkeltonEstimator::show_detect_window() {
 
 	imshow("detect window", this->view_frame);
 
-	/* “®‰æŽB‰e */
+	/* å‹•ç”»æ’®å½± */
 	//this->writer << this->view_frame;
 }
 
