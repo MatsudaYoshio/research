@@ -10,10 +10,25 @@ const double HandCursor::display_operation_height_ratio{ DISPLAY_H / HandCursor:
 const Point HandCursor::invalid_point{ -100,-100 }; // 画面上に表示されないような座標の点(無効点)
 const Point HandCursor::display_center_point{ HALF_DISPLAY_W, HALF_DISPLAY_H }; // ディスプレイの中心の点
 
-/* カーソルの色 */
-const std::array<ofColor, HandCursor::cursor_color_num> HandCursor::cursor_colors = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::orange, ofColor::lightCoral, ofColor::goldenRod };
+/* 手動で準備したカーソルの色 */
+const std::array<ofColor, HandCursor::initial_cursor_color_num> HandCursor::initial_cursor_colors = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::orange, ofColor::lightCoral, ofColor::goldenRod };
 
-HandCursor::HandCursor() {
+HandCursor::HandCursor():cursor_colors(this->initial_cursor_color_num), cursor_color_state(this->initial_cursor_color_num) {
+	/* 手動で準備したカーソルの色をセット */
+	random_device rd;
+	mt19937 mt(rd());
+	uniform_int_distribution<int> random_color_id(0, this->initial_cursor_color_num - 1);
+
+	for (const auto& c : this->initial_cursor_colors) {
+		this->cg.add_color(c);
+	}
+
+	for (int i = 0; i < this->initial_cursor_color_num; ++i) {
+		this->cursor_colors[i] = this->cg.used_colors[i].second;
+	}
+
+	shuffle(begin(this->cursor_colors), end(this->cursor_colors), mt);
+
 	this->image_buffer.emplace_front(this->cap.get_image()); // 最初の一枚を取り込んでおく
 
 	/* 画像取得スレッド */
@@ -30,7 +45,7 @@ HandCursor::HandCursor() {
 	//this->user_data[-100].state = STATE::ACTIVE;
 
 	/* 動画撮影 */
-	//this->writer.open("multi-user_interaction3.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 14, Size(CAMERA_W, CAMERA_H), true);
+	//this->writer.open("multi-user_interaction5.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 18, Size(CAMERA_W, CAMERA_H), true);
 }
 
 void HandCursor::update() {
@@ -84,7 +99,13 @@ void HandCursor::update() {
 		}
 	}
 
-	this->show_detect_window(); // 動作確認用のウィンドウを表示
+	if (this->user_data.size() > this->initial_cursor_color_num) { // 手動で準備したカーソルの色が足りなかったら、自動的に生成して増やす
+		this->cg();
+		this->cursor_colors.emplace_back(this->cg.used_colors.back().second);
+		this->cursor_color_state.emplace_back(false);
+	}
+
+	//this->show_detect_window(); // 動作確認用のウィンドウを表示
 }
 
 void HandCursor::exit() {
@@ -145,7 +166,8 @@ void HandCursor::init_user_data(const int personal_id, const double face_size, U
 	const int cursor_color_id = distance(cbegin(this->cursor_color_state), find_if_not(cbegin(this->cursor_color_state), cend(this->cursor_color_state), [](auto x) {return x; })); // 未使用の色からカーソルの色を選ぶ
 	this->cursor_color_state[cursor_color_id] = true; // 選んだカーソルの色を使用済みとする
 
-													  /* ユーザの情報をできるだけ詰めて初期化 */
+	this->cg();
+	/* ユーザの情報をできるだけ詰めて初期化 */
 	this->user_data.emplace(this->user_id, user_data_type{
 		STATE::ACTIVE,
 			hand,
@@ -210,7 +232,6 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 		this->dx = this->pose_key_points[LEFT_WRIST_X(personal_id)] - this->user_data[user_id].initial_point.x;
 		this->dy = this->pose_key_points[LEFT_WRIST_Y(personal_id)] - this->user_data[user_id].initial_point.y;
 	}
-
 
 	this->transform_point(this->user_data[user_id].face_point, this->user_data[user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
 
@@ -302,13 +323,10 @@ void HandCursor::show_detect_window() {
 
 	for (const auto& t : this->user_data) {
 		cv::rectangle(this->view_frame, t.second.operation_area, Scalar(255, 0, 0), 10);
-		//cout << t.second.operation_area.x << " " << t.second.operation_area.y << " " << t.second.operation_area.width << " " << t.second.operation_area.height << endl;
-		//cv::rectangle(img, Point(t.second.hand.left(), t.second.hand.top()), Point(t.second.hand.right(), t.second.hand.bottom()), this->CV_RED, 5);
-		//cv::rectangle(img, t.second.face_rect, this->CV_BLUE, 10);
 	}
 
 	imshow("detect window", this->view_frame);
 
 	/* 動画撮影 */
-	//this->writer << this->view_frame;
+	this->writer << this->view_frame;
 }

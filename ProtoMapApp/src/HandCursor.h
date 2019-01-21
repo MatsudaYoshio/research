@@ -21,6 +21,7 @@
 #include "AppParameters.h"
 #include "OneEuroFilter.h"
 #include "BodyPartExtractor.h"
+#include "ColorGenerator.h"
 
 // Result for BODY_25 (25 body parts consisting of COCO + foot)
 // const std::map<unsigned int, std::string> POSE_BODY_25_BODY_PARTS {
@@ -111,7 +112,7 @@ private:
 	static constexpr int resize_size{ 80 };
 	static constexpr double default_face_size{ 60 };
 	static constexpr double face_error{ 100 };
-	static constexpr int cursor_color_num{ 10 };
+	static constexpr int initial_cursor_color_num{ 10 };
 	static constexpr long long int new_user_id{ 0 };
 	static constexpr double operation_width_rate{ 1000 };
 	static constexpr double operation_heght_rate{ 1000 };
@@ -125,9 +126,10 @@ private:
 	static const double display_operation_width_ratio;
 	static const double display_operation_height_ratio;
 	static const cv::Point invalid_point, display_center_point;
-	static const std::array<ofColor, cursor_color_num> cursor_colors;
-
-	std::array<bool, cursor_color_num> cursor_color_state;
+	static const std::array<ofColor, initial_cursor_color_num> initial_cursor_colors;
+	
+	vector<ofColor> cursor_colors;
+	vector<bool> cursor_color_state;
 
 	bool stop_flag{ false };
 
@@ -146,6 +148,8 @@ private:
 	cv::VideoWriter writer;
 
 	BodyPartExtractor body_part_extractor;
+
+	ColorGenerator cg;
 
 	double estimate_face_size(int personal_id) const;
 	int decide_user_id(int personal_id) const;

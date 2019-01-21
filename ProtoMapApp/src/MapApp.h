@@ -7,6 +7,7 @@
 
 class MapApp : public ofBaseApp {
 private:
+	ofColor c = ofColor::red;
 	HandCursor hc;
 	SceneManager sm;
 
