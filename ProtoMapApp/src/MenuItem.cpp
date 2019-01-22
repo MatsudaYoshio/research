@@ -22,6 +22,7 @@ void MenuItem::update() {
 			pair<param::MENU_ITEM_ID, long long int> id(this->item_id, this->user_id);
 			ofNotifyEvent(this->select_event, id);
 			this->progress_state = 0;
+			this->state = STATE::SELECTED;
 		}
 		else {
 			this->progress_state = ofClamp(this->progress_state + this->progress_ratio*this->item_rect.width, 0, this->item_rect.width);
@@ -29,6 +30,7 @@ void MenuItem::update() {
 		break;
 	case STATE::INACTIVE:
 		this->alpha = MAX_ALFHA;
+	case STATE::SELECTED:
 		this->progress_state = 0;
 		break;
 	}
@@ -60,6 +62,10 @@ void MenuItem::draw() const {
 
 bool MenuItem::is_inside(const int x, const int y) const {
 	return this->item_rect.inside(x, y);
+}
+
+bool MenuItem::is_selected() const {
+	return this->state == STATE::SELECTED;
 }
 
 void MenuItem::set_state(const STATE& s) {

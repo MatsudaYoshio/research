@@ -19,6 +19,11 @@ void MenuBar::setup(HandCursor* const hc) {
 void MenuBar::update() {
 	/* メニュー項目上にカーソルがあるかどうかをチェックしてメニュー項目の状態を変更する */
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
+		if (this->items[i].is_selected()) {
+			this->items[i].update();
+			continue;
+		}
+
 		for (const auto& ud : this->hc->user_data) {
 			if (ud.second.state == HandCursor::STATE::INACTIVE) {
 				continue;
@@ -46,6 +51,10 @@ void MenuBar::draw() const {
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
 		this->items[i].draw();
 	}
+}
+
+void MenuBar::deactivate_menu_item(const int menu_item_id) {
+	this->items[menu_item_id].set_state(MenuItem::STATE::INACTIVE);
 }
 
 void MenuBar::select_menu_item(pair<param::MENU_ITEM_ID, long long int>& id) {

@@ -16,6 +16,7 @@ public:
 	void update();
 	void draw() const;
 
+	void deactivate_menu_item(int menu_item_id);
 	void select_menu_item(pair<param::MENU_ITEM_ID, long long int>& id);
 
 	~MenuBar();

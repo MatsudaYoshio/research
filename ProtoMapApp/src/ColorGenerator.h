@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <unordered_map>
+
 #include <opencv2/opencv.hpp>
 
 class ColorGenerator {
