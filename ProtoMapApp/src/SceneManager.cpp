@@ -120,8 +120,6 @@ void SceneManager::draw() {
 			continue;
 		}
 
-		//if (i == 2) continue;
-
 		for (const auto& p : this->pins[i]) {
 			p.draw();
 		}

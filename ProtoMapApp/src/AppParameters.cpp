@@ -38,8 +38,8 @@ const ofColor param::MENU_ITEM_COLOR[]{ ofColor::gold, ofColor::lawnGreen, ofCol
 const vector<param::CONTENT_ID> param::MENU_ITEM_CONTENTS[]{
 	vector<param::CONTENT_ID>{param::CONTENT_ID::KYOTO_TOWER, param::CONTENT_ID::HIGASHIHONGANJI, param::CONTENT_ID::SYOSEIEN, param::CONTENT_ID::NISHIHONGANJI, param::CONTENT_ID::KIYOMIZUDERA, param::CONTENT_ID::KYOTO_AQUARIUM, param::CONTENT_ID::KANNONJI, param::CONTENT_ID::TOJI},
 	vector<param::CONTENT_ID>{param::CONTENT_ID::EIJUAN, param::CONTENT_ID::SODOH, param::CONTENT_ID::FUNATSURU, param::CONTENT_ID::HANAROKU, param::CONTENT_ID::RANTEI, param::CONTENT_ID::MARUYASU, param::CONTENT_ID::IMASA, param::CONTENT_ID::SAWASHO},
-	vector<param::CONTENT_ID>{param::CONTENT_ID::AEON_MALL, param::CONTENT_ID::ISETAN, param::CONTENT_ID::AVANTI, param::CONTENT_ID::TAKASHIMAYA, param::CONTENT_ID::YAMASHITA},
-	vector<param::CONTENT_ID>{param::CONTENT_ID::ALMONT, param::CONTENT_ID::SAKURA_HONGANJI, param::CONTENT_ID::KYOSTAY_IROHA_TOJI, param::CONTENT_ID::HYATT_REGENCY, param::CONTENT_ID::FAMILY_VILLA_KEAGE}
+	vector<param::CONTENT_ID>{param::CONTENT_ID::AEON_MALL, param::CONTENT_ID::ISETAN, param::CONTENT_ID::AVANTI, param::CONTENT_ID::TAKASHIMAYA, param::CONTENT_ID::YAMASHITA, param::CONTENT_ID::HOBBY_SQUARE_KYOTO, param::CONTENT_ID::GION_NARUMIYA, param::CONTENT_ID::UNIQLO},
+	vector<param::CONTENT_ID>{param::CONTENT_ID::ALMONT, param::CONTENT_ID::SAKURA_HONGANJI, param::CONTENT_ID::KYOSTAY_IROHA_TOJI, param::CONTENT_ID::HYATT_REGENCY, param::CONTENT_ID::FAMILY_VILLA_KEAGE, param::CONTENT_ID::MUROMACHI_YUTONE, param::CONTENT_ID::KURAYA, param::CONTENT_ID::TOKIWAAN}
 };
 
 /* コンテンツの情報 */
@@ -61,44 +61,28 @@ const param::content_data_type param::CONTENT_DATA[]{
 	param::content_data_type{ 1014, 608, 6, param::MENU_ITEM_ID::RESTAURANT, "Maruyasu", param::CONTENT_NAME_POSITION::TOP },
 	param::content_data_type{ 390, 934, 7, param::MENU_ITEM_ID::RESTAURANT, "Imasa", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 2547, 1319, 8, param::MENU_ITEM_ID::RESTAURANT, "Sawasho", param::CONTENT_NAME_POSITION::RIGHT },
-	param::content_data_type{ 1368, 1323, 1, param::MENU_ITEM_ID::SHOPPING, "Aeon Mall", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1368, 1323, 1, param::MENU_ITEM_ID::SHOPPING, "Aeon Mall", param::CONTENT_NAME_POSITION::LEFT },
 	param::content_data_type{ 1547, 1165, 2, param::MENU_ITEM_ID::SHOPPING, "Isetan", param::CONTENT_NAME_POSITION::RIGHT },
-	param::content_data_type{ 1674, 1279, 3, param::MENU_ITEM_ID::SHOPPING, "Avanti", param::CONTENT_NAME_POSITION::RIGHT },
-	param::content_data_type{ 2068, 49, 4, param::MENU_ITEM_ID::SHOPPING, "Takashimaya", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1674, 1279, 3, param::MENU_ITEM_ID::SHOPPING, "Avanti", param::CONTENT_NAME_POSITION::BOTTOM },
+	param::content_data_type{ 2068, 59, 4, param::MENU_ITEM_ID::SHOPPING, "Takashimaya", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 2737, 455, 5, param::MENU_ITEM_ID::SHOPPING, "Kyo-Yamashita", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 245, 1103, 6, param::MENU_ITEM_ID::SHOPPING, "Hobby Square Kyoto", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 2530, 93, 7, param::MENU_ITEM_ID::SHOPPING, "Gion Narumiya", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 679, 520, 8, param::MENU_ITEM_ID::SHOPPING, "UNIQLO", param::CONTENT_NAME_POSITION::TOP },
 	param::content_data_type{ 1852, 1294, 1, param::MENU_ITEM_ID::HOTEL, "Almont", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 1338, 734, 2, param::MENU_ITEM_ID::HOTEL, "Sakura-Honganji", param::CONTENT_NAME_POSITION::TOP },
 	param::content_data_type{ 1108, 1484, 3, param::MENU_ITEM_ID::HOTEL, "Kyostay-Iroha-Toji", param::CONTENT_NAME_POSITION::RIGHT },
 	param::content_data_type{ 2335, 958, 4, param::MENU_ITEM_ID::HOTEL, "Hyatt Regency", param::CONTENT_NAME_POSITION::RIGHT },
-	param::content_data_type{ 3314, 96, 5, param::MENU_ITEM_ID::HOTEL, "Family Villa Keage", param::CONTENT_NAME_POSITION::RIGHT }
+	param::content_data_type{ 3314, 96, 5, param::MENU_ITEM_ID::HOTEL, "Family Villa Keage", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1521, 345, 6, param::MENU_ITEM_ID::HOTEL, "Muromachi Yutone", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 1079, 402, 7, param::MENU_ITEM_ID::HOTEL, "Kuraya", param::CONTENT_NAME_POSITION::RIGHT },
+	param::content_data_type{ 2480, 693, 8, param::MENU_ITEM_ID::HOTEL, "Tokiwaan", param::CONTENT_NAME_POSITION::RIGHT }
 };
 
 /* コンテンツの数だけ初期化が必要 */
 ofImage param::CONTENT_IMAGE[]{
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{},
-	ofImage{}
+	ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{},
+	ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{},
+	ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{},
+	ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}, ofImage{}
 };
