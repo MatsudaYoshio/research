@@ -64,7 +64,7 @@ void SceneManager::update() {
 		if (this->menu_item_life[i] == this->min_menu_item_life) {
 			this->menu_item_life[i] = this->max_menu_item_life;
 			this->menu_item_user_id[i] = NOT_USER;
-			
+
 			this->mb.deactivate_menu_item(i);
 		}
 	}

@@ -7,9 +7,9 @@ void MapApp::setup() {
 	ofHideCursor(); // カーソル非表示
 	ofEnableAlphaBlending(); // アルファチャンネルを使用可能にする
 	ofSetCircleResolution(256); // 円の精密度を設定
-	
-	this->initialize_image(); // コンテンツ画像の初期化
 
+	this->initialize_image(); // コンテンツ画像の初期化
+	
 	this->sm.setup(&this->hc);
 }
 

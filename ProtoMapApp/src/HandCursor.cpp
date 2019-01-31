@@ -11,7 +11,7 @@ const Point HandCursor::invalid_point{ -100,-100 }; // ‰æ–Êã‚É•\¦‚³‚ê‚È‚¢‚æ‚¤‚
 const Point HandCursor::display_center_point{ HALF_DISPLAY_W, HALF_DISPLAY_H }; // ƒfƒBƒXƒvƒŒƒC‚Ì’†S‚Ì“_
 
 /* è“®‚Å€”õ‚µ‚½ƒJ[ƒ\ƒ‹‚ÌF */
-const std::array<ofColor, HandCursor::initial_cursor_color_num> HandCursor::initial_cursor_colors = { ofColor::deepPink, ofColor::mediumPurple, ofColor::cyan, ofColor::blue, ofColor::red, ofColor::green, ofColor::black, ofColor::orange, ofColor::lightCoral, ofColor::goldenRod };
+const std::array<ofColor, HandCursor::initial_cursor_color_num> HandCursor::initial_cursor_colors = { ofColor::deepPink, ofColor::mediumPurple, ofColor::brown, ofColor::blue, ofColor::red, ofColor::forestGreen, ofColor::black, ofColor::gray, ofColor::coral, ofColor::goldenRod };
 
 HandCursor::HandCursor():cursor_colors(this->initial_cursor_color_num), cursor_color_state(this->initial_cursor_color_num) {
 	/* è“®‚Å€”õ‚µ‚½ƒJ[ƒ\ƒ‹‚ÌF‚ğƒZƒbƒg */
@@ -55,6 +55,8 @@ void HandCursor::update() {
 
 	//this->user_data[-100].latest_update_frame = this->frame_count;
 
+	//this->tm.Start();
+
 	/* ˆê’èŠÔ‚ÌŠÔAî•ñ‚ªXV‚³‚ê‚Ä‚¢‚È‚¢ƒ†[ƒU‚ğíœ‚·‚é */
 	for (auto ite = begin(this->user_data); ite != end(this->user_data);) {
 		if (this->frame_count - ite->second.latest_update_frame > 60) {
@@ -75,9 +77,9 @@ void HandCursor::update() {
 			continue;
 		}
 		double face_size{ this->estimate_face_size(i) }; // Šç‚Ì‘å‚«‚³‚ğ„’è
-
+		
 		long long int user_id{ this->decide_user_id(i) }; // user_id‚ğŒˆ’è
-
+		
 		if (user_id == this->new_user_id) { // V‚µ‚¢ƒ†[ƒU‚Å‚ ‚ê‚Î
 			if (this->is_start_interaction_by_right_hand(i)) { // ‰Eè‚ğã‚°‚Ä‚¢‚ê‚Î
 				this->init_user_data(i, face_size, USING_HAND::RIGHT); // ‰Eè‚ÅƒCƒ“ƒ^ƒ‰ƒNƒVƒ‡ƒ“‚ğŠJn‚µ‚½‚Æ‚µ‚ÄAƒ†[ƒUƒf[ƒ^‚Ì‰Šú‰»
@@ -105,7 +107,11 @@ void HandCursor::update() {
 		this->cursor_color_state.emplace_back(false);
 	}
 
+	
+
 	//this->show_detect_window(); // “®ìŠm”F—p‚ÌƒEƒBƒ“ƒhƒE‚ğ•\¦
+
+	//cout << this->tm.GetMs() << endl;
 }
 
 void HandCursor::exit() {
@@ -166,7 +172,6 @@ void HandCursor::init_user_data(const int personal_id, const double face_size, U
 	const int cursor_color_id = distance(cbegin(this->cursor_color_state), find_if_not(cbegin(this->cursor_color_state), cend(this->cursor_color_state), [](auto x) {return x; })); // –¢g—p‚ÌF‚©‚çƒJ[ƒ\ƒ‹‚ÌF‚ğ‘I‚Ô
 	this->cursor_color_state[cursor_color_id] = true; // ‘I‚ñ‚¾ƒJ[ƒ\ƒ‹‚ÌF‚ğg—pÏ‚İ‚Æ‚·‚é
 
-	this->cg();
 	/* ƒ†[ƒU‚Ìî•ñ‚ğ‚Å‚«‚é‚¾‚¯‹l‚ß‚Ä‰Šú‰» */
 	this->user_data.emplace(this->user_id, user_data_type{
 		STATE::ACTIVE,

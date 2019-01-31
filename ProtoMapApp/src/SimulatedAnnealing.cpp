@@ -120,7 +120,6 @@ void SimulatedAnnealing::calculate_cost(const unordered_map<long long int, ofRec
 		for (const auto& td : this->hc->user_data) {
 			if (sub_windows.at(s.first).get_user_id() == td.first) {
 				this->distance_cost += ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x, td.second.transformed_face_point.y);
-				//this->distance_cost = max(this->distance_cost, static_cast<double>(ofDist(s.second.getCenter().x, s.second.getCenter().y, td.second.transformed_face_point.x, td.second.transformed_face_point.y)));
 				continue;
 			}
 		}

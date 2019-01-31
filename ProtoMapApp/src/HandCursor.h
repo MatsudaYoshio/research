@@ -22,6 +22,7 @@
 #include "OneEuroFilter.h"
 #include "BodyPartExtractor.h"
 #include "ColorGenerator.h"
+#include "TimerBase.h"
 
 // Result for BODY_25 (25 body parts consisting of COCO + foot)
 // const std::map<unsigned int, std::string> POSE_BODY_25_BODY_PARTS {
@@ -150,6 +151,8 @@ private:
 	BodyPartExtractor body_part_extractor;
 
 	ColorGenerator cg;
+
+	//TimerBase tm;
 
 	double estimate_face_size(int personal_id) const;
 	int decide_user_id(int personal_id) const;
