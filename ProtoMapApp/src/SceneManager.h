@@ -32,12 +32,13 @@ private:
 
 	void optimize();
 	void draw_cursor();
+	void release_menu_item(int menu_item_id);
 public:
 	void setup(HandCursor* const hc);
 	void update();
 	void draw();
 
-	void add_pin(pair<param::MENU_ITEM_ID, long long int>& id);
+	void update_pin(pair<param::MENU_ITEM_ID, long long int>& id);
 	void make_sub_window(pair<param::CONTENT_ID, long long int>& id);
 
 	~SceneManager();

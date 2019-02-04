@@ -6,7 +6,7 @@ void SceneManager::setup(HandCursor* const hc) {
 	this->hc = hc;
 
 	this->mb.setup(hc);
-	ofAddListener(this->mb.add_pin_event, this, &SceneManager::add_pin);
+	ofAddListener(this->mb.add_pin_event, this, &SceneManager::update_pin);
 
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
 		this->pins[i].resize(MENU_ITEM_CONTENTS[i].size());
@@ -62,10 +62,7 @@ void SceneManager::update() {
 		}
 
 		if (this->menu_item_life[i] == this->min_menu_item_life) {
-			this->menu_item_life[i] = this->max_menu_item_life;
-			this->menu_item_user_id[i] = NOT_USER;
-
-			this->mb.deactivate_menu_item(i);
+			this->release_menu_item(i);
 		}
 	}
 
@@ -168,7 +165,12 @@ void SceneManager::optimize() {
 	}
 }
 
-void SceneManager::add_pin(pair<param::MENU_ITEM_ID, long long int>& id) {
+void SceneManager::update_pin(pair<param::MENU_ITEM_ID, long long int>& id) {
+	auto ite{ find(cbegin(this->menu_item_user_id), cend(this->menu_item_user_id), id.second) };
+	if (ite != end(this->menu_item_user_id)) { // 既にどこかのメニュー項目を選択していたら
+		this->release_menu_item(distance(cbegin(this->menu_item_user_id), ite)); // 選択されていたメニュー項目を解放（ピンを非表示にする）
+	}
+
 	this->menu_item_user_id[static_cast<int>(id.first)] = id.second;
 }
 
@@ -207,8 +209,14 @@ void SceneManager::draw_cursor() {
 	}
 }
 
+void SceneManager::release_menu_item(const int menu_item_id) {
+	this->menu_item_life[menu_item_id] = this->max_menu_item_life;
+	this->menu_item_user_id[menu_item_id] = NOT_USER;
+	this->mb.deactivate_menu_item(menu_item_id);
+}
+
 SceneManager::~SceneManager() {
-	ofRemoveListener(this->mb.add_pin_event, this, &SceneManager::add_pin);
+	ofRemoveListener(this->mb.add_pin_event, this, &SceneManager::update_pin);
 
 	for (int i = 0; i < MENU_ITEM_NUM; ++i) {
 		for (auto&& p : this->pins[i]) {
