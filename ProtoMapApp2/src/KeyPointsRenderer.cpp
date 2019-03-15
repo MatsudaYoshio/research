@@ -139,7 +139,7 @@ void KeyPointsRenderer::draw() {
 			/* œŠi‚Ìü•ª‚ğ•`‰æ */
 			for (int j = 0; j < this->BODY25_key_points_pairs_num; ++j) {
 				if (this->lines_state[j].first) {
-					ofSetColor(this->hc->user_data[this->hc->personal_id2user_id[i]].cursor_color);
+					ofSetColor(this->hc->user_data[this->hc->personal_id2user_id[i]].cursor_color, this->hc->user_data[this->hc->personal_id2user_id[i]].lines_alpha);
 					try {
 						ofPushMatrix();
 						ofTranslate((this->transformed_key_points.at({ i, this->key_points_pairs[j].first }) + this->transformed_key_points.at({ i, this->key_points_pairs[j].second })) / 2);
@@ -151,50 +151,37 @@ void KeyPointsRenderer::draw() {
 				}
 			}
 
+			/* Šç‚Ì“_‚ğ•`‰æi“_–Å‚³‚¹‚éj*/
+			if (this->hc->user_data[this->hc->personal_id2user_id[i]].face_blink_count != 0) {
+				ofSetColor(this->hc->user_data[this->hc->personal_id2user_id[i]].cursor_color, ofColor::limit()*this->hc->user_data[this->hc->personal_id2user_id[i]].face_blink_count / FACE_BLINK_INTERVAL);
+				try {
+					ofDrawCircle(this->transformed_key_points.at({ i, 0 }), this->point_size * 2);
+				}
+				catch (std::out_of_range&) {}
+
+				--this->hc->user_data[this->hc->personal_id2user_id[i]].face_blink_count;
+			}
+			else {
+				this->hc->user_data[this->hc->personal_id2user_id[i]].face_blink_count = FACE_BLINK_INTERVAL;
+			}
+
+
 			/* œŠi“_‚ğ•`‰æ */
 			for (int j = 0; j < this->BODY25_key_points_num; ++j) {
 				if (this->points_state[j].first) {
-					ofSetColor(this->hc->user_data[this->hc->personal_id2user_id[i]].cursor_color);
+					ofSetColor(this->hc->user_data[this->hc->personal_id2user_id[i]].cursor_color, this->hc->user_data[this->hc->personal_id2user_id[i]].key_points_alpha);
 					try {
 						ofDrawCircle(this->transformed_key_points.at({ i, j }), this->point_size);
 					}
 					catch (std::out_of_range&) {}
 				}
 			}
+
+			this->hc->user_data[this->hc->personal_id2user_id[i]].lines_alpha = max(this->hc->user_data[this->hc->personal_id2user_id[i]].lines_alpha - this->skeleton_fade_speed, 0.0f);
+			this->hc->user_data[this->hc->personal_id2user_id[i]].key_points_alpha = max(this->hc->user_data[this->hc->personal_id2user_id[i]].key_points_alpha - this->skeleton_fade_speed, 0.0f);
 		}
-		
 	}
 }
-
-//void KeyPointsRenderer::draw(const map<pair<int, int>, ofPoint>& transformed_key_points) const {
-//	for (const auto& p : transformed_key_points) {
-//		/* œŠi‚Ìü•ª‚ğ•`‰æ */
-//		for (int j = 0; j < this->BODY25_key_points_pairs_num; ++j) {
-//			if (this->lines_state[j].first) {
-//				ofSetColor(this->lines_state[j].second);
-//				try {
-//					ofPushMatrix();
-//					ofTranslate((transformed_key_points.at({ p.first.first, this->key_points_pairs[j].first }) + transformed_key_points.at({ p.first.first, this->key_points_pairs[j].second })) / 2);
-//					ofRotate(atan2(transformed_key_points.at({ p.first.first, this->key_points_pairs[j].first }).y - transformed_key_points.at({ p.first.first, this->key_points_pairs[j].second }).y, transformed_key_points.at({ p.first.first, this->key_points_pairs[j].first }).x - transformed_key_points.at({ p.first.first, this->key_points_pairs[j].second }).x) * 180 / M_PI);
-//					ofDrawEllipse(0, 0, ofDist(transformed_key_points.at({ p.first.first, this->key_points_pairs[j].first }).x, transformed_key_points.at({ p.first.first, this->key_points_pairs[j].first }).y, transformed_key_points.at({ p.first.first,this->key_points_pairs[j].second }).x, transformed_key_points.at({ p.first.first,this->key_points_pairs[j].second }).y), this->line_size);
-//					ofPopMatrix();
-//				}
-//				catch (std::out_of_range&) {}
-//			}
-//		}
-//
-//		/* œŠi“_‚ğ•`‰æ */
-//		for (int j = 0; j < this->BODY25_key_points_num; ++j) {
-//			if (this->points_state[j].first) {
-//				ofSetColor(this->points_state[j].second);
-//				try {
-//					ofDrawCircle(transformed_key_points.at({ p.first.first, j }), this->point_size);
-//				}
-//				catch (std::out_of_range&) {}
-//			}
-//		}
-//	}
-//}
 
 void KeyPointsRenderer::transform_points() {
 	this->transformed_key_points.clear();

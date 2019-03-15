@@ -134,6 +134,27 @@ void SceneManager::draw() {
 		w.second.draw();
 	}
 
+	this->kpr.draw();
+
+	for (auto&& ud : this->hc->user_data) {
+		if (ud.second.cursor_apper_flag) {
+			ud.second.cursor_apper_flag = false;
+
+			double shadow_num = 15;
+			double change_rate = 1 / shadow_num;
+
+
+			//ofNoFill();
+			//ofSetLineWidth(60);
+			//ofSetColor(ofColor::white, ud.second.alpha);
+			//ofDrawCircle(300, 300, 30);
+			//ofFill();
+			//ofSetColor(ud.second.cursor_color, ud.second.alpha);
+			//ofDrawCircle(300, 300, 20);
+
+		}
+	}
+
 	this->draw_cursor(); // 手カーソルの描画
 
 	//this->cost_change_plotter.draw();
@@ -141,8 +162,6 @@ void SceneManager::draw() {
 	//ofSetColor(ofColor::deepPink);
 	//this->hand_image.draw(500, 500, 200, 200); // マップの表示
 	//ofSetColor(ofColor::white);
-
-	this->kpr.draw();
 }
 
 void SceneManager::optimize() {
@@ -207,21 +226,21 @@ void SceneManager::draw_cursor() {
 			continue;
 		}
 
-		ofNoFill();
-		ofSetLineWidth(60);
-		ofSetColor(ofColor::white, ud.second.alpha);
-		ofDrawCircle(ud.second.cursor_point.x, ud.second.cursor_point.y, 60);
-		ofFill();
-		ofSetColor(ud.second.cursor_color, ud.second.alpha);
-		ofDrawCircle(ud.second.cursor_point.x, ud.second.cursor_point.y, 55);
+		//ofNoFill();
+		//ofSetLineWidth(60);
+		//ofSetColor(ofColor::white, ud.second.cursor_alpha);
+		//ofDrawCircle(ud.second.cursor_point.x, ud.second.cursor_point.y, 60);
+		//ofFill();
+		//ofSetColor(ud.second.cursor_color, ud.second.cursor_alpha);
+		//ofDrawCircle(ud.second.cursor_point.x, ud.second.cursor_point.y, 55);
 
-		//ofSetColor(ud.second.cursor_color, ud.second.alpha);
-		//if (ud.second.hand == HandCursor::USING_HAND::RIGHT) {
-		//	this->right_hand_image.draw(ud.second.cursor_point.x - 125, ud.second.cursor_point.y - 125, 250, 250);
-		//}
-		//else {
-		//	this->left_hand_image.draw(ud.second.cursor_point.x - 125, ud.second.cursor_point.y - 125, 250, 250);
-		//}
+		ofSetColor(ud.second.cursor_color, ud.second.cursor_alpha);
+		if (ud.second.hand == HandCursor::USING_HAND::RIGHT) {
+			this->right_hand_image.draw(ud.second.cursor_point.x - 125, ud.second.cursor_point.y - 125, 250, 250);
+		}
+		else {
+			this->left_hand_image.draw(ud.second.cursor_point.x - 125, ud.second.cursor_point.y - 125, 250, 250);
+		}
 
 
 		//if (ud.second.cursor_point.x >= 800 || ud.second.cursor_point.y >= 800) {

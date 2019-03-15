@@ -39,6 +39,10 @@ namespace param {
 
 	extern const float MAX_ALFHA;
 	extern const float HALF_MAX_ALFHA;
+	extern const float MAX_KEY_POINTS_ALFHA;
+	extern const float MAX_LINES_ALFHA;
+
+	extern const int FACE_BLINK_INTERVAL;
 
 	constexpr int MENU_ITEM_NUM{ 4 }; // ƒƒjƒ…[€–Ú‚Ì”
 

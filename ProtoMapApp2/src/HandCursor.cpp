@@ -91,9 +91,15 @@ void HandCursor::update() {
 		else { // 既に操作しているユーザであれば
 			if (this->user_data[user_id].hand == USING_HAND::RIGHT && !this->is_start_interaction_by_right_hand(i)) { // 右手で操作していたが右手が上がっていなければ
 				this->user_data[user_id].state = STATE::INACTIVE;
+				this->user_data[user_id].key_points_alpha = MAX_KEY_POINTS_ALFHA;
+				this->user_data[user_id].lines_alpha = MAX_LINES_ALFHA;
+				this->user_data[user_id].face_blink_count = FACE_BLINK_INTERVAL;
 			}
 			else if (this->user_data[user_id].hand == USING_HAND::LEFT && !this->is_start_interaction_by_left_hand(i)) { // 左手で操作していたが左手が上がっていなければ
 				this->user_data[user_id].state = STATE::INACTIVE;
+				this->user_data[user_id].key_points_alpha = MAX_KEY_POINTS_ALFHA;
+				this->user_data[user_id].lines_alpha = MAX_LINES_ALFHA;
+				this->user_data[user_id].face_blink_count = FACE_BLINK_INTERVAL;
 			}
 			else {
 				this->renew_user_data(i, face_size, user_id); // ユーザデータの更新
@@ -180,6 +186,7 @@ void HandCursor::init_user_data(const int personal_id, const double face_size, U
 	this->user_data.emplace(this->user_id, user_data_type{
 		STATE::ACTIVE,
 			hand,
+			false,
 			personal_id,
 			this->frame_count,
 			this->frame_count,
@@ -191,6 +198,9 @@ void HandCursor::init_user_data(const int personal_id, const double face_size, U
 			cursor_color_id,
 			this->cursor_colors[cursor_color_id],
 			ofColor::limit(),
+			MAX_KEY_POINTS_ALFHA,
+			MAX_LINES_ALFHA,
+			FACE_BLINK_INTERVAL,
 			this->invalid_point,
 			this->invalid_point,
 	});
@@ -204,6 +214,8 @@ void HandCursor::init_user_data(const int personal_id, const double face_size, U
 	/* フィルタの初期化 */
 	this->user_data[this->user_id].dx_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
 	this->user_data[this->user_id].dy_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
+
+	this->user_data[this->user_id].cursor_apper_flag = true;
 
 	this->transform_point(this->user_data[this->user_id].face_point, this->user_data[this->user_id].transformed_face_point); // 顔の座標を画面上の座標に変換
 
@@ -221,6 +233,7 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 		this->user_data[user_id].state = STATE::ACTIVE;
 		this->user_data[user_id].dx_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
 		this->user_data[user_id].dy_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
+		this->user_data[user_id].cursor_apper_flag = true;
 	}
 
 	/* 初めの一定量フレームを捨てる(最初のカーソルの表示を見た目きれいにするため) */
@@ -229,7 +242,7 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 	}
 
 	this->user_data[user_id].state = STATE::ACTIVE;
-	this->user_data[user_id].alpha = MAX_ALFHA;
+	this->user_data[user_id].cursor_alpha = MAX_ALFHA;
 
 	this->user_data[user_id].face_size = face_size;
 	this->user_data[user_id].face_point.x = this->pose_key_points[NOSE_X(personal_id)];
@@ -269,7 +282,7 @@ void HandCursor::transform_point(const Point& src_point, Point& dst_point) const
 
 void HandCursor::overlap_window(const long long int user_id) {
 	this->user_data[user_id].state = STATE::OVERLAP;
-	this->user_data[user_id].alpha = HALF_MAX_ALFHA;
+	this->user_data[user_id].cursor_alpha = HALF_MAX_ALFHA;
 }
 
 void HandCursor::show_detect_window() {

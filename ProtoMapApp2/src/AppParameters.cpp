@@ -31,6 +31,10 @@ const long long int param::NOT_USER{ -1 }; // 無効のユーザID
 /* アルファ値(透過度を決定する) */
 const float param::MAX_ALFHA{ ofColor::limit() };
 const float param::HALF_MAX_ALFHA{ param::MAX_ALFHA / 2 };
+const float param::MAX_KEY_POINTS_ALFHA{ 180 };
+const float param::MAX_LINES_ALFHA{ 100 };
+
+const int param::FACE_BLINK_INTERVAL{ 20 };
 
 const ofColor param::MENU_ITEM_COLOR[]{ ofColor::gold, ofColor::lawnGreen, ofColor::pink, ofColor::skyBlue }; // メニュー項目の色
 

@@ -98,6 +98,7 @@ private:
 	using user_data_type = struct {
 		STATE state;
 		USING_HAND hand;
+		bool cursor_apper_flag;
 		long long int personal_id;
 		long long int start_frame, latest_update_frame;
 		cv::Rect2d face_rect, operation_area;
@@ -105,7 +106,8 @@ private:
 		double face_size;
 		int cursor_color_id;
 		ofColor cursor_color;
-		float alpha;
+		float cursor_alpha, key_points_alpha, lines_alpha;
+		int face_blink_count;
 		cv::Point transformed_face_point, cursor_point;
 		std::unique_ptr<OneEuroFilter> dx_filter, dy_filter;
 	};

@@ -23,8 +23,8 @@ private:
 	KeyPointsRenderer kpr;
 
 	const ofImage map_image{ "./fig/kyoto_bg.png" };
-	//const ofImage right_hand_image{ "./fig/right_hand.png" };
-	//const ofImage left_hand_image{ "./fig/left_hand.png" };
+	const ofImage right_hand_image{ "./fig/right_hand.png" };
+	const ofImage left_hand_image{ "./fig/left_hand.png" };
 	//const ofImage hand_grab_image{ "./fig/hand_grab.png" };
 	//const ofImage face_image{ "./fig/happy_smiley.png" };
 	array<long long int, param::MENU_ITEM_NUM> menu_item_user_id;
