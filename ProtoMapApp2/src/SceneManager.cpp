@@ -1,6 +1,9 @@
 #include "SceneManager.h"
 
 using namespace param;
+using namespace cv;
+
+const ofColor SceneManager::default_face_color{ ofColor::gray };
 
 void SceneManager::setup(HandCursor* const hc) {
 	this->hc = hc;
@@ -20,20 +23,12 @@ void SceneManager::setup(HandCursor* const hc) {
 	fill_n(begin(this->menu_item_life), MENU_ITEM_NUM, this->max_menu_item_life);
 
 	this->sa.setup(this->hc, &this->sub_windows);
-
-	//this->cost_change_plotter.set_line_color(ofColor::lightGreen);
-	//this->cost_change_plotter.set_window_position(DISPLAY_W - 1024, 0);
-	//this->cost_change_plotter.set_range(-10000, 10000);
-
-	this->kpr.setup(this->hc);
 }
 
 void SceneManager::update() {
 	if (!this->sub_windows.empty()) {
 		this->optimize(); // 最適化
 	}
-
-	//this->cost_change_plotter.update(this->comparative_cost - this->best_cost);
 
 	/* サブウィンドウの更新 */
 	/* いなくなったユーザのサブウィンドウを削除 */
@@ -124,44 +119,14 @@ void SceneManager::draw() {
 		}
 	}
 
-	//for (const auto& ud : this->hc->user_data) {
-	//	ofSetColor(ud.second.cursor_color, 120);
-	//	this->face_image.draw(ud.second.transformed_face_point.x(), ud.second.transformed_face_point.y(), 200, 200);
-	//}
-
 	// サブウィンドウの描画
 	for (auto&& w : this->sub_windows) {
 		w.second.draw();
 	}
 
-	this->kpr.draw();
-
-	for (auto&& ud : this->hc->user_data) {
-		if (ud.second.cursor_apper_flag) {
-			ud.second.cursor_apper_flag = false;
-
-			double shadow_num = 15;
-			double change_rate = 1 / shadow_num;
-
-
-			//ofNoFill();
-			//ofSetLineWidth(60);
-			//ofSetColor(ofColor::white, ud.second.alpha);
-			//ofDrawCircle(300, 300, 30);
-			//ofFill();
-			//ofSetColor(ud.second.cursor_color, ud.second.alpha);
-			//ofDrawCircle(300, 300, 20);
-
-		}
-	}
+	this->draw_face(); // 顔アイコンの描画
 
 	this->draw_cursor(); // 手カーソルの描画
-
-	//this->cost_change_plotter.draw();
-
-	//ofSetColor(ofColor::deepPink);
-	//this->hand_image.draw(500, 500, 200, 200); // マップの表示
-	//ofSetColor(ofColor::white);
 }
 
 void SceneManager::optimize() {
@@ -220,36 +185,50 @@ void SceneManager::make_sub_window(pair<param::CONTENT_ID, long long int>& id) {
 	this->sub_windows.emplace(static_cast<int>(id.first), SubWindow{ id.first, id.second, this->hc->user_data[id.second].cursor_color });
 }
 
-void SceneManager::draw_cursor() {
+void SceneManager::draw_face() const {
+	const auto people_num{ this->hc->pose_key_points.getSize(0) };
+	for (int i = 0; i < people_num; ++i) {
+		if (this->hc->pose_key_points[NOSE_X(i)] == 0.0 || this->hc->pose_key_points[NOSE_Y(i)] == 0.0) {
+			continue;
+		}
+
+		Point transformed_point;
+		this->hc->transform_point(Point(this->hc->pose_key_points[NOSE_X(i)], this->hc->pose_key_points[NOSE_Y(i)]), transformed_point);
+		if (this->hc->personal_id2user_id[i] == NOT_USER) {
+			ofSetColor(this->default_face_color, HALF_MAX_ALFHA);
+			const auto face_size = this->face_rate*this->hc->estimate_face_size(i);
+			this->face_image.draw(transformed_point.x - face_size / 2, transformed_point.y - face_size / 2, face_size, face_size);
+		}
+		else {
+#define user(i) this->hc->user_data[this->hc->personal_id2user_id[i]]
+			if (user(i).face_blink_count != 0) {
+				ofSetColor(user(i).cursor_color, THREE_QUARTER_MAX_ALFHA*user(i).face_blink_count / FACE_BLINK_INTERVAL);
+
+				this->face_image.draw(transformed_point.x - this->face_rate * user(i).face_size / 2, transformed_point.y - this->face_rate * user(i).face_size / 2, this->face_rate * user(i).face_size, this->face_rate * user(i).face_size);
+
+				--user(i).face_blink_count;
+			}
+			else {
+				user(i).face_blink_count = FACE_BLINK_INTERVAL;
+			}
+#undef user(i)
+		}
+	}
+}
+
+void SceneManager::draw_cursor() const {
 	for (const auto& ud : this->hc->user_data) {
 		if (ud.second.state == HandCursor::STATE::INACTIVE) {
 			continue;
 		}
 
-		//ofNoFill();
-		//ofSetLineWidth(60);
-		//ofSetColor(ofColor::white, ud.second.cursor_alpha);
-		//ofDrawCircle(ud.second.cursor_point.x, ud.second.cursor_point.y, 60);
-		//ofFill();
-		//ofSetColor(ud.second.cursor_color, ud.second.cursor_alpha);
-		//ofDrawCircle(ud.second.cursor_point.x, ud.second.cursor_point.y, 55);
-
 		ofSetColor(ud.second.cursor_color, ud.second.cursor_alpha);
 		if (ud.second.hand == HandCursor::USING_HAND::RIGHT) {
-			this->right_hand_image.draw(ud.second.cursor_point.x - 125, ud.second.cursor_point.y - 125, 250, 250);
+			this->right_hand_image.draw(ud.second.cursor_point.x - this->cursor_size / 2, ud.second.cursor_point.y - this->cursor_size / 2, this->cursor_size, this->cursor_size);
 		}
 		else {
-			this->left_hand_image.draw(ud.second.cursor_point.x - 125, ud.second.cursor_point.y - 125, 250, 250);
+			this->left_hand_image.draw(ud.second.cursor_point.x - this->cursor_size / 2, ud.second.cursor_point.y - this->cursor_size / 2, this->cursor_size, this->cursor_size);
 		}
-
-
-		//if (ud.second.cursor_point.x >= 800 || ud.second.cursor_point.y >= 800) {
-		//this->hand_image.draw(ud.second.cursor_point.x-125, ud.second.cursor_point.y-125, 250, 250);
-		//}
-		//else {
-			//this->hand_grab_image.draw(ud.second.cursor_point.x+50-100, ud.second.cursor_point.y+50-100, 200, 200);
-		//}
-		
 	}
 }
 

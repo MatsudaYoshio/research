@@ -35,9 +35,6 @@ private:
 	int modify_window_num, modify_param;
 	std::unordered_map<long long int, ofRectangle> current_state, next_state;
 
-	int file_index = 1;
-	ofstream ofs;
-
 	void set_next_state();
 	double minimum_distance(const ofRectangle& r, double x, double y) const;
 public:

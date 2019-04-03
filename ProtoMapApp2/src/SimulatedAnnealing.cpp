@@ -17,9 +17,6 @@ void SimulatedAnnealing::setup(HandCursor* hc, unordered_map<long long int, SubW
 	Concurrency::parallel_for(0, MAX_ITERATION, [&](int i) {
 		this->kT[i] = this->k*pow(0.00005, static_cast<double>(i) / this->MAX_ITERATION);
 	});
-
-	//this->cost_plotter.set_range(0, 10000);
-	//this->cost_plotter.set_line_color(ofColor::skyBlue);
 }
 
 void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectangle>& initial_state, unordered_map<long long int, ofRectangle>& best_state, double& best_cost) {
@@ -32,10 +29,7 @@ void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectan
 	this->best_cost = this->current_cost;
 	best_state = this->current_state;
 
-	//this->ofs.open("cost_data" + to_string(this->file_index) + ".txt");
 	for (int i = 0; i < this->MAX_ITERATION; ++i) {
-		//this->ofs << this->current_cost << endl;
-
 		this->set_next_state(); // ƒpƒ‰ƒ[ƒ^‚ð§–ñ“à‚Å“®‚©‚µ‚ÄŽŸ‚Ìó‘Ô‚ðŒˆ’è
 
 		this->calculate_cost(this->next_state, this->next_cost, *this->sub_windows);
@@ -58,9 +52,6 @@ void SimulatedAnnealing::operator() (const unordered_map<long long int, ofRectan
 	}
 
 	best_cost = this->best_cost;
-
-	//this->ofs.close();
-	//++this->file_index;
 }
 
 void SimulatedAnnealing::set_next_state() {

@@ -39,14 +39,11 @@ namespace param {
 
 	extern const float MAX_ALFHA;
 	extern const float HALF_MAX_ALFHA;
-	extern const float MAX_KEY_POINTS_ALFHA;
-	extern const float MAX_LINES_ALFHA;
+	extern const float THREE_QUARTER_MAX_ALFHA;
 
 	extern const int FACE_BLINK_INTERVAL;
 
 	constexpr int MENU_ITEM_NUM{ 4 }; // メニュー項目の数
-
-	constexpr int CONTENT_NUM{ 26 }; // コンテンツの数
 
 	const enum class MENU_ITEM_ID { SIGHTSEEING, RESTAURANT, SHOPPING, HOTEL }; // メニュー項目ID
 

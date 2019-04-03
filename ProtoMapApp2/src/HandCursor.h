@@ -92,13 +92,13 @@
 
 class HandCursor {
 public:
-	const enum class STATE { INACTIVE, OVERLAP, ACTIVE};
+	const enum class STATE { INACTIVE, OVERLAP, ACTIVE };
 	const enum class USING_HAND { RIGHT, LEFT };
 private:
 	using user_data_type = struct {
 		STATE state;
 		USING_HAND hand;
-		bool cursor_apper_flag;
+		bool cursor_appear_flag;
 		long long int personal_id;
 		long long int start_frame, latest_update_frame;
 		cv::Rect2d face_rect, operation_area;
@@ -106,7 +106,7 @@ private:
 		double face_size;
 		int cursor_color_id;
 		ofColor cursor_color;
-		float cursor_alpha, key_points_alpha, lines_alpha;
+		float cursor_alpha;
 		int face_blink_count;
 		cv::Point transformed_face_point, cursor_point;
 		std::unique_ptr<OneEuroFilter> dx_filter, dy_filter;
@@ -115,8 +115,9 @@ private:
 	/* íËêî */
 	static constexpr int resize_size{ 80 };
 	static constexpr double default_face_size{ 60 };
+	static constexpr double minimum_face_size{ default_face_size*0.8 };
 	static constexpr double face_error{ 100 };
-	static constexpr int initial_cursor_color_num{ 10 };
+	static constexpr int initial_cursor_color_num{ 8 };
 	static constexpr long long int new_user_id{ 0 };
 	static constexpr double operation_width_rate{ 1000 };
 	static constexpr double operation_heght_rate{ 1000 };
@@ -131,7 +132,7 @@ private:
 	static const double display_operation_height_ratio;
 	static const cv::Point invalid_point, display_center_point;
 	static const std::array<ofColor, initial_cursor_color_num> initial_cursor_colors;
-	
+
 	vector<ofColor> cursor_colors;
 	vector<bool> cursor_color_state;
 
@@ -157,14 +158,13 @@ private:
 
 	//TimerBase tm;
 
-	double estimate_face_size(int personal_id) const;
 	int decide_user_id(int personal_id) const;
 	bool is_start_interaction_by_right_hand(int personal_id) const;
 	bool is_start_interaction_by_left_hand(int personal_id) const;
 	void init_user_data(int personal_id, double face_size, USING_HAND hand);
 	void renew_user_data(int personal_id, double face_size, long long int user_id);
+	void deactivate_user(long long int user_id);
 	void get_frame();
-	void transform_point(const cv::Point& src_point, cv::Point& dst_point) const;
 	void show_detect_window();
 public:
 	op::Array<float> pose_key_points;
@@ -175,6 +175,8 @@ public:
 	void update();
 	void exit();
 	void overlap_window(long long int user_id);
+	double estimate_face_size(int personal_id) const;
+	void transform_point(const cv::Point& src_point, cv::Point& dst_point) const;
 };
 
 #endif

@@ -11,7 +11,7 @@ const Point HandCursor::invalid_point{ -100,-100 }; // ‰æ–Êã‚É•\¦‚³‚ê‚È‚¢‚æ‚¤‚
 const Point HandCursor::display_center_point{ HALF_DISPLAY_W, HALF_DISPLAY_H }; // ƒfƒBƒXƒvƒŒƒC‚Ì’†S‚Ì“_
 
 /* è“®‚Å€”õ‚µ‚½ƒJ[ƒ\ƒ‹‚ÌF */
-const std::array<ofColor, HandCursor::initial_cursor_color_num> HandCursor::initial_cursor_colors = { ofColor::deepPink, ofColor::mediumPurple, ofColor::brown, ofColor::blue, ofColor::red, ofColor::forestGreen, ofColor::black, ofColor::gray, ofColor::coral, ofColor::goldenRod };
+const std::array<ofColor, HandCursor::initial_cursor_color_num> HandCursor::initial_cursor_colors = { ofColor::deepPink, ofColor::mediumPurple, ofColor::brown, ofColor::blue, ofColor::red, ofColor::forestGreen, ofColor::coral, ofColor::goldenRod };
 
 HandCursor::HandCursor():cursor_colors(this->initial_cursor_color_num), cursor_color_state(this->initial_cursor_color_num) {
 	/* è“®‚Å€”õ‚µ‚½ƒJ[ƒ\ƒ‹‚ÌF‚ğƒZƒbƒg */
@@ -45,7 +45,7 @@ HandCursor::HandCursor():cursor_colors(this->initial_cursor_color_num), cursor_c
 	//this->user_data[-100].state = STATE::ACTIVE;
 
 	/* “®‰æB‰e */
-	//this->writer.open("multi-user_interaction5.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 18, Size(CAMERA_W, CAMERA_H), true);
+	//this->writer.open("multi-user_interaction2.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 16, Size(CAMERA_W, CAMERA_H), true);
 }
 
 void HandCursor::update() {
@@ -76,8 +76,13 @@ void HandCursor::update() {
 		if (this->pose_key_points[NOSE_X(i)] == 0.0 || this->pose_key_points[NOSE_Y(i)] == 0.0) { // Šç‚ªŒŸo‚Å‚«‚È‚¯‚ê‚Î
 			continue;
 		}
+
 		double face_size{ this->estimate_face_size(i) }; // Šç‚Ì‘å‚«‚³‚ğ„’è
-		
+
+		if (face_size < this->minimum_face_size) {
+			continue;
+		}
+
 		long long int user_id{ this->decide_user_id(i) }; // user_id‚ğŒˆ’è
 		
 		if (user_id == this->new_user_id) { // V‚µ‚¢ƒ†[ƒU‚Å‚ ‚ê‚Î
@@ -90,16 +95,10 @@ void HandCursor::update() {
 		}
 		else { // Šù‚É‘€ì‚µ‚Ä‚¢‚éƒ†[ƒU‚Å‚ ‚ê‚Î
 			if (this->user_data[user_id].hand == USING_HAND::RIGHT && !this->is_start_interaction_by_right_hand(i)) { // ‰Eè‚Å‘€ì‚µ‚Ä‚¢‚½‚ª‰Eè‚ªã‚ª‚Á‚Ä‚¢‚È‚¯‚ê‚Î
-				this->user_data[user_id].state = STATE::INACTIVE;
-				this->user_data[user_id].key_points_alpha = MAX_KEY_POINTS_ALFHA;
-				this->user_data[user_id].lines_alpha = MAX_LINES_ALFHA;
-				this->user_data[user_id].face_blink_count = FACE_BLINK_INTERVAL;
+				this->deactivate_user(user_id);
 			}
 			else if (this->user_data[user_id].hand == USING_HAND::LEFT && !this->is_start_interaction_by_left_hand(i)) { // ¶è‚Å‘€ì‚µ‚Ä‚¢‚½‚ª¶è‚ªã‚ª‚Á‚Ä‚¢‚È‚¯‚ê‚Î
-				this->user_data[user_id].state = STATE::INACTIVE;
-				this->user_data[user_id].key_points_alpha = MAX_KEY_POINTS_ALFHA;
-				this->user_data[user_id].lines_alpha = MAX_LINES_ALFHA;
-				this->user_data[user_id].face_blink_count = FACE_BLINK_INTERVAL;
+				this->deactivate_user(user_id);
 			}
 			else {
 				this->renew_user_data(i, face_size, user_id); // ƒ†[ƒUƒf[ƒ^‚ÌXV
@@ -198,8 +197,6 @@ void HandCursor::init_user_data(const int personal_id, const double face_size, U
 			cursor_color_id,
 			this->cursor_colors[cursor_color_id],
 			ofColor::limit(),
-			MAX_KEY_POINTS_ALFHA,
-			MAX_LINES_ALFHA,
 			FACE_BLINK_INTERVAL,
 			this->invalid_point,
 			this->invalid_point,
@@ -215,7 +212,7 @@ void HandCursor::init_user_data(const int personal_id, const double face_size, U
 	this->user_data[this->user_id].dx_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
 	this->user_data[this->user_id].dy_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
 
-	this->user_data[this->user_id].cursor_apper_flag = true;
+	this->user_data[this->user_id].cursor_appear_flag = true;
 
 	this->transform_point(this->user_data[this->user_id].face_point, this->user_data[this->user_id].transformed_face_point); // Šç‚ÌÀ•W‚ğ‰æ–Êã‚ÌÀ•W‚É•ÏŠ·
 
@@ -233,7 +230,7 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 		this->user_data[user_id].state = STATE::ACTIVE;
 		this->user_data[user_id].dx_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
 		this->user_data[user_id].dy_filter.reset(new OneEuroFilter(this->filter_freq, this->filter_mincutoff, this->filter_beta));
-		this->user_data[user_id].cursor_apper_flag = true;
+		this->user_data[user_id].cursor_appear_flag = true;
 	}
 
 	/* ‰‚ß‚Ìˆê’è—ÊƒtƒŒ[ƒ€‚ğÌ‚Ä‚é(Å‰‚ÌƒJ[ƒ\ƒ‹‚Ì•\¦‚ğŒ©‚½–Ú‚«‚ê‚¢‚É‚·‚é‚½‚ß) */
@@ -267,6 +264,11 @@ void HandCursor::renew_user_data(const int personal_id, const double face_size, 
 	this->user_data[user_id].cursor_point.y = this->user_data[user_id].dy_filter->filter(this->user_data[user_id].cursor_point.y);
 }
 
+void HandCursor::deactivate_user(long long int user_id) {
+	this->user_data[user_id].state = STATE::INACTIVE;
+	this->user_data[user_id].face_blink_count = FACE_BLINK_INTERVAL;
+}
+
 void HandCursor::get_frame() {
 	while (!this->stop_flag) {
 		this->image_buffer.emplace_front(this->cap.get_image());
@@ -291,64 +293,126 @@ void HandCursor::show_detect_window() {
 	const int people_num{ this->pose_key_points.getSize(0) };
 	Concurrency::parallel_for(0, people_num, [&](int i) {
 		// œŠi‚Ìü•ª‚ğ•`‰æ
-		if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0 && this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0) {
-			line(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Scalar(ofColor::mediumVioletRed.b, ofColor::mediumVioletRed.g, ofColor::mediumVioletRed.r), 10);
-		}
-		if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0) {
-			line(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), Scalar(ofColor::orangeRed.b, ofColor::orangeRed.g, ofColor::orangeRed.r), 10);
-		}
-		if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0) {
-			line(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), Scalar(ofColor::chartreuse.b, ofColor::chartreuse.g, ofColor::chartreuse.r), 10);
-		}
-		if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0 && this->pose_key_points[MIDDLE_HIP_X(i)] != 0.0 && this->pose_key_points[MIDDLE_HIP_Y(i)] != 0.0) {
-			line(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Point(this->pose_key_points[MIDDLE_HIP_X(i)], this->pose_key_points[MIDDLE_HIP_Y(i)]), Scalar(0, 0, 255), 10);
-		}
-		if (this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_X(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_Y(i)] != 0.0) {
-			line(this->view_frame, Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), Point(this->pose_key_points[RIGHT_ELBOW_X(i)], this->pose_key_points[RIGHT_ELBOW_Y(i)]), Scalar(ofColor::goldenRod.b, ofColor::goldenRod.g, ofColor::goldenRod.r), 10);
-		}
-		if (this->pose_key_points[RIGHT_ELBOW_X(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_Y(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
-			line(this->view_frame, Point(this->pose_key_points[RIGHT_ELBOW_X(i)], this->pose_key_points[RIGHT_ELBOW_Y(i)]), Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), Scalar(0, 255, 255), 10);
-		}
-		if (this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_X(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_Y(i)] != 0.0) {
-			line(this->view_frame, Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), Point(this->pose_key_points[LEFT_ELBOW_X(i)], this->pose_key_points[LEFT_ELBOW_Y(i)]), Scalar(ofColor::lime.b, ofColor::lime.g, ofColor::lime.r), 10);
-		}
-		if (this->pose_key_points[LEFT_ELBOW_X(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_Y(i)] != 0.0 && this->pose_key_points[LEFT_WRIST_X(i)] != 0.0 && this->pose_key_points[LEFT_WRIST_Y(i)] != 0.0) {
-			line(this->view_frame, Point(this->pose_key_points[LEFT_ELBOW_X(i)], this->pose_key_points[LEFT_ELBOW_Y(i)]), Point(this->pose_key_points[LEFT_WRIST_X(i)], this->pose_key_points[LEFT_WRIST_Y(i)]), Scalar(0, 255, 0), 10);
-		}
+		//if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0 && this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0) {
+		//	line(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Scalar(ofColor::mediumVioletRed.b, ofColor::mediumVioletRed.g, ofColor::mediumVioletRed.r), 10);
+		//}
+		//if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0) {
+		//	line(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), Scalar(ofColor::orangeRed.b, ofColor::orangeRed.g, ofColor::orangeRed.r), 10);
+		//}
+		//if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0) {
+		//	line(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), Scalar(ofColor::chartreuse.b, ofColor::chartreuse.g, ofColor::chartreuse.r), 10);
+		//}
+		//if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0 && this->pose_key_points[MIDDLE_HIP_X(i)] != 0.0 && this->pose_key_points[MIDDLE_HIP_Y(i)] != 0.0) {
+		//	line(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Point(this->pose_key_points[MIDDLE_HIP_X(i)], this->pose_key_points[MIDDLE_HIP_Y(i)]), Scalar(0, 0, 255), 10);
+		//}
+		//if (this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_X(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_Y(i)] != 0.0) {
+		//	line(this->view_frame, Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), Point(this->pose_key_points[RIGHT_ELBOW_X(i)], this->pose_key_points[RIGHT_ELBOW_Y(i)]), Scalar(ofColor::goldenRod.b, ofColor::goldenRod.g, ofColor::goldenRod.r), 10);
+		//}
+		//if (this->pose_key_points[RIGHT_ELBOW_X(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_Y(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
+		//	line(this->view_frame, Point(this->pose_key_points[RIGHT_ELBOW_X(i)], this->pose_key_points[RIGHT_ELBOW_Y(i)]), Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), Scalar(0, 255, 255), 10);
+		//}
+		//if (this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_X(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_Y(i)] != 0.0) {
+		//	line(this->view_frame, Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), Point(this->pose_key_points[LEFT_ELBOW_X(i)], this->pose_key_points[LEFT_ELBOW_Y(i)]), Scalar(ofColor::lime.b, ofColor::lime.g, ofColor::lime.r), 10);
+		//}
+		//if (this->pose_key_points[LEFT_ELBOW_X(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_Y(i)] != 0.0 && this->pose_key_points[LEFT_WRIST_X(i)] != 0.0 && this->pose_key_points[LEFT_WRIST_Y(i)] != 0.0) {
+		//	line(this->view_frame, Point(this->pose_key_points[LEFT_ELBOW_X(i)], this->pose_key_points[LEFT_ELBOW_Y(i)]), Point(this->pose_key_points[LEFT_WRIST_X(i)], this->pose_key_points[LEFT_WRIST_Y(i)]), Scalar(0, 255, 0), 10);
+		//}
 
 		// œŠi“_‚ğ•`‰æ
+		//if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 12, Scalar(ofColor::mediumVioletRed.b, ofColor::mediumVioletRed.g, ofColor::mediumVioletRed.r), -1);
+		//}
+		//if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), 12, Scalar(0, 0, 255), -1);
+		//}
+		//if (this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), 12, Scalar(ofColor::orangeRed.b, ofColor::orangeRed.g, ofColor::orangeRed.r), -1);
+		//}
+		//if (this->pose_key_points[RIGHT_ELBOW_X(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_ELBOW_X(i)], this->pose_key_points[RIGHT_ELBOW_Y(i)]), 12, Scalar(ofColor::goldenRod.b, ofColor::goldenRod.g, ofColor::goldenRod.r), -1);
+		//}
+		//if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 12, Scalar(0, 255, 255), -1);
+		//}
+		//if (this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), 12, Scalar(ofColor::chartreuse.b, ofColor::chartreuse.g, ofColor::chartreuse.r), -1);
+		//}
+		//if (this->pose_key_points[LEFT_ELBOW_X(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_ELBOW_X(i)], this->pose_key_points[LEFT_ELBOW_Y(i)]), 12, Scalar(ofColor::lime.b, ofColor::lime.g, ofColor::lime.r), -1);
+		//}
+		//if (this->pose_key_points[LEFT_WRIST_X(i)] != 0.0 && this->pose_key_points[LEFT_WRIST_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_WRIST_X(i)], this->pose_key_points[LEFT_WRIST_Y(i)]), 12, Scalar(0, 255, 0), -1);
+		//}
+		//if (this->pose_key_points[MIDDLE_HIP_X(i)] != 0.0 && this->pose_key_points[MIDDLE_HIP_Y(i)] != 0.0) {
+		//	cv::circle(this->view_frame, Point(this->pose_key_points[MIDDLE_HIP_X(i)], this->pose_key_points[MIDDLE_HIP_Y(i)]), 12, Scalar(0, 0, 255), -1);
+		//}
+
+		Scalar user_color;
+		if (this->personal_id2user_id[i] == NOT_USER) {
+			user_color = Scalar(192, 192, 192);
+		}
+		else {
+			user_color = Scalar(this->user_data[this->personal_id2user_id[i]].cursor_color.b, this->user_data[this->personal_id2user_id[i]].cursor_color.g, this->user_data[this->personal_id2user_id[i]].cursor_color.r);
+		}
+
+		if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0 && this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0) {
+			line(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), user_color, 10);
+		}
+		if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0) {
+			line(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), user_color, 10);
+		}
+		if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0) {
+			line(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), user_color, 10);
+		}
+		if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0 && this->pose_key_points[MIDDLE_HIP_X(i)] != 0.0 && this->pose_key_points[MIDDLE_HIP_Y(i)] != 0.0) {
+			line(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), Point(this->pose_key_points[MIDDLE_HIP_X(i)], this->pose_key_points[MIDDLE_HIP_Y(i)]), user_color, 10);
+		}
+		if (this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_X(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_Y(i)] != 0.0) {
+			line(this->view_frame, Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), Point(this->pose_key_points[RIGHT_ELBOW_X(i)], this->pose_key_points[RIGHT_ELBOW_Y(i)]), user_color, 10);
+		}
+		if (this->pose_key_points[RIGHT_ELBOW_X(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_Y(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
+			line(this->view_frame, Point(this->pose_key_points[RIGHT_ELBOW_X(i)], this->pose_key_points[RIGHT_ELBOW_Y(i)]), Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), user_color, 10);
+		}
+		if (this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_X(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_Y(i)] != 0.0) {
+			line(this->view_frame, Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), Point(this->pose_key_points[LEFT_ELBOW_X(i)], this->pose_key_points[LEFT_ELBOW_Y(i)]), user_color, 10);
+		}
+		if (this->pose_key_points[LEFT_ELBOW_X(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_Y(i)] != 0.0 && this->pose_key_points[LEFT_WRIST_X(i)] != 0.0 && this->pose_key_points[LEFT_WRIST_Y(i)] != 0.0) {
+			line(this->view_frame, Point(this->pose_key_points[LEFT_ELBOW_X(i)], this->pose_key_points[LEFT_ELBOW_Y(i)]), Point(this->pose_key_points[LEFT_WRIST_X(i)], this->pose_key_points[LEFT_WRIST_Y(i)]), user_color, 10);
+		}
+
 		if (this->pose_key_points[NOSE_X(i)] != 0.0 && this->pose_key_points[NOSE_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 12, Scalar(ofColor::mediumVioletRed.b, ofColor::mediumVioletRed.g, ofColor::mediumVioletRed.r), -1);
+			cv::circle(this->view_frame, Point(this->pose_key_points[NOSE_X(i)], this->pose_key_points[NOSE_Y(i)]), 12, user_color, -1);
 		}
 		if (this->pose_key_points[NECK_X(i)] != 0.0 && this->pose_key_points[NECK_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), 12, Scalar(0, 0, 255), -1);
+			cv::circle(this->view_frame, Point(this->pose_key_points[NECK_X(i)], this->pose_key_points[NECK_Y(i)]), 12, user_color, -1);
 		}
 		if (this->pose_key_points[RIGHT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[RIGHT_SHOULDER_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), 12, Scalar(ofColor::orangeRed.b, ofColor::orangeRed.g, ofColor::orangeRed.r), -1);
+			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_SHOULDER_X(i)], this->pose_key_points[RIGHT_SHOULDER_Y(i)]), 12, user_color, -1);
 		}
 		if (this->pose_key_points[RIGHT_ELBOW_X(i)] != 0.0 && this->pose_key_points[RIGHT_ELBOW_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_ELBOW_X(i)], this->pose_key_points[RIGHT_ELBOW_Y(i)]), 12, Scalar(ofColor::goldenRod.b, ofColor::goldenRod.g, ofColor::goldenRod.r), -1);
+			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_ELBOW_X(i)], this->pose_key_points[RIGHT_ELBOW_Y(i)]), 12, user_color, -1);
 		}
 		if (this->pose_key_points[RIGHT_WRIST_X(i)] != 0.0 && this->pose_key_points[RIGHT_WRIST_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 12, Scalar(0, 255, 255), -1);
+			cv::circle(this->view_frame, Point(this->pose_key_points[RIGHT_WRIST_X(i)], this->pose_key_points[RIGHT_WRIST_Y(i)]), 12, user_color, -1);
 		}
 		if (this->pose_key_points[LEFT_SHOULDER_X(i)] != 0.0 && this->pose_key_points[LEFT_SHOULDER_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), 12, Scalar(ofColor::chartreuse.b, ofColor::chartreuse.g, ofColor::chartreuse.r), -1);
+			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_SHOULDER_X(i)], this->pose_key_points[LEFT_SHOULDER_Y(i)]), 12, user_color, -1);
 		}
 		if (this->pose_key_points[LEFT_ELBOW_X(i)] != 0.0 && this->pose_key_points[LEFT_ELBOW_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_ELBOW_X(i)], this->pose_key_points[LEFT_ELBOW_Y(i)]), 12, Scalar(ofColor::lime.b, ofColor::lime.g, ofColor::lime.r), -1);
+			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_ELBOW_X(i)], this->pose_key_points[LEFT_ELBOW_Y(i)]), 12, user_color, -1);
 		}
 		if (this->pose_key_points[LEFT_WRIST_X(i)] != 0.0 && this->pose_key_points[LEFT_WRIST_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_WRIST_X(i)], this->pose_key_points[LEFT_WRIST_Y(i)]), 12, Scalar(0, 255, 0), -1);
+			cv::circle(this->view_frame, Point(this->pose_key_points[LEFT_WRIST_X(i)], this->pose_key_points[LEFT_WRIST_Y(i)]), 12, user_color, -1);
 		}
 		if (this->pose_key_points[MIDDLE_HIP_X(i)] != 0.0 && this->pose_key_points[MIDDLE_HIP_Y(i)] != 0.0) {
-			cv::circle(this->view_frame, Point(this->pose_key_points[MIDDLE_HIP_X(i)], this->pose_key_points[MIDDLE_HIP_Y(i)]), 12, Scalar(0, 0, 255), -1);
+			cv::circle(this->view_frame, Point(this->pose_key_points[MIDDLE_HIP_X(i)], this->pose_key_points[MIDDLE_HIP_Y(i)]), 12, user_color, -1);
 		}
+
 	});
 
-	for (const auto& t : this->user_data) {
-		cv::rectangle(this->view_frame, t.second.operation_area, Scalar(255, 0, 0), 10);
-	}
+	//for (const auto& t : this->user_data) {
+	//	cv::rectangle(this->view_frame, t.second.operation_area, Scalar(255, 0, 0), 10);
+	//}
 
 	imshow("detect window", this->view_frame);
 
