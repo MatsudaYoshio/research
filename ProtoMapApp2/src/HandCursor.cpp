@@ -190,9 +190,9 @@ void HandCursor::init_user_data(const int personal_id, const double face_size, U
 			this->frame_count,
 			this->frame_count,
 			Rect2d(this->pose_key_points[NOSE_X(personal_id)] - face_size / 2, this->pose_key_points[NOSE_Y(personal_id)] - face_size / 2, face_size, face_size),
-			Rect2d(this->pose_key_points[NECK_X(personal_id)] - face_size*this->display_operation_width_ratio, (this->pose_key_points[NECK_Y(personal_id)] + this->pose_key_points[NOSE_Y(personal_id)]) / 2 - face_size*this->display_operation_height_ratio / 2, face_size*this->display_operation_width_ratio, face_size*this->display_operation_height_ratio),
+			Rect2d(this->pose_key_points[NECK_X(personal_id)] - face_size*this->display_operation_width_ratio, this->pose_key_points[NECK_Y(personal_id)] - face_size*this->display_operation_height_ratio / 2, face_size*this->display_operation_width_ratio, face_size*this->display_operation_height_ratio),
 			Point(this->pose_key_points[NOSE_X(personal_id)], this->pose_key_points[NOSE_Y(personal_id)]),
-			Point(this->pose_key_points[NECK_X(personal_id)] - face_size*this->display_operation_width_ratio / 2, (this->pose_key_points[NECK_Y(personal_id)] + this->pose_key_points[NOSE_Y(personal_id)]) / 2),
+			Point(this->pose_key_points[NECK_X(personal_id)] - face_size*this->display_operation_width_ratio / 2, this->pose_key_points[NECK_Y(personal_id)]),
 			face_size,
 			cursor_color_id,
 			this->cursor_colors[cursor_color_id],
@@ -410,9 +410,9 @@ void HandCursor::show_detect_window() {
 
 	});
 
-	//for (const auto& t : this->user_data) {
-	//	cv::rectangle(this->view_frame, t.second.operation_area, Scalar(255, 0, 0), 10);
-	//}
+	for (const auto& t : this->user_data) {
+		cv::rectangle(this->view_frame, t.second.operation_area, Scalar(255, 0, 0), 10);
+	}
 
 	imshow("detect window", this->view_frame);
 
