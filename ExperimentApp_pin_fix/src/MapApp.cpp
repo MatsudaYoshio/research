@@ -103,7 +103,7 @@ void MapApp::initialize_image() {
 }
 
 void MapApp::initialize_output_data_file() {
-	const string directory_path = "C:/of_v0.9.8_vs_release/apps/myApps/ExperimentApp_opt/bin/data/experiment_data/";
+	const string directory_path = "C:/of_v0.9.8_vs_release/apps/myApps/ExperimentApp_pin_fix/bin/data/experiment_data/";
 
 	cout << "Participant's name on the left: ";
 	cin >> left_user_name;
