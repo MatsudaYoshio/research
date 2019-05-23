@@ -8,8 +8,12 @@
 
 class SubWindow {
 private:
+	static constexpr int number_font_size{ 60 };
+	static constexpr int number_circle_size{ 60 };
+
 	DrawFrame df;
 	ofRectangle view_rect;
+	ofTrueTypeFont font;
 	param::CONTENT_ID content_id;
 	long long int user_id;
 public:

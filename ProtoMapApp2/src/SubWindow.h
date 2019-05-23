@@ -13,9 +13,12 @@ private:
 	static constexpr double defalut_width{ defalut_height * 1.618 }; // ‰©‹à”ä
 	static constexpr double track_rects_num{ 12 };
 	static constexpr auto change_rate{ 1 / track_rects_num };
+	static constexpr int number_font_size{ 60 };
+	static constexpr int number_circle_size{ 60 };
 
 	DrawFrame df;
 	ofRectangle view_rect;
+	ofTrueTypeFont font;
 	param::CONTENT_ID content_id;
 	long long int user_id;
 	queue<ofRectangle> next_rects;
