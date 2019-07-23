@@ -35,15 +35,6 @@ HandCursor::HandCursor():cursor_colors(this->initial_cursor_color_num), cursor_c
 	thread frame_thread(&HandCursor::get_frame, this);
 	frame_thread.detach();
 
-	//this->user_data[-100].alpha = 255;
-	//this->user_data[-100].cursor_color = ofColor::orange;
-	//this->user_data[-100].face_rect = Rect2d(200,200,200,200);
-	//this->user_data[-100].cursor_point.x = 2937;
-	//this->user_data[-100].cursor_point.y = 500;
-	//this->user_data[-100].transformed_face_point.x = 200;
-	//this->user_data[-100].transformed_face_point.y = 1500;
-	//this->user_data[-100].state = STATE::ACTIVE;
-
 	/* “®‰æŽB‰e */
 	//this->writer.open("multi-user_interaction2.mp4", VideoWriter::fourcc('M', 'P', '4', 'V'), 16, Size(CAMERA_W, CAMERA_H), true);
 }

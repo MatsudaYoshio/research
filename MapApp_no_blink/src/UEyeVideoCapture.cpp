@@ -73,7 +73,7 @@ UEyeVideoCapture::UEyeVideoCapture() {
 		cerr << "Fail to set auto parameter : framerate" << endl;
 		return;
 	}
-	
+
 	if (is_SetAutoParameter(this->hCam, IS_SET_ENABLE_AUTO_SHUTTER, &disable, 0) == IS_NO_SUCCESS) {
 		cerr << "Fail to set auto parameter : shutter" << endl;
 		return;
@@ -81,10 +81,9 @@ UEyeVideoCapture::UEyeVideoCapture() {
 }
 
 Mat UEyeVideoCapture::get_image() {
-	if (is_FreezeVideo(this->hCam, IS_WAIT) == IS_SUCCESS) {
-		is_GetImageMem(this->hCam, &this->pMemVoid);
-		return Mat(this->img_height, this->img_width, CV_8UC3, this->pMemVoid);
-	}
+	is_FreezeVideo(this->hCam, IS_WAIT);
+	is_GetImageMem(this->hCam, &this->pMemVoid);
+	return Mat(this->img_height, this->img_width, CV_8UC3, this->pMemVoid);
 }
 
 UEyeVideoCapture::~UEyeVideoCapture() {

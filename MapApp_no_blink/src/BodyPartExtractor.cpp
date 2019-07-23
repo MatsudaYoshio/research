@@ -6,7 +6,7 @@ using namespace cv;
 using namespace param;
 
 const string BodyPartExtractor::MODEL_POSE{ "BODY_25" };
-const string BodyPartExtractor::MODEL_FOLDER{ "C:/openpose-1.4.0/models/" };
+const string BodyPartExtractor::MODEL_FOLDER{ "C:/openpose-1.5.0/models/" };
 const string BodyPartExtractor::NET_RESOLUTION{ "-1x272" };
 const string BodyPartExtractor::OUTPUT_RESOLUTION{ "-1x-1" };
 
@@ -24,7 +24,7 @@ BodyPartExtractor::BodyPartExtractor() :scale_and_size_extractor(this->net_input
 void BodyPartExtractor::operator()(Array<float>& pose_key_points, Mat& image) {
 	this->net_input_array = cv_mat_to_op_input.createArray(image, this->scale_input_to_net_inputs, this->net_input_sizes);
 
-	this->pose_extractor_caffe.forwardPass(this->net_input_array, this->image_size, this->scale_input_to_net_inputs);
+	this->pose_extractor_caffe.forwardPass(this->net_input_array, this->image_size, this->scale_input_to_net_inputs, this->pose_net_output);
 
 	pose_key_points = this->pose_extractor_caffe.getPoseKeypoints();
 }

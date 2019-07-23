@@ -39,6 +39,7 @@ private:
 	op::Point<int> output_resolution;
 	std::vector<op::Array<float>> net_input_array;
 	op::Array<float> pose_key_points;
+	op::Array<float> pose_net_output;
 
 	op::CvMatToOpInput cv_mat_to_op_input;
 	op::ScaleAndSizeExtractor scale_and_size_extractor;
