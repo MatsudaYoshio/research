@@ -17,6 +17,7 @@ void WhacAMoleApp::setup() {
 	ofHideCursor(); // カーソル非表示
 	ofSetBackgroundAuto(false); // フレーム更新時に塗りつぶしを無効化
 
+	/* topスコアを読み込む */
 	ifstream ifs(this->top_score_path);
 	string str;
 	ifs >> str;

@@ -40,7 +40,7 @@ public:
 
 	void setup(const ofRectangle& draw_rect, int hidden_time); // モグラを描画する位置・大きさに関する矩形と最初の隠れ時間を引数にセットアップ
 	void update();
-	void draw();
+	void draw() const ;
 
 	ofRectangle get_rect() const;
 	int get_score();

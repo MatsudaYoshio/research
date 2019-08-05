@@ -133,33 +133,24 @@ void KeyPointsRenderer::draw(const map<pair<int, int>, ofPoint>& transformed_key
 			}
 		}
 
-		/* 右手のハンマーの描画 */
-		try {
-			ofPushMatrix();
-			ofTranslate(transformed_key_points.at({ p.first.first, RIGHT_WRIST }));
-			ofRotateZ(-35);
-			ofSetColor(ofColor::red);
-			ofDrawRectangle(0, 0, 150, 70);
-			ofDrawRectangle(0, 0, -100, 70);
-			ofSetColor(ofColor::yellow);
-			ofDrawRectangle(0, 0, 50, 170);
-			ofPopMatrix();
-		}
-		catch (std::out_of_range&) {}
-
-		/* 左手のハンマーの描画 */
-		try {
-			ofPushMatrix();
-			ofTranslate(transformed_key_points.at({ p.first.first, LEFT_WRIST }));
-			ofRotateZ(35);
-			ofSetColor(ofColor::red);
-			ofDrawRectangle(0, 0, 150, 70);
-			ofDrawRectangle(0, 0, -100, 70);
-			ofSetColor(ofColor::yellow);
-			ofDrawRectangle(0, 0, 50, 170);
-			ofPopMatrix();
-		}
-		catch (std::out_of_range&) {}
+		/* ハンマーの描画 */
+		const auto draw_hammer = [&transformed_key_points, &p](const int d) {
+			try {
+				ofPushMatrix();
+				ofTranslate(transformed_key_points.at({ p.first.first, d }));
+				ofRotateZ(35 * ((d == RIGHT_WRIST) ? -1 : 1));
+				ofSetColor(ofColor::red);
+				ofDrawRectangle(0, 0, 150, 70);
+				ofDrawRectangle(0, 0, -100, 70);
+				ofSetColor(ofColor::yellow);
+				ofDrawRectangle(0, 0, 50, 170);
+				ofPopMatrix();
+			}
+			catch (std::out_of_range&) {}
+		};
+		
+		draw_hammer(RIGHT_WRIST);
+		draw_hammer(LEFT_WRIST);
 	}
 }
 

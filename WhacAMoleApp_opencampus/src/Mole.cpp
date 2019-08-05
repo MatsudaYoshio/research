@@ -54,7 +54,7 @@ void Mole::update() {
 	}
 }
 
-void Mole::draw() {
+void Mole::draw() const {
 	MOLE_IMAGE[static_cast<int>(this->state)].draw(this->draw_rect);
 }
 
